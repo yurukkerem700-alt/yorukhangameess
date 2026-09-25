@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Kartal Uçuşu</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #6ec6ff; touch-action: none; user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #sc { position: fixed; top: 6%; left: 0; right: 0; text-align: center; font-size: 54px; font-weight: 900; text-shadow: 0 4px 0 rgba(0,0,0,.25); pointer-events: none; }
+  #ui { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .panel { text-align: center; background: rgba(15,40,70,.8); border: 2px solid rgba(255,255,255,.3); padding: 26px 30px; border-radius: 22px; max-width: 86vw; }
+  h1 { margin: 0 0 6px; font-size: clamp(30px, 7vw, 48px); color: #ffd23d; text-shadow: 0 4px 0 #b86a00; }
+  p { margin: 6px 0; color: #e6f3ff; }
+  .btn { margin-top: 14px; background: #ffd23d; color: #3a2400; border: 0; border-radius: 14px; padding: 13px 36px; font-size: 19px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 0 #b86a00; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="sc">0</div>
+<div id="ui"><div class="panel" id="panel">
+  <h1>KARTAL UÇUŞU</h1>
+  <p>Taş sütunların arasından uç!</p>
+  <p><b>Kanat çırp:</b> dokun / tıkla / Boşluk</p>
+  <p id="bestline"></p>
+  <button class="btn" id="go">UÇ!</button>
+</div></div>
+<script>
+(() => {
+  const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  let W, H, DPR, S;
+  function resize() { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); S = H / 700; }
+  addEventListener('resize', resize); resize();
+  const store = { get(k) { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  let best = store.get('kartal_best');
+  document.getElementById('bestline').textContent = best ? 'En iyi: ' + best : '';
+  let state = 'menu', bird, pipes, score, t = 0, spawnX, clouds = Array.from({ length: 7 }, () => ({ x: Math.random(), y: Math.random() * 0.5, s: 0.6 + Math.random() }));
+  function reset() { bird = { y: H * 0.45, vy: 0, r: 0 }; pipes = []; score = 0; spawnX = 0; document.getElementById('sc').textContent = 0; }
+  reset();
+  function flap() { if (state === 'play') bird.vy = -8.6 * S; }
+  function start() { reset(); state = 'play'; flap(); document.getElementById('ui').style.display = 'none'; }
+  document.getElementById('go').onclick = e => { e.stopPropagation(); start(); };
+  addEventListener('pointerdown', e => { if (state === 'play') flap(); });
+  addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); state === 'play' ? flap() : start(); } });
+  function over() {
+    if (state !== 'play') return; state = 'dead';
+    if (score > best) { best = score; store.set('kartal_best', best); }
+    setTimeout(() => { state = 'over';
+      document.getElementById('panel').innerHTML = `<h1>DÜŞTÜN!</h1><p style="font-size:24px;color:#fff"><b>${score}</b> sütun</p><p>En iyi: ${best}</p><button class="btn" id="go">TEKRAR</button>`;
+      document.getElementById('go').onclick = e => { e.stopPropagation(); start(); }; document.getElementById('ui').style.display = 'flex'; }, 700);
+  }
+  const BX = () => W * 0.28, GROUND = () => H - 70 * S, SPEED = () => 3.2 * S * (1 + Math.min(score, 40) * 0.01);
+  function update() {
+    bird.vy += 0.45 * S; bird.y += bird.vy; bird.r = Math.max(-0.5, Math.min(1.2, bird.vy / (10 * S)));
+    if (state === 'dead') { if (bird.y > GROUND() - 16 * S) { bird.y = GROUND() - 16 * S; } return; }
+    spawnX -= SPEED();
+    if (spawnX <= 0) { const gap = Math.max(150, 200 - score * 1.5) * S, top = 80 * S + Math.random() * (GROUND() - gap - 160 * S); pipes.push({ x: W + 40, top, gap, passed: false }); spawnX = 270 * S; }
+    const pw = 76 * S;
+    for (const p of pipes) {
+      p.x -= SPEED();
+      if (!p.passed && p.x + pw < BX()) { p.passed = true; score++; document.getElementById('sc').textContent = score; }
+      if (BX() + 18 * S > p.x && BX() - 18 * S < p.x + pw && (bird.y - 14 * S < p.top || bird.y + 14 * S > p.top + p.gap)) over();
+    }
+    pipes = pipes.filter(p => p.x > -100 * S);
+    if (bird.y > GROUND() - 16 * S || bird.y < -40) over();
+  }
+  function pillar(x, y, w, h, flip) {
+    const g = ctx.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, '#8d7b68'); g.addColorStop(.5, '#c9b79f'); g.addColorStop(1, '#7a6856');
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = 'rgba(0,0,0,.12)'; for (let yy = y + 20 * S; yy < y + h; yy += 40 * S) ctx.fillRect(x, yy, w, 3 * S);
+    ctx.fillStyle = '#e63946'; const cy = flip ? y + h - 22 * S : y; ctx.fillRect(x - 6 * S, cy, w + 12 * S, 22 * S);
+    ctx.fillStyle = '#ffc23d'; for (let i = 0; i < 4; i++) { const cx = x - 6 * S + (i + .5) * (w + 12 * S) / 4; ctx.beginPath(); ctx.moveTo(cx, cy + 3 * S); ctx.lineTo(cx + 7 * S, cy + 11 * S); ctx.lineTo(cx, cy + 19 * S); ctx.lineTo(cx - 7 * S, cy + 11 * S); ctx.fill(); }
+  }
+  function drawBird() {
+    ctx.save(); ctx.translate(BX(), bird.y); ctx.rotate(bird.r); ctx.scale(S, S);
+    const f = Math.sin(t * (state === 'play' ? 0.5 : 0.2)) * 12;
+    ctx.fillStyle = '#6b3b1a'; ctx.beginPath(); ctx.ellipse(0, 0, 22, 14, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#4e2a12'; ctx.beginPath(); ctx.moveTo(-6, -2); ctx.lineTo(-24, -14 - f); ctx.lineTo(10, -4); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(16, -6, 10, 0, 7); ctx.fill();
+    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(19, -8, 2.6, 0, 7); ctx.fill();
+    ctx.fillStyle = '#ffc23d'; ctx.beginPath(); ctx.moveTo(24, -6); ctx.lineTo(36, -1); ctx.lineTo(24, 2); ctx.fill();
+    ctx.fillStyle = '#4e2a12'; ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(-32, -6); ctx.lineTo(-32, 8); ctx.fill();
+    ctx.restore();
+  }
+  function loop() {
+    requestAnimationFrame(loop); t++;
+    if (state === 'play' || state === 'dead') update(); else bird.y = H * 0.45 + Math.sin(t * 0.05) * 12 * S;
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#3fa4f0'); g.addColorStop(1, '#bfe6ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    for (const c of clouds) { c.x -= 0.0003 * c.s; if (c.x < -0.2) c.x = 1.2; const x = c.x * W, y = c.y * H, r = 26 * c.s * S; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.arc(x + r, y - r * .4, r * 1.2, 0, 7); ctx.arc(x + r * 2.2, y, r, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#8fc0a8'; ctx.beginPath(); ctx.moveTo(0, GROUND());
+    for (let x = 0; x <= W; x += 30) ctx.lineTo(x, GROUND() - 60 * S - Math.sin((x + t * 0.3) * 0.01) * 30 * S); ctx.lineTo(W, GROUND()); ctx.fill();
+    const pw = 76 * S;
+    for (const p of pipes) { pillar(p.x, 0, pw, p.top, true); pillar(p.x, p.top + p.gap, pw, GROUND() - p.top - p.gap, false); }
+    ctx.fillStyle = '#6fbf4a'; ctx.fillRect(0, GROUND(), W, 14 * S); ctx.fillStyle = '#c69a5b'; ctx.fillRect(0, GROUND() + 14 * S, W, H);
+    drawBird();
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

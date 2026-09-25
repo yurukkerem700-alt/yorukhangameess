@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /panelim
+Disallow: /giris
+
+Sitemap: https://yorukhan-games.vercel.app/sitemap.xml

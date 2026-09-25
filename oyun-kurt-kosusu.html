@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Kurt Koşusu</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #140d1f; touch-action: none; user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #ui { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .panel { pointer-events: auto; text-align: center; color: #fff; background: rgba(10,6,18,.72); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(6px); padding: 26px 30px; border-radius: 20px; max-width: 86vw; }
+  .panel h1 { margin: 0 0 6px; font-size: clamp(28px, 6vw, 46px); letter-spacing: 1px; background: linear-gradient(90deg,#ffb347,#ff6a1a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .panel p { margin: 6px 0; color: #d8cfe8; font-size: 15px; }
+  .btn { margin-top: 14px; background: #fff; color: #140d1f; border: 0; border-radius: 12px; padding: 13px 34px; font-size: 18px; font-weight: 800; cursor: pointer; }
+  #hud { position: fixed; top: 12px; left: 16px; right: 16px; display: flex; justify-content: space-between; color: #fff; font-weight: 800; font-size: 20px; text-shadow: 0 2px 8px rgba(0,0,0,.6); pointer-events: none; }
+  #hud small { font-size: 13px; opacity: .75; font-weight: 600; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud"><div><small>MESAFE</small><br><span id="sc">0</span> m</div><div style="text-align:right"><small>EN İYİ</small><br><span id="bs">0</span> m</div></div>
+<div id="ui"><div class="panel" id="panel">
+  <h1>KURT KOŞUSU</h1>
+  <p>Bozkırda koş, kayalardan ve kartallardan kaç!</p>
+  <p><b>Zıpla:</b> dokun / Boşluk / ↑ &nbsp;·&nbsp; <b>Havada tekrar bas:</b> çift zıplama</p>
+  <button class="btn" id="go">BAŞLA</button>
+</div></div>
+<script>
+(() => {
+  const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  let W, H, DPR, G; // G = zemin yüksekliği
+  function resize() {
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    G = H * 0.8;
+  }
+  addEventListener('resize', resize); resize();
+
+  const store = { get(k, d) { try { return +localStorage.getItem(k) || d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  let best = store.get('kurt_best', 0);
+  document.getElementById('bs').textContent = best;
+
+  const U = () => Math.min(W * 1.6, H * 1.4) / 900; // ölçek
+  let state = 'menu', t = 0, speed, dist, wolf, obs, spawnT, parts, stars, shake = 0;
+  stars = Array.from({ length: 80 }, () => ({ x: Math.random(), y: Math.random() * 0.55, r: Math.random() * 1.6 + .3, tw: Math.random() * 6 }));
+
+  function reset() {
+    speed = 6; dist = 0; spawnT = 60; obs = []; parts = [];
+    wolf = { y: 0, vy: 0, jumps: 0, run: 0 };
+  }
+  reset();
+
+  function jump() {
+    if (state !== 'play') return;
+    if (wolf.jumps < 2) {
+      wolf.vy = wolf.jumps === 0 ? -16.5 : -14; wolf.jumps++;
+      for (let i = 0; i < 8; i++) parts.push({ x: W * 0.2, y: G + wolf.y, vx: -Math.random() * 3, vy: -Math.random() * 2, l: 30, c: '#c9a36b' });
+    }
+  }
+  addEventListener('keydown', e => { if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) { e.preventDefault(); if (state === 'play') jump(); else start(); } });
+  cv.addEventListener('pointerdown', e => { e.preventDefault(); jump(); });
+
+  function start() { reset(); state = 'play'; document.getElementById('ui').style.display = 'none'; }
+  document.getElementById('go').onclick = start;
+
+  function over() {
+    state = 'over'; shake = 14;
+    const m = Math.floor(dist);
+    if (m > best) { best = m; store.set('kurt_best', best); document.getElementById('bs').textContent = best; }
+    setTimeout(() => {
+      document.getElementById('panel').innerHTML = `<h1>YAKALANDIN!</h1><p style="font-size:22px;color:#fff"><b>${m} m</b> koştun</p><p>En iyi: ${best} m</p><button class="btn" id="go">TEKRAR</button>`;
+      document.getElementById('go').onclick = start;
+      document.getElementById('ui').style.display = 'flex';
+    }, 600);
+  }
+
+  function spawn() {
+    const u = U();
+    const r = Math.random();
+    if (dist > 150 && r < 0.25) { // kartal
+      obs.push({ type: 'bird', x: W + 40, y: G - (70 + Math.random() * 90) * u, w: 54 * u, h: 26 * u, f: 0 });
+    } else if (r < 0.55) {
+      obs.push({ type: 'rock', x: W + 40, w: (40 + Math.random() * 30) * u, h: (34 + Math.random() * 30) * u });
+    } else {
+      const n = 1 + Math.floor(Math.random() * 3);
+      obs.push({ type: 'tree', x: W + 40, w: 22 * u * n, h: (60 + Math.random() * 30) * u, n });
+    }
+    spawnT = Math.max(38, 95 - speed * 3) + Math.random() * 60;
+  }
+
+  // ---- çizim yardımcıları ----
+  function mountains(off, col, hMul, seed) {
+    ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, G);
+    for (let x = 0; x <= W + 20; x += 20) {
+      const X = x + off;
+      const n = Math.sin(X * 0.004 + seed) * 0.5 + Math.sin(X * 0.011 + seed * 2) * 0.3 + Math.sin(X * 0.027 + seed) * 0.12;
+      ctx.lineTo(x, G - H * hMul * (0.6 + n * 0.45));
+    }
+    ctx.lineTo(W, G); ctx.closePath(); ctx.fill();
+  }
+  function drawWolf(x, y, u) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(u, u);
+    const run = wolf.run, air = wolf.y < -1;
+    ctx.fillStyle = '#e9e4f0';
+    // gövde
+    ctx.beginPath(); ctx.ellipse(0, -38, 34, 15, -0.05, 0, Math.PI * 2); ctx.fill();
+    // kuyruk
+    ctx.beginPath(); ctx.moveTo(-30, -44); ctx.quadraticCurveTo(-58, -58 + Math.sin(run) * 6, -64, -40); ctx.quadraticCurveTo(-50, -40, -30, -34); ctx.fill();
+    // baş
+    ctx.beginPath(); ctx.moveTo(22, -50); ctx.lineTo(40, -62); ctx.lineTo(44, -76); ctx.lineTo(50, -64); ctx.lineTo(66, -54); ctx.lineTo(56, -44); ctx.lineTo(30, -32); ctx.closePath(); ctx.fill();
+    // göz
+    ctx.fillStyle = '#ff7a1a'; ctx.beginPath(); ctx.arc(50, -56, 2.6, 0, Math.PI * 2); ctx.fill();
+    // bacaklar
+    ctx.strokeStyle = '#e9e4f0'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+    const legs = air ? [[-18, 0.9], [-8, 0.9], [14, -0.9], [24, -0.9]] : [[-18, Math.sin(run)], [-8, Math.sin(run + 2)], [14, Math.sin(run + 1)], [24, Math.sin(run + 3)]];
+    for (const [lx, a] of legs) { ctx.beginPath(); ctx.moveTo(lx, -30); ctx.lineTo(lx + a * 12, -4); ctx.stroke(); }
+    ctx.restore();
+  }
+
+  function loop() {
+    requestAnimationFrame(loop);
+    t++;
+    const u = U();
+    if (state === 'play') {
+      speed += 0.0025; dist += speed * 0.05;
+      wolf.vy += 0.85; wolf.y += wolf.vy;
+      if (wolf.y >= 0) { wolf.y = 0; wolf.vy = 0; wolf.jumps = 0; }
+      wolf.run += speed * 0.05;
+      if (--spawnT <= 0) spawn();
+      for (const o of obs) { o.x -= speed * (o.type === 'bird' ? 1.25 : 1) * u * 1.4; o.f = (o.f || 0) + 0.2; }
+      obs = obs.filter(o => o.x > -120);
+      // çarpışma
+      const wx = W * 0.2, wy = G + wolf.y;
+      const box = { x1: wx - 30 * u, x2: wx + 50 * u, y1: wy - 60 * u, y2: wy - 8 * u };
+      for (const o of obs) {
+        const oy2 = o.type === 'bird' ? o.y + o.h / 2 : G, oy1 = o.type === 'bird' ? o.y - o.h / 2 : G - o.h;
+        if (box.x2 > o.x + 6 * u && box.x1 < o.x + o.w - 6 * u && box.y2 > oy1 + 4 * u && box.y1 < oy2) { over(); break; }
+      }
+      document.getElementById('sc').textContent = Math.floor(dist);
+    } else if (state === 'menu') { wolf.run += 0.15; }
+
+    // ---- sahne ----
+    ctx.save();
+    if (shake > 0) { ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake); shake *= 0.85; }
+    const sky = ctx.createLinearGradient(0, 0, 0, G);
+    sky.addColorStop(0, '#1b1033'); sky.addColorStop(0.55, '#5b2a5e'); sky.addColorStop(1, '#ff8a3d');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    for (const s of stars) { ctx.globalAlpha = 0.4 + Math.sin(t * 0.03 + s.tw) * 0.3; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, 7); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    // ay
+    ctx.fillStyle = '#ffe7b8'; ctx.shadowColor = '#ffcf7a'; ctx.shadowBlur = 40;
+    ctx.beginPath(); ctx.arc(W * 0.78, H * 0.22, Math.min(W, H) * 0.08, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+    const off = dist * 12;
+    mountains(off * 0.15, '#3a1d4a', 0.32, 1);
+    mountains(off * 0.35, '#26143a', 0.2, 3);
+    // zemin
+    ctx.fillStyle = '#1a0f26'; ctx.fillRect(0, G, W, H - G);
+    ctx.fillStyle = '#ff7a1a'; ctx.fillRect(0, G, W, 3);
+    ctx.fillStyle = 'rgba(255,255,255,.08)';
+    for (let x = -(off % 60); x < W; x += 60) ctx.fillRect(x, G + 14, 26, 3);
+    // engeller
+    for (const o of obs) {
+      if (o.type === 'rock') {
+        ctx.fillStyle = '#6b5a7e'; ctx.beginPath(); ctx.moveTo(o.x, G); ctx.lineTo(o.x + o.w * 0.15, G - o.h * 0.7); ctx.lineTo(o.x + o.w * 0.5, G - o.h); ctx.lineTo(o.x + o.w * 0.85, G - o.h * 0.6); ctx.lineTo(o.x + o.w, G); ctx.fill();
+        ctx.fillStyle = '#8a76a0'; ctx.beginPath(); ctx.moveTo(o.x + o.w * 0.15, G - o.h * 0.7); ctx.lineTo(o.x + o.w * 0.5, G - o.h); ctx.lineTo(o.x + o.w * 0.45, G - o.h * 0.5); ctx.fill();
+      } else if (o.type === 'tree') {
+        for (let i = 0; i < o.n; i++) {
+          const x = o.x + i * 22 * u + 11 * u;
+          ctx.fillStyle = '#2f6b4a'; ctx.beginPath(); ctx.moveTo(x, G - o.h); ctx.lineTo(x + 12 * u, G - o.h * 0.25); ctx.lineTo(x - 12 * u, G - o.h * 0.25); ctx.fill();
+          ctx.fillStyle = '#4b2e1e'; ctx.fillRect(x - 3 * u, G - o.h * 0.25, 6 * u, o.h * 0.25);
+        }
+      } else {
+        ctx.save(); ctx.translate(o.x + o.w / 2, o.y); ctx.fillStyle = '#2a1a12';
+        const flap = Math.sin(o.f) * 14 * u;
+        ctx.beginPath(); ctx.ellipse(0, 0, o.w * 0.3, o.h * 0.3, 0, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-6 * u, 0); ctx.lineTo(-o.w / 2, -flap); ctx.lineTo(4 * u, -2 * u); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(6 * u, 0); ctx.lineTo(o.w / 2, -flap); ctx.lineTo(-4 * u, -2 * u); ctx.fill();
+        ctx.fillStyle = '#ffc23d'; ctx.beginPath(); ctx.moveTo(-o.w * 0.3, 0); ctx.lineTo(-o.w * 0.42, 3 * u); ctx.lineTo(-o.w * 0.28, 4 * u); ctx.fill();
+        ctx.restore();
+      }
+    }
+    // parçacıklar
+    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.l--; ctx.globalAlpha = Math.max(0, p.l / 30); ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 3, 3); }
+    parts = parts.filter(p => p.l > 0); ctx.globalAlpha = 1;
+    // kurt
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(W * 0.2 + 5 * u, G + 4, 38 * u * (1 + wolf.y / 400), 6 * u, 0, 0, 7); ctx.fill();
+    drawWolf(W * 0.2, G + wolf.y, u);
+    ctx.restore();
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

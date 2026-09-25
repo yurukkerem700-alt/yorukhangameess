@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://yorukhan-games.vercel.app/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/?liste=tum</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/oyun?id=6b817371-dd43-4f40-a077-1b07ed8b2bdc</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/oyun?id=0c468808-6c14-4b27-87a4-fd68d3677a2f</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/oyun?id=eb1d6065-1846-4584-9c2f-7897f0f2a710</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/oyun?id=b40747e3-e7b0-4824-9c10-8740f2cb5f95</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/oyun?id=2352a14b-b5fe-4a28-bdeb-46244c907db1</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/oyun?id=3619b98b-8e12-4dae-bdb3-832d3452df3d</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/oyun?id=0d0fdeeb-9e0a-410b-b90d-d805dde9e533</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/yukle</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/hakkinda</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/gizlilik</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://yorukhan-games.vercel.app/kosullar</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+</urlset>

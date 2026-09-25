@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Kilim Blokları</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #150b0b; touch-action: none; user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
+  canvas { display: block; margin: 0 auto; }
+  #hud { position: fixed; top: 8px; left: 0; right: 0; display: flex; justify-content: center; gap: 30px; font-weight: 800; font-size: 17px; pointer-events: none; }
+  #hud small { display: block; font-size: 11px; opacity: .6; letter-spacing: 1px; text-align: center; }
+  #ui { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(20,8,8,.6); }
+  .panel { text-align: center; background: #2a1414; border: 1px solid #5a2a22; padding: 26px 30px; border-radius: 20px; max-width: 86vw; }
+  h1 { margin: 0 0 6px; font-size: clamp(28px, 7vw, 46px); background: linear-gradient(90deg,#ffc23d,#e63946); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  p { margin: 6px 0; color: #f1d2c8; }
+  .btn { margin-top: 14px; background: #fff; color: #2a1414; border: 0; border-radius: 12px; padding: 13px 34px; font-size: 18px; font-weight: 800; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="hud"><div><small>SKOR</small><span id="sc">0</span></div><div><small>SEVİYE</small><span id="lvl">1</span></div><div><small>CAN</small><span id="lv">3</span></div><div><small>EN İYİ</small><span id="bs">0</span></div></div>
+<canvas id="c"></canvas>
+<div id="ui"><div class="panel" id="panel">
+  <h1>KİLİM BLOKLARI</h1>
+  <p>Topu sektir, kilim desenli blokları kır!</p>
+  <p><b>Raket:</b> parmağını/fareyi kaydır ya da ← →</p>
+  <button class="btn" id="go">BAŞLA</button>
+</div></div>
+<script>
+(() => {
+  const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  let W, H, DPR;
+  const COLS = 10, PAL = ['#e63946', '#ff7a1a', '#ffc23d', '#2a9d8f', '#f1faee', '#457b9d'];
+  // kilim desenleri (0 = boş)
+  const LEVELS = [
+    ['0011111100', '0122222210', '1233333321', '1234444321', '1233333321', '0122222210'],
+    ['1000000001', '2100000012', '3210000123', '4321001234', '3210000123', '2100000012', '1000000001'],
+    ['5555555555', '1010101010', '0202020202', '3333333333', '0404040404', '6060606060', '1111111111'],
+    ['0001111000', '0012222100', '0123333210', '1234554321', '0123333210', '0012222100', '0001111000'],
+  ];
+  function resize() {
+    DPR = Math.min(2, devicePixelRatio || 1);
+    W = Math.min(innerWidth, innerHeight * 0.75, 600); H = innerHeight;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  addEventListener('resize', resize); resize();
+  const store = { get(k) { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  let best = store.get('kilim_best'); document.getElementById('bs').textContent = best;
+  let state = 'menu', bricks, pad, ball, score, lives, level, parts = [], stuck;
+
+  function build() {
+    const L = LEVELS[(level - 1) % LEVELS.length], bw = W / COLS, bh = Math.min(26, H * 0.035), top = H * 0.12;
+    bricks = [];
+    L.forEach((row, r) => [...row].forEach((ch, c) => { const v = +ch; if (v) bricks.push({ x: c * bw, y: top + r * bh, w: bw, h: bh, col: PAL[v - 1], hp: level > 2 && v >= 4 ? 2 : 1 }); }));
+  }
+  function resetBall() { stuck = true; ball = { x: pad.x, y: pad.y - 14, vx: 0, vy: 0, r: Math.max(6, W * 0.014) }; }
+  function start() { resize(); score = 0; lives = 3; level = 1; pad = { x: W / 2, y: H - 70, w: W * 0.2 }; build(); resetBall(); hud(); state = 'play'; document.getElementById('ui').style.display = 'none'; }
+  document.getElementById('go').onclick = start;
+  function hud() { document.getElementById('sc').textContent = score; document.getElementById('lv').textContent = lives; document.getElementById('lvl').textContent = level; }
+  function launch() { if (state === 'play' && stuck) { stuck = false; const sp = H * 0.011 + level * 0.4; ball.vx = sp * 0.5 * (Math.random() < .5 ? -1 : 1); ball.vy = -sp; } }
+  let keys = {};
+  addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Space') { e.preventDefault(); if (state === 'play') launch(); else start(); } });
+  addEventListener('keyup', e => keys[e.code] = false);
+  const movePad = e => { if (!pad) return; const r = cv.getBoundingClientRect(); pad.x = Math.max(pad.w / 2, Math.min(W - pad.w / 2, e.clientX - r.left)); };
+  addEventListener('pointermove', movePad);
+  addEventListener('pointerdown', e => { movePad(e); launch(); });
+  function over(win) {
+    state = 'over';
+    if (score > best) { best = score; store.set('kilim_best', best); document.getElementById('bs').textContent = best; }
+    document.getElementById('panel').innerHTML = `<h1>${win ? 'TEBRİKLER!' : 'OYUN BİTTİ'}</h1><p style="font-size:22px;color:#fff"><b>${score}</b> puan · ${level}. seviye</p><p>En iyi: ${best}</p><button class="btn" id="go">TEKRAR</button>`;
+    document.getElementById('go').onclick = start; document.getElementById('ui').style.display = 'flex';
+  }
+  function update() {
+    if (keys.ArrowLeft) pad.x -= W * 0.02; if (keys.ArrowRight) pad.x += W * 0.02;
+    pad.x = Math.max(pad.w / 2, Math.min(W - pad.w / 2, pad.x));
+    if (stuck) { ball.x = pad.x; ball.y = pad.y - ball.r - 2; return; }
+    const steps = 3;
+    for (let i = 0; i < steps; i++) {
+      ball.x += ball.vx / steps; ball.y += ball.vy / steps;
+      if (ball.x < ball.r) { ball.x = ball.r; ball.vx = Math.abs(ball.vx); }
+      if (ball.x > W - ball.r) { ball.x = W - ball.r; ball.vx = -Math.abs(ball.vx); }
+      if (ball.y < H * 0.08) { ball.y = H * 0.08; ball.vy = Math.abs(ball.vy); }
+      if (ball.vy > 0 && ball.y + ball.r > pad.y - 6 && ball.y < pad.y + 8 && Math.abs(ball.x - pad.x) < pad.w / 2 + ball.r) {
+        const k = (ball.x - pad.x) / (pad.w / 2), sp = Math.hypot(ball.vx, ball.vy) * 1.01;
+        const a = -Math.PI / 2 + k * 1.05; ball.vx = Math.cos(a) * sp; ball.vy = Math.sin(a) * sp; ball.y = pad.y - 6 - ball.r;
+      }
+      for (const b of bricks) {
+        if (b.dead) continue;
+        const cx = Math.max(b.x, Math.min(ball.x, b.x + b.w)), cy = Math.max(b.y, Math.min(ball.y, b.y + b.h));
+        if ((ball.x - cx) ** 2 + (ball.y - cy) ** 2 < ball.r ** 2) {
+          const ox = Math.min(ball.x + ball.r - b.x, b.x + b.w - (ball.x - ball.r)), oy = Math.min(ball.y + ball.r - b.y, b.y + b.h - (ball.y - ball.r));
+          if (ox < oy) ball.vx *= -1; else ball.vy *= -1;
+          if (--b.hp <= 0) { b.dead = true; score += 10 * level; for (let j = 0; j < 10; j++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: (Math.random() - .5) * 6, vy: (Math.random() - .5) * 6, l: 30, c: b.col }); }
+          hud(); break;
+        }
+      }
+    }
+    if (ball.y > H + 20) { lives--; hud(); if (lives <= 0) return over(false); resetBall(); }
+    if (bricks.every(b => b.dead)) { level++; if (level > 8) return over(true); build(); resetBall(); hud(); }
+  }
+  function brick(b) {
+    const p = 2; ctx.fillStyle = b.col; ctx.fillRect(b.x + p, b.y + p, b.w - p * 2, b.h - p * 2);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; const cx = b.x + b.w / 2, cy = b.y + b.h / 2, s = b.h * 0.32;
+    ctx.beginPath(); ctx.moveTo(cx, cy - s); ctx.lineTo(cx + s, cy); ctx.lineTo(cx, cy + s); ctx.lineTo(cx - s, cy); ctx.fill();
+    if (b.hp > 1) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(b.x + 4, b.y + 4, b.w - 8, b.h - 8); }
+  }
+  function loop() {
+    requestAnimationFrame(loop);
+    if (state === 'play') update();
+    ctx.fillStyle = '#1c0f0f'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,194,61,.05)';
+    for (let y = 0; y < H; y += 40) for (let x = (y / 40) % 2 * 20; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 10, y + 10); ctx.lineTo(x, y + 20); ctx.lineTo(x - 10, y + 10); ctx.fill(); }
+    if (!bricks) return;
+    bricks.forEach(b => !b.dead && brick(b));
+    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vy += .2; p.l--; ctx.globalAlpha = p.l / 30; ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 4, 4); }
+    parts = parts.filter(p => p.l > 0); ctx.globalAlpha = 1;
+    const g = ctx.createLinearGradient(pad.x - pad.w / 2, 0, pad.x + pad.w / 2, 0); g.addColorStop(0, '#ff7a1a'); g.addColorStop(1, '#ffc23d');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(pad.x - pad.w / 2, pad.y - 6, pad.w, 12, 6); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.shadowColor = '#ffc23d'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+    if (state === 'play' && stuck) { ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.font = '700 16px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Başlatmak için dokun', W / 2, H * 0.65); }
+  }
+  score = 0; lives = 3; level = 1; pad = { x: W / 2, y: H - 70, w: W * 0.2 }; build(); resetBall();
+  loop();
+})();
+</script>
+</body>
+</html>

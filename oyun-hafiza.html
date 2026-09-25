@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Hafıza Ustası</title>
+<style>
+  :root { --s: min(92vw, 74vh, 520px); }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: radial-gradient(circle at 50% 0%, #243b6b, #0c1224 70%); user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
+  #wrap { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+  header { width: var(--s); display: flex; gap: 10px; align-items: center; }
+  h1 { flex: 1; margin: 0; font-size: calc(var(--s) * 0.062); font-weight: 900; color: #9ad0ff; line-height: 1.05; }
+  .box { background: rgba(255,255,255,.08); border-radius: 10px; padding: 5px 8px; text-align: center; min-width: 44px; }
+  .box small { display: block; font-size: 10px; opacity: .6; font-weight: 700; letter-spacing: 1px; }
+  .box b { font-size: 18px; }
+  #grid { width: var(--s); height: var(--s); display: grid; grid-template: repeat(4, 1fr) / repeat(4, 1fr); gap: calc(var(--s) * 0.025); perspective: 800px; }
+  .card { position: relative; cursor: pointer; transform-style: preserve-3d; transition: transform .35s ease; }
+  .card.open, .card.done { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; border-radius: 12px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: grid; place-items: center; }
+  .back { background: linear-gradient(135deg, #3a6fd8, #6a3ad8); box-shadow: inset 0 0 0 3px rgba(255,255,255,.15); }
+  .back::after { content: ''; width: 34%; aspect-ratio: 1; border: 3px solid rgba(255,255,255,.35); transform: rotate(45deg); }
+  .front { background: #f4f1ff; transform: rotateY(180deg); font-size: calc(var(--s) * 0.11); }
+  .card.done .front { background: #c8ffe1; box-shadow: 0 0 20px rgba(80,255,160,.5); }
+  #ui { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(5,10,25,.7); }
+  .panel { text-align: center; background: #16213f; border: 1px solid #2c3e74; padding: 26px 30px; border-radius: 20px; max-width: 86vw; }
+  .panel h2 { margin: 0 0 8px; font-size: 32px; }
+  .btn { margin-top: 12px; background: #fff; color: #0c1224; border: 0; border-radius: 12px; padding: 12px 30px; font-size: 17px; font-weight: 800; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header><h1>HAFIZA USTASI</h1><div class="box"><small>HAMLE</small><b id="mv">0</b></div><div class="box"><small>SÜRE</small><b id="tm">0</b></div><div class="box"><small>REKOR</small><b id="bs">–</b></div></header>
+  <div id="grid"></div>
+</div>
+<div id="ui"><div class="panel" id="panel"></div></div>
+<script>
+(() => {
+  const ICONS = ['🐺', '🦅', '🐎', '🏹', '⛺', '🌙', '🔥', '🗡️', '🐫', '🌾', '💎', '🛡️'];
+  const store = { get(k) { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  let best = store.get('hafiza_best'); const bsEl = document.getElementById('bs'); if (best) bsEl.textContent = best;
+  let open = [], moves, found, time, timer, lock;
+  function start() {
+    const pick = [...ICONS].sort(() => Math.random() - .5).slice(0, 8);
+    const deck = [...pick, ...pick].sort(() => Math.random() - .5);
+    const g = document.getElementById('grid'); g.innerHTML = '';
+    deck.forEach(ic => { const c = document.createElement('div'); c.className = 'card'; c.dataset.v = ic; c.innerHTML = `<div class="face back"></div><div class="face front">${ic}</div>`; c.onclick = () => flip(c); g.appendChild(c); });
+    open = []; moves = 0; found = 0; time = 0; lock = false; clearInterval(timer); timer = null;
+    document.getElementById('mv').textContent = 0; document.getElementById('tm').textContent = 0; document.getElementById('ui').style.display = 'none';
+  }
+  function flip(c) {
+    if (lock || c.classList.contains('open') || c.classList.contains('done')) return;
+    if (!timer) timer = setInterval(() => document.getElementById('tm').textContent = ++time, 1000);
+    c.classList.add('open'); open.push(c);
+    if (open.length === 2) {
+      moves++; document.getElementById('mv').textContent = moves;
+      const [a, b] = open;
+      if (a.dataset.v === b.dataset.v) { setTimeout(() => { a.classList.add('done'); b.classList.add('done'); }, 250); open = []; found++; if (found === 8) win(); }
+      else { lock = true; setTimeout(() => { a.classList.remove('open'); b.classList.remove('open'); open = []; lock = false; }, 750); }
+    }
+  }
+  function win() {
+    clearInterval(timer);
+    const rec = !best || moves < best; if (rec) { best = moves; store.set('hafiza_best', best); bsEl.textContent = best; }
+    setTimeout(() => {
+      document.getElementById('panel').innerHTML = `<h2>${rec ? '🏆 Yeni rekor!' : '🎉 Bitti!'}</h2><p><b>${moves}</b> hamle · <b>${time}</b> saniye</p><button class="btn" id="pb">TEKRAR OYNA</button>`;
+      document.getElementById('pb').onclick = start; document.getElementById('ui').style.display = 'flex';
+    }, 600);
+  }
+  start();
+})();
+</script>
+</body>
+</html>

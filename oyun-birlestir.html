@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Birleştir</title>
+<style>
+  :root { --s: min(88vw, 70vh, 480px); --gap: calc(var(--s) * 0.028); }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1325; touch-action: none; user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
+  #wrap { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+  header { width: var(--s); display: flex; align-items: center; gap: 10px; }
+  h1 { margin: 0; font-size: calc(var(--s) * 0.085); white-space: nowrap; font-weight: 900; flex: 1; background: linear-gradient(90deg,#ffb347,#ff5e7e); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .box { background: #2a2038; border-radius: 10px; padding: 5px 10px; text-align: center; min-width: 50px; }
+  .box small { display: block; font-size: 11px; opacity: .6; font-weight: 700; letter-spacing: 1px; }
+  .box b { font-size: 18px; }
+  #board { position: relative; width: var(--s); height: var(--s); background: #2a2038; border-radius: 16px; padding: var(--gap); box-sizing: border-box; display: grid; grid-template: repeat(4, 1fr) / repeat(4, 1fr); gap: var(--gap); }
+  .bg { background: #3a2e4c; border-radius: 10px; }
+  .tile { position: absolute; display: grid; place-items: center; border-radius: 10px; font-weight: 900; transition: transform .11s ease; }
+  .tile.new { animation: pop .18s ease; }
+  .tile.merged { animation: bump .2s ease; }
+  @keyframes pop { from { scale: 0; } to { scale: 1; } }
+  @keyframes bump { 50% { scale: 1.15; } }
+  #ui { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(20,12,30,.7); }
+  .panel { text-align: center; background: #241b33; border: 1px solid #3d2f55; padding: 26px 30px; border-radius: 20px; max-width: 86vw; }
+  .panel h2 { margin: 0 0 6px; font-size: 34px; }
+  .btn { margin-top: 12px; background: #fff; color: #1a1325; border: 0; border-radius: 12px; padding: 12px 30px; font-size: 17px; font-weight: 800; cursor: pointer; }
+  .hint { color: #b9a9d2; font-size: 13px; width: var(--s); text-align: center; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header><h1>BİRLEŞTİR</h1><div class="box"><small>SKOR</small><b id="sc">0</b></div><div class="box"><small>EN İYİ</small><b id="bs">0</b></div></header>
+  <div id="board"></div>
+  <div class="hint">Kaydır ya da ok tuşlarını kullan · Aynı sayıları birleştir, 2048'e ulaş!</div>
+  <button class="btn" id="restart" style="margin:0;padding:9px 22px;font-size:15px;background:#3a2e4c;color:#fff">Yeniden başla</button>
+</div>
+<div id="ui"><div class="panel" id="panel"></div></div>
+<script>
+(() => {
+  const board = document.getElementById('board');
+  const COLORS = { 2: ['#4b3d63', '#fff'], 4: ['#5d4a7d', '#fff'], 8: ['#ff9f43', '#fff'], 16: ['#ff7a1a', '#fff'], 32: ['#ff5e57', '#fff'], 64: ['#ee3b5b', '#fff'], 128: ['#ffd23d', '#2a1a00'], 256: ['#ffc107', '#2a1a00'], 512: ['#3cf0a0', '#062a1a'], 1024: ['#2fd0ff', '#04202a'], 2048: ['#ffffff', '#1a1325'] };
+  const store = { get(k) { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  let best = store.get('birlestir_best'); document.getElementById('bs').textContent = best;
+  for (let i = 0; i < 16; i++) board.appendChild(Object.assign(document.createElement('div'), { className: 'bg' }));
+  let grid, score, won, id = 0, tiles = new Map();
+
+  function geom() { const s = board.clientWidth, g = parseFloat(getComputedStyle(board).paddingLeft); return { g, c: (s - g * 5) / 4 }; }
+  function render(fresh = [], merged = []) {
+    const { g, c } = geom(); const alive = new Set();
+    for (let r = 0; r < 4; r++) for (let q = 0; q < 4; q++) {
+      const t = grid[r][q]; if (!t) continue; alive.add(t.id);
+      let el = tiles.get(t.id);
+      if (!el) { el = document.createElement('div'); el.className = 'tile'; board.appendChild(el); tiles.set(t.id, el); if (fresh.includes(t.id)) el.classList.add('new'); }
+      const [bg, fg] = COLORS[t.v] || ['#111', '#fff'];
+      Object.assign(el.style, { width: c + 'px', height: c + 'px', left: 0, top: 0, transform: `translate(${g + q * (c + g)}px, ${g + r * (c + g)}px)`, background: bg, color: fg, fontSize: c * (t.v >= 1024 ? 0.3 : t.v >= 128 ? 0.36 : 0.44) + 'px', boxShadow: t.v >= 128 ? `0 0 ${c * 0.3}px ${bg}88` : 'none' });
+      el.textContent = t.v;
+      if (merged.includes(t.id)) { el.classList.remove('merged'); void el.offsetWidth; el.classList.add('merged'); }
+    }
+    for (const [k, el] of tiles) if (!alive.has(k)) { el.remove(); tiles.delete(k); }
+  }
+  function add() {
+    const empty = []; for (let r = 0; r < 4; r++) for (let q = 0; q < 4; q++) if (!grid[r][q]) empty.push([r, q]);
+    if (!empty.length) return null;
+    const [r, q] = empty[Math.floor(Math.random() * empty.length)];
+    grid[r][q] = { v: Math.random() < 0.9 ? 2 : 4, id: ++id }; return id;
+  }
+  function start() {
+    grid = Array.from({ length: 4 }, () => Array(4).fill(null)); score = 0; won = false;
+    for (const el of tiles.values()) el.remove(); tiles.clear();
+    const a = add(), b = add(); render([a, b]); upd(); document.getElementById('ui').style.display = 'none';
+  }
+  function upd() { document.getElementById('sc').textContent = score; if (score > best) { best = score; store.set('birlestir_best', best); document.getElementById('bs').textContent = best; } }
+  function move(dr, dq) {
+    let moved = false; const merged = [];
+    const order = [0, 1, 2, 3]; const rows = dr > 0 ? [...order].reverse() : order, cols = dq > 0 ? [...order].reverse() : order;
+    const done = new Set();
+    for (const r of rows) for (const q of cols) {
+      const t = grid[r][q]; if (!t) continue;
+      let nr = r, nq = q;
+      while (true) {
+        const tr = nr + dr, tq = nq + dq;
+        if (tr < 0 || tr > 3 || tq < 0 || tq > 3) break;
+        const o = grid[tr][tq];
+        if (!o) { nr = tr; nq = tq; continue; }
+        if (o.v === t.v && !done.has(o.id)) { grid[r][q] = null; o.v *= 2; score += o.v; done.add(o.id); merged.push(o.id); if (o.v === 2048 && !won) won = true;
+          const el = tiles.get(t.id); const { g, c } = geom(); if (el) { el.style.transform = `translate(${g + tq * (c + g)}px, ${g + tr * (c + g)}px)`; el.style.zIndex = 0; setTimeout(() => el.remove(), 110); tiles.delete(t.id); }
+          moved = true; nr = -1; break; }
+        break;
+      }
+      if (nr !== -1 && (nr !== r || nq !== q)) { grid[nr][nq] = t; grid[r][q] = null; moved = true; }
+    }
+    if (!moved) return;
+    const n = add(); render([n], merged); upd();
+    if (won === true) { won = 'shown'; show('🎉 2048!', 'Başardın! Devam edip rekorunu büyütebilirsin.', 'DEVAM', () => document.getElementById('ui').style.display = 'none'); }
+    else if (!canMove()) setTimeout(() => show('Hamle kalmadı', `Skorun: <b>${score}</b>`, 'TEKRAR', start), 300);
+  }
+  function canMove() { for (let r = 0; r < 4; r++) for (let q = 0; q < 4; q++) { const t = grid[r][q]; if (!t) return true; if (q < 3 && grid[r][q + 1]?.v === t.v) return true; if (r < 3 && grid[r + 1][q]?.v === t.v) return true; } return false; }
+  function show(title, text, btn, fn) { document.getElementById('panel').innerHTML = `<h2>${title}</h2><p>${text}</p><button class="btn" id="pb">${btn}</button>`; document.getElementById('pb').onclick = fn; document.getElementById('ui').style.display = 'flex'; }
+  addEventListener('keydown', e => { const m = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1], KeyW: [-1, 0], KeyS: [1, 0], KeyA: [0, -1], KeyD: [0, 1] }[e.code]; if (m) { e.preventDefault(); move(...m); } });
+  let sx, sy; addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; });
+  addEventListener('pointerup', e => { if (sx == null) return; const dx = e.clientX - sx, dy = e.clientY - sy; sx = null; if (Math.max(Math.abs(dx), Math.abs(dy)) < 25) return; if (Math.abs(dx) > Math.abs(dy)) move(0, Math.sign(dx)); else move(Math.sign(dy), 0); });
+  document.getElementById('restart').onclick = start;
+  addEventListener('resize', () => render());
+  start();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Gök Savaşçısı</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #02030a; touch-action: none; user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #hud { position: fixed; top: 10px; left: 14px; right: 14px; display: flex; justify-content: space-between; font-weight: 800; font-size: 18px; pointer-events: none; text-shadow: 0 2px 6px #000; }
+  #hud small { display: block; font-size: 11px; opacity: .65; letter-spacing: 1px; }
+  #ui { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(2,3,10,.55); }
+  .panel { text-align: center; background: rgba(12,16,40,.85); border: 1px solid #2b3570; padding: 26px 30px; border-radius: 20px; max-width: 86vw; }
+  h1 { margin: 0 0 6px; font-size: clamp(28px, 7vw, 46px); background: linear-gradient(90deg,#6ee7ff,#a78bfa); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: 1px; }
+  p { margin: 6px 0; color: #c3cbef; }
+  .btn { margin-top: 14px; background: #fff; color: #0b1030; border: 0; border-radius: 12px; padding: 13px 34px; font-size: 18px; font-weight: 800; cursor: pointer; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud"><div><small>SKOR</small><span id="sc">0</span></div><div style="text-align:center"><small>CAN</small><span id="lv">❤❤❤</span></div><div style="text-align:right"><small>EN İYİ</small><span id="bs">0</span></div></div>
+<div id="ui"><div class="panel" id="panel">
+  <h1>GÖK SAVAŞÇISI</h1>
+  <p>Gökyüzünü istilacılardan temizle!</p>
+  <p><b>Hareket:</b> parmağını/fareyi sürükle ya da ok tuşları. Ateş otomatik.</p>
+  <p>🟡 Yıldız topla: çift ateş</p>
+  <button class="btn" id="go">BAŞLA</button>
+</div></div>
+<script>
+(() => {
+  const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  let W, H, DPR, S;
+  function resize() { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); S = Math.min(W, H) / 700; }
+  addEventListener('resize', resize); resize();
+  const store = { get(k) { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  let best = store.get('gok_best'); document.getElementById('bs').textContent = best;
+
+  const stars = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random(), z: Math.random() * 3 + .5 }));
+  let waveT = 0, state = 'menu', ship, bullets, enemies, eBullets, parts, pups, score, lives, t, fireT, wave, inv, power, keys = {}, target = null;
+  function reset() {
+    ship = { x: W / 2, y: H * 0.85 }; bullets = []; enemies = []; eBullets = []; parts = []; pups = [];
+    score = 0; lives = 3; t = 0; fireT = 0; wave = 0; inv = 90; power = 0; target = null; hud();
+  }
+  function hud() { document.getElementById('sc').textContent = score; document.getElementById('lv').textContent = '❤'.repeat(Math.max(0, lives)) || '—'; }
+  addEventListener('keydown', e => { keys[e.code] = true; if ((e.code === 'Space' || e.code === 'Enter') && state !== 'play') start(); if (e.code.startsWith('Arrow')) e.preventDefault(); });
+  addEventListener('keyup', e => keys[e.code] = false);
+  const tp = e => { if (state === 'play') target = { x: e.clientX, y: e.clientY - 60 * S }; };
+  cv.addEventListener('pointerdown', tp); cv.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.buttons) tp(e); });
+  cv.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') target = null; });
+
+  function start() { resize(); reset(); state = 'play'; document.getElementById('ui').style.display = 'none'; }
+  document.getElementById('go').onclick = start;
+  function over() {
+    state = 'over';
+    if (score > best) { best = score; store.set('gok_best', best); document.getElementById('bs').textContent = best; }
+    setTimeout(() => {
+      document.getElementById('panel').innerHTML = `<h1>GEMİ DÜŞTÜ</h1><p style="font-size:22px;color:#fff"><b>${score}</b> puan · ${wave}. dalga</p><p>En iyi: ${best}</p><button class="btn" id="go">TEKRAR</button>`;
+      document.getElementById('go').onclick = start; document.getElementById('ui').style.display = 'flex';
+    }, 700);
+  }
+  function boom(x, y, c, n = 18) { for (let i = 0; i < n; i++) { const a = Math.random() * 7, v = Math.random() * 5 + 1; parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, l: 40, c }); } }
+
+  function spawnWave() {
+    wave++; waveT = 100;
+    const n = 5 + Math.min(12, wave * 2);
+    for (let i = 0; i < n; i++) {
+      const type = Math.random() < Math.min(0.45, wave * 0.06) ? 'shooter' : 'drone';
+      enemies.push({ type, x: (i + 1) * W / (n + 1), y: -40 - Math.floor(i / 6) * 60 - Math.random() * 60, hp: type === 'shooter' ? 3 : 1, ph: Math.random() * 7, cd: 60 + Math.random() * 120 });
+    }
+  }
+
+  function drawShip(x, y) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(S, S);
+    ctx.fillStyle = '#ff7a1a'; ctx.beginPath(); ctx.moveTo(-8, 22); ctx.lineTo(0, 34 + Math.random() * 10); ctx.lineTo(8, 22); ctx.fill();
+    ctx.fillStyle = '#e8ecff'; ctx.beginPath(); ctx.moveTo(0, -30); ctx.lineTo(12, 0); ctx.lineTo(30, 18); ctx.lineTo(10, 22); ctx.lineTo(-10, 22); ctx.lineTo(-30, 18); ctx.lineTo(-12, 0); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#6ee7ff'; ctx.beginPath(); ctx.ellipse(0, -4, 5, 11, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#a78bfa'; ctx.fillRect(-26, 12, 8, 4); ctx.fillRect(18, 12, 8, 4);
+    ctx.restore();
+  }
+  function drawEnemy(e) {
+    ctx.save(); ctx.translate(e.x, e.y); ctx.scale(S, S);
+    if (e.type === 'drone') {
+      ctx.fillStyle = '#ff4d6d'; ctx.beginPath(); ctx.moveTo(0, 18); ctx.lineTo(18, -6); ctx.lineTo(8, -14); ctx.lineTo(-8, -14); ctx.lineTo(-18, -6); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#ffd6de'; ctx.beginPath(); ctx.arc(0, -2, 5, 0, 7); ctx.fill();
+    } else {
+      ctx.fillStyle = e.hit ? '#fff' : '#b95cff'; ctx.beginPath(); ctx.ellipse(0, 0, 26, 14, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#e9d2ff'; ctx.beginPath(); ctx.ellipse(0, -6, 11, 9, 0, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = '#3cf0c5'; for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.arc(i * 9, 5, 2.5, 0, 7); ctx.fill(); }
+    }
+    ctx.restore(); e.hit = false;
+  }
+
+  function update() {
+    t++;
+    const sp = 7 * S;
+    if (keys.ArrowLeft || keys.KeyA) ship.x -= sp; if (keys.ArrowRight || keys.KeyD) ship.x += sp;
+    if (keys.ArrowUp || keys.KeyW) ship.y -= sp; if (keys.ArrowDown || keys.KeyS) ship.y += sp;
+    if (target) { ship.x += (target.x - ship.x) * 0.25; ship.y += (target.y - ship.y) * 0.25; }
+    ship.x = Math.max(20, Math.min(W - 20, ship.x)); ship.y = Math.max(H * 0.3, Math.min(H - 30, ship.y));
+    if (--fireT <= 0) {
+      fireT = 9;
+      if (power > 0) { bullets.push({ x: ship.x - 14 * S, y: ship.y - 10 * S }, { x: ship.x + 14 * S, y: ship.y - 10 * S }); power--; }
+      else bullets.push({ x: ship.x, y: ship.y - 30 * S });
+    }
+    bullets.forEach(b => b.y -= 14 * S); bullets = bullets.filter(b => b.y > -20);
+    if (!enemies.length) spawnWave();
+    for (const e of enemies) {
+      e.ph += 0.03; e.y += (0.8 + wave * 0.08) * S; e.x += Math.sin(e.ph) * 1.6 * S;
+      if (e.type === 'shooter' && e.y > 0 && --e.cd <= 0) { e.cd = 110 + Math.random() * 80; const a = Math.atan2(ship.y - e.y, ship.x - e.x); eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * 4 * S, vy: Math.sin(a) * 4 * S }); }
+      for (const b of bullets) if (!b.dead && Math.abs(b.x - e.x) < 22 * S && Math.abs(b.y - e.y) < 18 * S) { b.dead = true; e.hp--; e.hit = true; if (e.hp <= 0) { e.dead = true; score += e.type === 'shooter' ? 30 : 10; boom(e.x, e.y, e.type === 'shooter' ? '#b95cff' : '#ff4d6d'); if (Math.random() < 0.08) pups.push({ x: e.x, y: e.y }); hud(); } }
+      if (e.y > H + 40) { e.dead = true; }
+      if (!e.dead && inv <= 0 && Math.abs(e.x - ship.x) < 26 * S && Math.abs(e.y - ship.y) < 24 * S) { e.dead = true; hit(); boom(e.x, e.y, '#ff4d6d'); }
+    }
+    enemies = enemies.filter(e => !e.dead); bullets = bullets.filter(b => !b.dead);
+    for (const b of eBullets) { b.x += b.vx; b.y += b.vy; if (inv <= 0 && Math.hypot(b.x - ship.x, b.y - ship.y) < 16 * S) { b.dead = true; hit(); } }
+    eBullets = eBullets.filter(b => !b.dead && b.y < H + 20 && b.y > -20 && b.x > -20 && b.x < W + 20);
+    for (const p of pups) { p.y += 2.5 * S; if (Math.hypot(p.x - ship.x, p.y - ship.y) < 30 * S) { p.dead = true; power += 120; boom(p.x, p.y, '#ffd23d', 10); } }
+    pups = pups.filter(p => !p.dead && p.y < H + 20);
+    if (inv > 0) inv--;
+  }
+  function hit() { lives--; inv = 100; hud(); boom(ship.x, ship.y, '#6ee7ff', 26); if (lives <= 0) { boom(ship.x, ship.y, '#ff7a1a', 60); over(); } }
+
+  function loop() {
+    requestAnimationFrame(loop);
+    if (state === 'play') update();
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#050722'); g.addColorStop(1, '#130a2e');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    for (const s of stars) { s.y += s.z * 0.0009 * (state === 'play' ? 2 : 1); if (s.y > 1) { s.y = 0; s.x = Math.random(); } ctx.fillStyle = `rgba(255,255,255,${0.2 + s.z * 0.2})`; ctx.fillRect(s.x * W, s.y * H, s.z * 0.7, s.z * 1.8); }
+    ctx.fillStyle = '#ffe28a'; ctx.shadowColor = '#ffd23d'; ctx.shadowBlur = 10;
+    for (const b of bullets) ctx.fillRect(b.x - 2 * S, b.y - 10 * S, 4 * S, 16 * S);
+    ctx.shadowColor = '#ff4dd2'; ctx.fillStyle = '#ff9be9';
+    for (const b of eBullets) { ctx.beginPath(); ctx.arc(b.x, b.y, 5 * S, 0, 7); ctx.fill(); }
+    ctx.shadowBlur = 0;
+    for (const p of pups) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(t * 0.05); ctx.fillStyle = '#ffd23d'; ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5, r = (i % 2 ? 6 : 14) * S; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.fill(); ctx.restore(); }
+    enemies.forEach(drawEnemy);
+    if (state !== 'over' && (inv <= 0 || Math.floor(inv / 6) % 2)) drawShip(ship ? ship.x : W / 2, ship ? ship.y : H * 0.85);
+    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.l--; ctx.globalAlpha = Math.max(0, p.l / 40); ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 3 * S + 1, 3 * S + 1); }
+    parts = parts.filter(p => p.l > 0); ctx.globalAlpha = 1;
+    if (state === 'play' && waveT > 0) { waveT--; ctx.fillStyle = '#fff'; ctx.font = `800 ${28 * S + 8}px system-ui`; ctx.textAlign = 'center'; ctx.globalAlpha = Math.min(1, waveT / 40); ctx.fillText(wave + '. DALGA', W / 2, H * 0.4); ctx.globalAlpha = 1; }
+  }
+  reset(); loop();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Neon Yılan</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #07110d; touch-action: none; user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
+  #wrap { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+  #hud { display: flex; gap: 28px; font-weight: 800; font-size: 18px; }
+  #hud small { display: block; font-size: 11px; opacity: .6; letter-spacing: 1px; }
+  canvas { border-radius: 14px; box-shadow: 0 0 0 2px #1d3b2c, 0 20px 60px rgba(0,0,0,.6); }
+  #ui { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(4,10,8,.6); }
+  .panel { text-align: center; background: #0d1d16; border: 1px solid #1f4332; padding: 26px 30px; border-radius: 20px; max-width: 86vw; }
+  h1 { margin: 0 0 6px; font-size: clamp(30px, 7vw, 48px); color: #5dff9e; text-shadow: 0 0 22px rgba(93,255,158,.6); letter-spacing: 2px; }
+  p { margin: 6px 0; color: #b7d8c6; }
+  .btn { margin-top: 14px; background: #5dff9e; color: #04210f; border: 0; border-radius: 12px; padding: 13px 34px; font-size: 18px; font-weight: 800; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="hud"><div><small>SKOR</small><span id="sc">0</span></div><div><small>EN İYİ</small><span id="bs">0</span></div></div>
+  <canvas id="c"></canvas>
+</div>
+<div id="ui"><div class="panel" id="panel">
+  <h1>NEON YILAN</h1>
+  <p>Işıkları topla, büyü, kendine çarpma!</p>
+  <p><b>Yön:</b> ok tuşları / WASD ya da ekranı kaydır</p>
+  <button class="btn" id="go">BAŞLA</button>
+</div></div>
+<script>
+(() => {
+  const N = 20, cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  let size, cell;
+  function resize() {
+    const DPR = Math.min(2, devicePixelRatio || 1);
+    size = Math.floor(Math.min(innerWidth - 24, innerHeight - 90, 640) / N) * N;
+    cell = size / N;
+    cv.style.width = cv.style.height = size + 'px';
+    cv.width = cv.height = size * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  addEventListener('resize', resize); resize();
+  const store = { get(k) { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  let best = store.get('yilan_best'); document.getElementById('bs').textContent = best;
+
+  let snake, dir, nextDir, food, score, state = 'menu', acc = 0, last = 0, stepMs, glow = [], bonus = null;
+  function reset() {
+    snake = [{ x: 8, y: 10 }, { x: 7, y: 10 }, { x: 6, y: 10 }];
+    dir = { x: 1, y: 0 }; nextDir = dir; score = 0; stepMs = 130; bonus = null;
+    placeFood(); document.getElementById('sc').textContent = 0;
+  }
+  function free() { let p; do { p = { x: Math.floor(Math.random() * N), y: Math.floor(Math.random() * N) }; } while (snake.some(s => s.x === p.x && s.y === p.y)); return p; }
+  function placeFood() { food = free(); }
+  function setDir(x, y) { if (state !== 'play') return; if (x === -dir.x && y === -dir.y) return; nextDir = { x, y }; }
+
+  addEventListener('keydown', e => {
+    const k = e.code;
+    if (k === 'ArrowUp' || k === 'KeyW') setDir(0, -1);
+    else if (k === 'ArrowDown' || k === 'KeyS') setDir(0, 1);
+    else if (k === 'ArrowLeft' || k === 'KeyA') setDir(-1, 0);
+    else if (k === 'ArrowRight' || k === 'KeyD') setDir(1, 0);
+    else if ((k === 'Space' || k === 'Enter') && state !== 'play') start();
+    if (k.startsWith('Arrow') || k === 'Space') e.preventDefault();
+  });
+  let sx, sy;
+  addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; });
+  addEventListener('pointermove', e => {
+    if (sx == null) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) > 24) {
+      if (Math.abs(dx) > Math.abs(dy)) setDir(Math.sign(dx), 0); else setDir(0, Math.sign(dy));
+      sx = e.clientX; sy = e.clientY;
+    }
+  });
+  addEventListener('pointerup', () => { sx = null; });
+
+  function start() { reset(); state = 'play'; document.getElementById('ui').style.display = 'none'; }
+  document.getElementById('go').onclick = start;
+  function over() {
+    state = 'over';
+    if (score > best) { best = score; store.set('yilan_best', best); document.getElementById('bs').textContent = best; }
+    document.getElementById('panel').innerHTML = `<h1>OYUN BİTTİ</h1><p style="font-size:22px;color:#fff"><b>${score}</b> puan</p><p>En iyi: ${best}</p><button class="btn" id="go">TEKRAR</button>`;
+    document.getElementById('go').onclick = start;
+    document.getElementById('ui').style.display = 'flex';
+  }
+
+  function step() {
+    dir = nextDir;
+    const h = { x: (snake[0].x + dir.x + N) % N, y: (snake[0].y + dir.y + N) % N };
+    if (snake.some((s, i) => i < snake.length - 1 && s.x === h.x && s.y === h.y)) return over();
+    snake.unshift(h);
+    let ate = false;
+    if (h.x === food.x && h.y === food.y) {
+      score += 10; ate = true; placeFood(); stepMs = Math.max(60, stepMs - 3);
+      glow.push({ x: h.x, y: h.y, t: 20, c: '#5dff9e' });
+      if (!bonus && Math.random() < 0.25) bonus = { ...free(), t: 60 };
+    }
+    if (bonus && h.x === bonus.x && h.y === bonus.y) { score += 50; ate = true; glow.push({ x: h.x, y: h.y, t: 30, c: '#ffd23d' }); bonus = null; snake.push({ ...snake[snake.length - 1] }); }
+    if (!ate) snake.pop();
+    if (bonus && --bonus.t <= 0) bonus = null;
+    document.getElementById('sc').textContent = score;
+  }
+
+  function draw(now) {
+    ctx.fillStyle = '#0a1812'; ctx.fillRect(0, 0, size, size);
+    for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) if ((x + y) % 2) { ctx.fillStyle = '#0c1d16'; ctx.fillRect(x * cell, y * cell, cell, cell); }
+    // yem
+    const pulse = 1 + Math.sin(now / 150) * 0.12;
+    ctx.shadowBlur = 18; ctx.shadowColor = '#ff4d8d'; ctx.fillStyle = '#ff4d8d';
+    ctx.beginPath(); ctx.arc((food.x + .5) * cell, (food.y + .5) * cell, cell * 0.32 * pulse, 0, 7); ctx.fill();
+    if (bonus) { ctx.shadowColor = '#ffd23d'; ctx.fillStyle = '#ffd23d'; ctx.globalAlpha = bonus.t < 15 ? (Math.sin(now / 60) + 1) / 2 : 1;
+      const bx = (bonus.x + .5) * cell, by = (bonus.y + .5) * cell, r = cell * 0.42;
+      ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5 - Math.PI / 2, rr = i % 2 ? r * 0.45 : r; ctx.lineTo(bx + Math.cos(a) * rr, by + Math.sin(a) * rr); } ctx.fill(); ctx.globalAlpha = 1; }
+    // yılan
+    ctx.shadowColor = '#5dff9e';
+    snake.forEach((s, i) => {
+      const k = 1 - i / (snake.length + 6);
+      ctx.shadowBlur = i === 0 ? 20 : 8;
+      ctx.fillStyle = `hsl(${145 - i * 1.5}, 100%, ${45 + k * 25}%)`;
+      const p = i === 0 ? 1 : 2;
+      ctx.beginPath(); ctx.roundRect(s.x * cell + p, s.y * cell + p, cell - p * 2, cell - p * 2, cell * 0.3); ctx.fill();
+    });
+    ctx.shadowBlur = 0;
+    const h = snake[0]; ctx.fillStyle = '#04210f';
+    const ex = dir.y !== 0 ? [0.3, 0.7] : [0.5 + dir.x * 0.2, 0.5 + dir.x * 0.2], ey = dir.x !== 0 ? [0.3, 0.7] : [0.5 + dir.y * 0.2, 0.5 + dir.y * 0.2];
+    for (let i = 0; i < 2; i++) { ctx.beginPath(); ctx.arc((h.x + ex[i]) * cell, (h.y + ey[i]) * cell, cell * 0.09, 0, 7); ctx.fill(); }
+    for (const g of glow) { ctx.globalAlpha = g.t / 30; ctx.strokeStyle = g.c; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc((g.x + .5) * cell, (g.y + .5) * cell, (30 - g.t) * cell * 0.08 + cell * 0.3, 0, 7); ctx.stroke(); g.t--; }
+    glow = glow.filter(g => g.t > 0); ctx.globalAlpha = 1;
+  }
+
+  function loop(now) {
+    requestAnimationFrame(loop);
+    if (state === 'play') { acc += Math.min(100, now - last); while (acc >= stepMs && state === 'play') { acc -= stepMs; step(); } }
+    last = now; draw(now);
+  }
+  reset(); requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

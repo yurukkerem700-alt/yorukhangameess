@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Akvaryum Seferi</title>
+<style>
+:root{--ink:#f5fcff;--muted:#9cb9c6;--line:rgba(255,255,255,.1);--panel:rgba(2,14,22,.72);--cyan:#69e3f6;--green:#6fe1ad;--gold:#f4c45a;--blue:#4ca6ff}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#021018;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}body{display:grid;place-items:center}
+.wrap{width:min(1360px,100vw);height:min(880px,100vh);display:grid;grid-template-rows:auto 1fr auto;background:#032033}
+.hud{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:10px 14px;background:rgba(2,9,15,.93);border-bottom:1px solid var(--line);backdrop-filter:blur(14px);z-index:4}.brand{font-weight:950;letter-spacing:.5px}.stats{display:flex;gap:8px;flex-wrap:wrap}.stat{min-width:84px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.035);font-size:9px;color:var(--muted)}.stat b{display:block;color:#fff;font-size:14px;margin-top:2px}.actions{display:flex;gap:7px}button{font:inherit;border:0;border-radius:10px;padding:9px 11px;background:#123348;color:#fff;font-weight:850;cursor:pointer}.lang{background:var(--gold);color:#241a05}.icon{width:39px;padding:9px 0}
+.game{position:relative;min-height:0;overflow:hidden}.game canvas{display:block;width:100%;height:100%;touch-action:none}
+.ui{position:absolute;inset:0;pointer-events:none}.left,.right{position:absolute;top:12px;display:grid;gap:8px}.left{left:12px}.right{right:12px;width:245px}.panel{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);backdrop-filter:blur(9px);box-shadow:0 18px 50px #0006}.label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}.value{font-size:13px;font-weight:900;margin-top:3px}.bar{height:7px;background:#123140;border-radius:8px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#56c8ff,#d8fbff)}.bar.green i{background:linear-gradient(90deg,#42aa7c,#75efb3)}.bar.gold i{background:linear-gradient(90deg,#c78a2c,#f4c45a)}
+.hint{position:absolute;left:12px;bottom:12px;max-width:min(920px,calc(100% - 24px));padding:9px 11px;border-radius:11px;background:rgba(2,10,16,.72);border:1px solid rgba(255,255,255,.07);font-size:11px;color:#deeff6;backdrop-filter:blur(8px)}.toast{position:absolute;left:50%;top:16px;transform:translateX(-50%);padding:9px 13px;border-radius:999px;background:rgba(4,15,22,.91);border:1px solid rgba(255,255,255,.1);font-size:12px;font-weight:900;opacity:0;transition:opacity .2s}.toast.on{opacity:1}
+.species{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:7px}.chip{height:28px;display:grid;place-items:center;border-radius:8px;background:#0d2635;border:1px solid rgba(255,255,255,.07);font-size:10px;color:#7191a0}.chip.found{color:#fff;background:rgba(75,175,163,.14);border-color:rgba(111,225,173,.24)}
+.modal{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,7,13,.72);padding:18px;z-index:8;backdrop-filter:blur(8px)}.card{width:min(780px,100%);padding:26px;border:1px solid rgba(255,255,255,.13);border-radius:20px;background:linear-gradient(180deg,#0a2d3e,#061a26);box-shadow:0 38px 110px #000d}.eyebrow{font-size:10px;letter-spacing:1.8px;color:var(--cyan);font-weight:900}.card h1{font-size:35px;line-height:1.05;margin:8px 0}.card p{margin:0 0 16px;color:#bad2dd;line-height:1.65}.tips{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px}.tip{padding:11px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);font-size:11px;color:#c8dde4}.tip b{display:block;color:#fff;margin-bottom:3px}.primary{background:var(--cyan);color:#061218;padding:11px 15px}.small{margin-top:11px;color:#7f9dad;font-size:10px}.footer{padding:7px 12px;text-align:center;color:#6f8c9a;font-size:10px;border-top:1px solid var(--line)}
+@media(max-width:900px){.hud{grid-template-columns:1fr auto}.stats{grid-column:1/-1;grid-row:2}.right{width:200px}.tips{grid-template-columns:1fr}.card h1{font-size:29px}.hint{font-size:9px}.species{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hud">
+<div class="brand" id="brand">AKVARYUM SEFERİ</div>
+<div class="stats">
+<div class="stat"><span id="batteryL">Batarya</span><b id="battery">100%</b></div>
+<div class="stat"><span id="discoverL">Keşif</span><b id="discover">0/8</b></div>
+<div class="stat"><span id="depthL">Derinlik</span><b id="depth">0 m</b></div>
+<div class="stat"><span id="sonarL">Sonar</span><b id="sonar">Hazır</b></div>
+</div>
+<div class="actions"><button class="lang" id="lang">EN</button><button class="icon" id="restart">↻</button></div>
+</header>
+
+<div class="game">
+<canvas id="c"></canvas>
+<div class="ui">
+<div class="left">
+<div class="panel"><div class="label" id="lightL">Denizaltı ışığı</div><div class="value" id="light">AÇIK</div></div>
+<div class="panel"><div class="label" id="missionL">Görev</div><div class="value" id="mission">8 türü keşfet</div><div class="bar green"><i id="missionBar"></i></div></div>
+</div>
+<div class="right">
+<div class="panel"><div class="label" id="catalogL">Tür kataloğu</div><div class="species" id="species"></div></div>
+<div class="panel"><div class="label" id="areaL">Bölge</div><div class="value" id="area">Sığ Resif</div></div>
+</div>
+<div class="hint" id="hint">WASD / ok: hareket · SHIFT: hızlan · SPACE: sonar · E: ışık · Yaklaş ve türleri keşfet</div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal">
+<div class="card">
+<div class="eyebrow">YÖRÜKHAN ORIGINAL</div>
+<h1 id="title">Akvaryum Seferi</h1>
+<p id="desc">Büyük bir cam akvaryumun içine küçük denizaltınla gir. Suyun berraklığında resifleri, yosunları, kayaları ve serbest dolaşan balık sürülerini keşfet.</p>
+<div class="tips">
+<div class="tip"><b id="t1h">Berrak su</b><span id="t1">Suyun içindeki görüş mesafesi yüksek; akvaryumun cam sınırlarını görebilirsin.</span></div>
+<div class="tip"><b id="t2h">Canlılar</b><span id="t2">8 farklı türü yakından gözlemleyip kataloğa kaydet.</span></div>
+<div class="tip"><b id="t3h">Sonar</b><span id="t3">SPACE ile kısa bir sonar darbesi gönder; yakındaki canlılar parlar.</span></div>
+<div class="tip"><b id="t4h">Gezi</b><span id="t4">SHIFT hızlandırır, E denizaltı projektörünü açıp kapatır.</span></div>
+</div>
+<button class="primary" id="start">Seferi Başlat</button>
+<div class="small" id="how">Amaç: akvaryumu gez, 8 türü keşfet ve cam duvarın yanında tüm tankı seyret.</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="footer">Yörükhan Games · Akvaryum Seferi</footer>
+</div>
+
+<script>
+var cv=document.getElementById('c'),ctx=cv.getContext('2d');
+var W=900,H=560,dpr=1,lang='tr',running=false,last=0,time=0,battery=100,found=0,sonarCooldown=0,lights=true,score=0,keys={},pulse=0;
+var world={w:3000,h:1700},sub={x:300,y:900,vx:0,vy:0},cam={x:0,y:0},fish=[],schools=[],plants=[],rocks=[],bubbles=[],speciesFound=new Set(),region='Sığ Resif';
+var TYPES=[
+{id:'palyaço',tr:'Palyaço balığı',en:'Clownfish',c:'#f47b43',size:13,depth:0.25},
+{id:'mavi',tr:'Mavi tang',en:'Blue tang',c:'#5fa8ff',size:16,depth:0.35},
+{id:'melek',tr:'Melek balığı',en:'Angelfish',c:'#f1d06a',size:18,depth:0.48},
+{id:'balon',tr:'Balon balığı',en:'Pufferfish',c:'#b9d27f',size:14,depth:0.6},
+{id:'denizati',tr:'Denizatı',en:'Seahorse',c:'#d58bc7',size:12,depth:0.7},
+{id:'vatoz',tr:'Vatoz',en:'Stingray',c:'#8499ad',size:22,depth:0.78},
+{id:'denizanasi',tr:'Denizanası',en:'Jellyfish',c:'#8adcf0',size:17,depth:0.86},
+{id:'kaplumbaga',tr:'Deniz kaplumbağası',en:'Sea turtle',c:'#6fc58e',size:21,depth:0.66}
+];
+var I18N={
+tr:{brand:'AKVARYUM SEFERİ',battery:'Batarya',discover:'Keşif',depth:'Derinlik',sonar:'Sonar',light:'Denizaltı ışığı',catalog:'Tür kataloğu',area:'Bölge',mission:'Görev',hint:'WASD / ok: hareket · SHIFT: hızlan · SPACE: sonar · E: ışık · Yaklaş ve türleri keşfet',title:'Akvaryum Seferi',desc:'Büyük bir cam akvaryumun içine küçük denizaltınla gir. Suyun berraklığında resifleri, yosunları, kayaları ve serbest dolaşan balık sürülerini keşfet.',t1h:'Berrak su',t1:'Suyun içindeki görüş mesafesi yüksek; akvaryumun cam sınırlarını görebilirsin.',t2h:'Canlılar',t2:'8 farklı türü yakından gözlemleyip kataloğa kaydet.',t3h:'Sonar',t3:'SPACE ile kısa bir sonar darbesi gönder; yakındaki canlılar parlar.',t4h:'Gezi',t4:'SHIFT hızlandırır, E denizaltı projektörünü açıp kapatır.',start:'Seferi Başlat',how:'Amaç: akvaryumu gez, 8 türü keşfet ve cam duvarın yanında tüm tankı seyret.',ready:'Hazır',on:'AÇIK',off:'KAPALI',region1:'Sığ Resif',region2:'Mercan Bahçesi',region3:'Derin Mavi',region4:'Jelatin Bölgesi',sonarUsed:'Sonar kullanıldı',found:'Keşfedildi',win:'Akvaryum tamamen keşfedildi!',again:'Tekrar gez',edge:'Cam duvar',turtle:'Kaplumbağa sürüsü'}, 
+en:{brand:'AQUARIUM EXPEDITION',battery:'Battery',discover:'Discovery',depth:'Depth',sonar:'Sonar',light:'Submarine lights',catalog:'Species log',area:'Zone',mission:'Mission',hint:'WASD / arrows: move · SHIFT: boost · SPACE: sonar · E: lights · Approach species to discover them',title:'Aquarium Expedition',desc:'Take a small submarine into a giant glass aquarium. Explore clear water, reefs, kelp, rocks and free-swimming schools of fish.',t1h:'Clear water',t1:'Visibility stays high so you can see the glass boundaries and the whole tank.',t2h:'Wildlife',t2:'Get close to 8 species and add them to your log.',t3h:'Sonar',t3:'SPACE sends a short sonar pulse that highlights nearby wildlife.',t4h:'Cruise',t4:'SHIFT boosts speed; E toggles the submarine spotlight.',start:'Start Expedition',how:'Goal: explore the aquarium, discover all 8 species and enjoy the glass-wall views.',ready:'Ready',on:'ON',off:'OFF',region1:'Shallow Reef',region2:'Coral Garden',region3:'Deep Blue',region4:'Jelly Zone',sonarUsed:'Sonar fired',found:'Discovered',win:'Aquarium fully explored!',again:'Explore again',edge:'Glass wall',turtle:'Turtle school'}};
+var TT=I18N.tr;
+function fit(){dpr=Math.min(2,devicePixelRatio||1);var r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',fit);fit();
+
+function reset(){battery=100;found=0;score=0;sonarCooldown=0;lights=true;pulse=0;speciesFound=new Set();sub={x:300,y:900,vx:0,vy:0};cam={x:0,y:0};gen();sync(true)}
+function rand(a,b){return a+Math.random()*(b-a)}
+function gen(){
+fish=[];schools=[];plants=[];rocks=[];bubbles=[];
+for(var i=0;i<38;i++){var type=TYPES[i%TYPES.length],x=rand(180,2820),y=rand(130,1570),s=rand(.65,1.25);fish.push({x:x,y:y,baseY:y,baseX:x,type:type,phase:rand(0,7),speed:rand(8,22)*s,dir:Math.random()>.5?1:-1,amp:rand(10,55),school:i%7})}
+for(i=0;i<7;i++)schools.push({x:rand(300,2700),y:rand(250,1450),count:5+Math.floor(Math.random()*6),phase:rand(0,7),speed:rand(12,23),size:rand(.7,1.25),type:i%3});
+for(i=0;i<95;i++)plants.push({x:rand(50,2950),y:rand(1360,1650),h:rand(45,180),w:rand(3,10),c:Math.random()>.42?'#2a9a72':'#397d63',phase:rand(0,7)});
+for(i=0;i<54;i++)rocks.push({x:rand(40,2960),y:rand(1420,1690),r:rand(14,55),c:Math.random()>.45?'#43555d':'#536761'});
+for(i=0;i<90;i++)bubbles.push({x:rand(70,2930),y:rand(120,1680),r:rand(1,4),s:rand(6,18),phase:rand(0,7)})}
+function txt(s,x,y,size,alpha,weight,color){ctx.save();ctx.globalAlpha=alpha==null?1:alpha;ctx.fillStyle=color||'#f5fcff';ctx.font=(weight||700)+' '+(size||14)+'px Inter,system-ui,sans-serif';ctx.fillText(s,x,y);ctx.restore()}
+function circle(x,y,r,f,st){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(f){ctx.fillStyle=f;ctx.fill()}if(st){ctx.strokeStyle=st;ctx.stroke()}}
+function screen(x,y){return{x:x-cam.x,y:y-cam.y}}
+function speciesAt(x,y,type,near){return Math.hypot(x-sub.x,y-sub.y)<near}
+function worldToZone(y){var p=y/world.h;return p<.28?TT.region1:p<.55?TT.region2:p<.78?TT.region3:TT.region4}
+function drawGlass(){ctx.save();var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(170,240,255,.11)');g.addColorStop(.5,'rgba(80,208,231,.05)');g.addColorStop(1,'rgba(4,32,48,.12)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);var left=18,right=W-18,top=18,bottom=H-18;ctx.strokeStyle='rgba(220,251,255,.42)';ctx.lineWidth=3;ctx.strokeRect(left,top,right-left,bottom-top);ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=9;ctx.strokeRect(left+5,top+5,right-left-10,bottom-top-10);for(var i=0;i<7;i++){var x=left+70+i*160;ctx.strokeStyle='rgba(255,255,255,.045)';ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x+50,bottom);ctx.stroke()}ctx.restore()}
+function drawFish(f,nearSonar){
+var p=screen(f.x,f.y);if(p.x<-60||p.x>W+60||p.y<-60||p.y>H+60)return;var t=f.type,wig=Math.sin(time*.002*f.speed+f.phase)*.3;ctx.save();ctx.translate(p.x,p.y);ctx.scale(f.dir,1);ctx.rotate(wig*.08);
+if(t.id==='vatoz'){ctx.fillStyle=t.c;ctx.beginPath();ctx.moveTo(-24,0);ctx.quadraticCurveTo(0,-17,24,0);ctx.quadraticCurveTo(0,22,-24,0);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke();ctx.fillStyle='#d4e0e6';ctx.beginPath();ctx.arc(5,-2,2,0,Math.PI*2);ctx.fill()}
+else if(t.id==='denizanası'){ctx.fillStyle=t.c;ctx.globalAlpha=.65;ctx.beginPath();ctx.arc(0,-5,t.size*.72,Math.PI,0);ctx.lineTo(t.size*.72,12);ctx.quadraticCurveTo(9,22,3,11);ctx.quadraticCurveTo(0,23,-4,11);ctx.quadraticCurveTo(-10,22,-t.size*.72,12);ctx.closePath();ctx.fill();ctx.globalAlpha=.9;ctx.strokeStyle='#b6f2ff';ctx.stroke()}
+else if(t.id==='denizati'){ctx.strokeStyle=t.c;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,9,0.2,5.5);ctx.stroke();ctx.beginPath();ctx.moveTo(-2,6);ctx.quadraticCurveTo(-9,14,-5,20);ctx.stroke()}
+else if(t.id==='kaplumbaga'){ctx.fillStyle=t.c;ctx.beginPath();ctx.ellipse(0,0,t.size,t.size*.72,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#3f8b5d';for(var k=0;k<4;k++){ctx.beginPath();ctx.ellipse((k<2?-1:1)*15,(k%2?-10:10),8,12,(k%2?-0.6:0.6),0,Math.PI*2);ctx.fill()}circle(18,0,6,t.c)}
+else {ctx.fillStyle=t.c;ctx.beginPath();ctx.ellipse(0,0,t.size,t.size*.56,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.28)';ctx.beginPath();ctx.ellipse(-t.size*.22,-t.size*.18,t.size*.45,t.size*.18,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=t.c;ctx.beginPath();ctx.moveTo(-t.size,0);ctx.lineTo(-t.size-10,-8);ctx.lineTo(-t.size-10,8);ctx.closePath();ctx.fill();ctx.fillStyle='#08151c';circle(t.size*.48,-2,2,ctx.fillStyle)}
+if(nearSonar){ctx.strokeStyle='rgba(105,227,246,.75)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,t.size+9+Math.sin(time*.02)*2,0,Math.PI*2);ctx.stroke()}
+ctx.restore()}
+function drawSub(){var p=screen(sub.x,sub.y);ctx.save();ctx.translate(p.x,p.y);ctx.scale(.95,.95);ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=13;ctx.fillStyle='#d8e3e8';ctx.beginPath();ctx.ellipse(0,0,42,16,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#32484f';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#6bc8d6';ctx.beginPath();ctx.ellipse(-9,-2,14,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#5a6c73';ctx.fillRect(-2,-21,7,10);ctx.strokeStyle='#7be7f1';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(1,-20);ctx.lineTo(1,-30);ctx.stroke();ctx.fillStyle='#f5c35b';ctx.beginPath();ctx.arc(35,0,5,0,Math.PI*2);ctx.fill();ctx.restore();
+if(lights){var g=ctx.createRadialGradient(p.x,p.y,10,p.x,p.y,220);g.addColorStop(0,'rgba(255,249,219,.28)');g.addColorStop(1,'rgba(255,249,219,0)');ctx.fillStyle=g;ctx.fillRect(p.x-240,p.y-240,480,480)}}
+function draw(){
+ctx.clearRect(0,0,W,H);
+var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0e5b75');bg.addColorStop(.48,'#0d8ca0');bg.addColorStop(1,'#07536b');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+for(var i=0;i<12;i++){ctx.strokeStyle='rgba(210,247,255,.045)';ctx.lineWidth=1;ctx.beginPath();var yy=40+i*55+Math.sin(time*.001+i)*5;ctx.moveTo(0,yy);ctx.quadraticCurveTo(W*.35,yy+8,W*.65,yy-6);ctx.quadraticCurveTo(W*.84,yy-10,W,yy+2);ctx.stroke()}
+ctx.save();ctx.translate(-cam.x*.25,-cam.y*.12);for(i=0;i<6;i++){var sx=120+i*540,sy=170+i%3*280;ctx.fillStyle='rgba(255,255,255,.055)';ctx.beginPath();ctx.ellipse(sx,sy,230,100,0,0,Math.PI*2);ctx.fill()}ctx.restore();
+ctx.save();ctx.translate(-cam.x*.72,-cam.y*.72);
+for(i=0;i<rocks.length;i++){var r=rocks[i];ctx.fillStyle=r.c;ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(150,200,180,.16)';ctx.beginPath();ctx.arc(r.x-r.r*.22,r.y-r.r*.3,r.r*.4,0,Math.PI*2);ctx.fill()}
+for(i=0;i<plants.length;i++){var pl=plants[i],wave=Math.sin(time*.0018+pl.phase)*8;ctx.strokeStyle=pl.c;ctx.lineWidth=pl.w;ctx.beginPath();ctx.moveTo(pl.x,world.h-28);ctx.quadraticCurveTo(pl.x+wave,world.h-pl.h*.5,pl.x-wave*.3,world.h-pl.h);ctx.stroke();if(i%5===0){ctx.fillStyle=pl.c;ctx.beginPath();ctx.ellipse(pl.x+wave*.2,world.h-pl.h*.65,11,5,.5,0,Math.PI*2);ctx.fill()}}
+ctx.restore();
+for(i=0;i<bubbles.length;i++){var b=bubbles[i],bx=b.x,by=((b.y-time*b.s*.025)%world.h+world.h)%world.h,pb=screen(bx,by);if(pb.x>-10&&pb.x<W+10&&pb.y>-10&&pb.y<H+10){circle(pb.x,pb.y,b.r,'rgba(220,250,255,.11)','rgba(255,255,255,.2)')}}
+for(i=0;i<schools.length;i++){var sc=schools[i];for(var j=0;j<sc.count;j++){var a=sc.phase+j*1.6,fx=sc.x+Math.sin(time*.001*sc.speed+a)*90+Math.cos(time*.0008*(sc.speed*.7)+a)*35,fy=sc.y+Math.cos(time*.0013*(sc.speed*.7)+a)*52;var type=TYPES[sc.type+((j%2)?1:0)];drawFish({x:fx,y:fy,type:type,phase:a,speed:sc.speed,dir:Math.cos(time*.001+a)>0?1:-1},{})}}
+for(i=0;i<fish.length;i++){var f=fish[i],fx=f.baseX+Math.sin(time*.001*f.speed+f.phase)*f.amp+Math.sin(time*.0004+f.phase)*38,fy=f.baseY+Math.cos(time*.001*f.speed*.8+f.phase)*f.amp*.75;f.x+=f.dir*f.speed*.01;f.y=fy;if(f.x<130||f.x>2870)f.dir*=-1;var sonarNear=pulse>0&&Math.hypot(f.x-sub.x,f.y-sub.y)<220;drawFish({x:f.x,y:f.y,type:f.type,phase:f.phase,speed:f.speed,dir:f.dir},sonarNear)}
+drawSub();
+if(pulse>0){var pp=screen(sub.x,sub.y),maxR=330*(1-pulse);ctx.strokeStyle='rgba(105,227,246,'+(pulse*.7)+')';ctx.lineWidth=3;ctx.beginPath();ctx.arc(pp.x,pp.y,maxR,0,Math.PI*2);ctx.stroke()}
+drawGlass();
+}
+function update(dt){
+var ax=0,ay=0;if(keys.a||keys.arrowleft)ax--;if(keys.d||keys.arrowright)ax++;if(keys.w||keys.arrowup)ay--;if(keys.s||keys.arrowdown)ay++;var boost=keys.shift?1.65:1;var accel=keys.shift?210:140;
+if(ax||ay){var n=Math.hypot(ax,ay);ax/=n;ay/=n;sub.vx+=(ax*accel-sub.vx*1.1)*dt;sub.vy+=(ay*accel-sub.vy*1.1)*dt}else{sub.vx*=Math.pow(.08,dt);sub.vy*=Math.pow(.08,dt)}
+var max=boost*190,sp=Math.hypot(sub.vx,sub.vy);if(sp>max){sub.vx=sub.vx/sp*max;sub.vy=sub.vy/sp*max}
+sub.x=Math.max(90,Math.min(world.w-90,sub.x+sub.vx*dt));sub.y=Math.max(100,Math.min(world.h-100,sub.y+sub.vy*dt));
+cam.x=Math.max(0,Math.min(world.w-W,sub.x-W*.5));cam.y=Math.max(0,Math.min(world.h-H,sub.y-H*.5));
+if(keys.shift&&sp>90)battery=Math.max(0,battery-dt*2.5);else battery=Math.min(100,battery+dt*.5);
+if(sonarCooldown>0)sonarCooldown=Math.max(0,sonarCooldown-dt);if(pulse>0)pulse=Math.max(0,pulse-dt*.8);
+if(keys[' ']&&!keys._space&&sonarCooldown<=0){keys._space=true;sonarCooldown=4;pulse=1;score+=5;toast(TT.sonarUsed)}if(!keys[' '])keys._space=false;
+if(keys.e&&!keys._e){keys._e=true;lights=!lights;toast(lights?TT.on:TT.off)}if(!keys.e)keys._e=false;
+for(var i=0;i<fish.length;i++){var f=fish[i];if(speciesFound.has(f.type.id))continue;var d=Math.hypot(f.x-sub.x,f.y-sub.y);if(d<58){speciesFound.add(f.type.id);found=speciesFound.size;score+=100;toast(TYPES.find(function(t){return t.id===f.type.id})[lang]+' · '+TT.found);break}}
+region=worldToZone(sub.y);if(battery<=0){sub.vx*=.97;sub.vy*=.97}
+if(found===TYPES.length&&score<950){score+=300;toast(TT.win)}
+sync(false)
+}
+function sync(full){
+TT=I18N[lang];document.getElementById('brand').textContent=TT.brand;document.getElementById('batteryL').textContent=TT.battery;document.getElementById('discoverL').textContent=TT.discover;document.getElementById('depthL').textContent=TT.depth;document.getElementById('sonarL').textContent=TT.sonar;document.getElementById('lightL').textContent=TT.light;document.getElementById('catalogL').textContent=TT.catalog;document.getElementById('areaL').textContent=TT.area;document.getElementById('missionL').textContent=TT.mission;document.getElementById('hint').textContent=TT.hint;document.getElementById('battery').textContent=Math.floor(battery)+'%';document.getElementById('discover').textContent=found+'/8';document.getElementById('depth').textContent=Math.floor(sub.y/world.h*180)+' m';document.getElementById('sonar').textContent=sonarCooldown>0?Math.ceil(sonarCooldown)+'s':TT.ready;document.getElementById('light').textContent=lights?TT.on:TT.off;document.getElementById('area').textContent=region;document.getElementById('mission').textContent=found<8?TT.discover+' · '+(8-found):TT.win;document.getElementById('missionBar').style.width=(found/8*100)+'%';var box=document.getElementById('species');box.innerHTML=TYPES.map(function(t){return '<div class="chip '+(speciesFound.has(t.id)?'found':'')+'">'+(speciesFound.has(t.id)?t[lang]:'?')+'</div>'}).join('');
+}
+function loop(t){var dt=Math.min(.033,(t-last)/1000||.016);last=t;time=t;if(running)update(dt);draw();requestAnimationFrame(loop)}
+document.getElementById('start').onclick=function(){reset();running=true;document.getElementById('modal').style.display='none';last=performance.now()};
+document.getElementById('restart').onclick=function(){reset();running=true;document.getElementById('modal').style.display='none';last=performance.now()};
+document.getElementById('lang').onclick=function(){lang=lang==='tr'?'en':'tr';sync(true);document.getElementById('modal').style.display='grid';running=false};
+addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;if(e.code==='Space')e.preventDefault()});addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
+reset();sync(true);requestAnimationFrame(loop);
+</script>
+</body>
+</html>

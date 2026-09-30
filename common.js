@@ -1,6 +1,7 @@
 // Ortak parçalar: veritabanı bağlantısı, oturum, menüler, kartlar, reklamlar
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { CONFIG } from './config.js';
+import './clips.js';
 
 export { CONFIG };
 export const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);

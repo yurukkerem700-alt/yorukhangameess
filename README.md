@@ -29,7 +29,7 @@ Sitede kayıt ol, sonra Claude'a e-postanı söyle ("beni admin yap"). Menüde *
 | `index.html` | Keşfet sayfası (vitrin, raflar, listeler) ve oyun arama/kategori sayfası |
 | `oyun.html` | Oyun sayfası |
 | `yukle.html`, `giris.html`, `panelim.html`, `profil.html`, `admin.html` | Hesap ve yükleme sayfaları |
-| `oyun-*.html` + `oyun-*.jpg` | Sitenin kendi 7 oyunu ve kapakları |
+| `oyun-*.html` + `oyun-*.jpg`/`*.svg` | Sitenin resmi oyunları ve kapakları |
 | `logo.svg`, `logo-mark.svg` | Logo (yatay) ve amblem (koçboynuzu Y) |
 | `favicon.svg`, `favicon.ico`, `icon-*.png`, `og.png` | Sekme ikonu, uygulama ikonları, paylaşım görseli |
 | `style.css` | Tasarım |

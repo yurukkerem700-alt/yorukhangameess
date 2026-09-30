@@ -220,8 +220,8 @@ renderCatalog();
 
 function toastMsg(msg){toast.textContent=msg;toast.classList.add('on');clearTimeout(toastMsg.t);toastMsg.t=setTimeout(()=>toast.classList.remove('on'),1200);}
 function pulseSonar(){if(!running||sonarCooldown>0)return;sonarCooldown=3;sonarPulse=0.1;for(const f of fish){const d=f.obj.position.distanceTo(sub.position);if(d<18){discovered.add(f.type.id);score+=10;}}renderCatalog();toastMsg(T.sonar);}
-const foods=[];
-function dropFood(){if(!running||feedTimer>0)return;feedTimer=.7;foods.push(new THREE.Vector3(sub.position.x+Math.sin(sub.rotation.y)*4,sub.position.y,sub.position.z+Math.cos(sub.rotation.y)*4));toastMsg(T.feed);}
+const foods=[];const foodMeshes=[];
+function dropFood(){if(!running||feedTimer>0)return;feedTimer=.7;const p=new THREE.Vector3(sub.position.x+Math.sin(sub.rotation.y)*4,sub.position.y,sub.position.z+Math.cos(sub.rotation.y)*4);foods[0]=p;const mesh=new THREE.Mesh(new THREE.SphereGeometry(.10,8,8),new THREE.MeshBasicMaterial({color:0xf2d17d}));mesh.position.copy(p);scene.add(mesh);foodMeshes.push({mesh,life:1.8});toastMsg(T.feed);}
 function discoverCheck(){for(const f of fish){if(discovered.has(f.type.id))continue;const d=f.obj.position.distanceTo(sub.position);if(d<4.6){discovered.add(f.type.id);score+=25;renderCatalog();toastMsg((tr?f.type.tr:f.type.en)+' · '+T.found);}}if(discovered.size===8)document.getElementById('mission').textContent=T.win;}
 function areaName(){const y=sub.position.y;if(y<-11)return T.deep;if(Math.abs(sub.position.x)>28)return T.coral;if(y>8)return T.jelly;return T.shallow;}
 
@@ -249,9 +249,8 @@ function update(dt){
     f.obj.rotation.z=Math.sin(performance.now()*.0025+f.phase)*.06;
     if(f.type.kind==='jelly')f.obj.position.y+=Math.sin(performance.now()*.0013+f.phase)*.008;
   }
-  if(feedTimer>0){feedTimer-=dt;if(feedTimer<=0)foods.shift();}
-  if(foods.length>6)foods.shift();
-  for(const p of foods){const pellet=new THREE.Mesh(new THREE.SphereGeometry(.07,6,6),new THREE.MeshBasicMaterial({color:0xf2d17d}));pellet.position.copy(p);scene.add(pellet);}
+  if(feedTimer>0){feedTimer-=dt;if(feedTimer<=0)foods.length=0;}
+  for(let i=foodMeshes.length-1;i>=0;i--){const f=foodMeshes[i];f.life-=dt;f.mesh.position.y+=Math.sin(performance.now()*.006+i)*.01;if(f.life<=0){scene.remove(f.mesh);f.mesh.geometry.dispose();f.mesh.material.dispose();foodMeshes.splice(i,1);}}
   discoverCheck();
   const desiredArea=areaName();
   document.getElementById('zone').textContent=desiredArea+' · '+(tr?'Açık Cam Tank':'Open Glass Tank');

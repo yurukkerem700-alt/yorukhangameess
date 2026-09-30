@@ -518,3 +518,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .toast { bottom: calc(80px + env(safe-area-inset-bottom)); }
 }
 @media (hover: none) { .play-hover { display: none; } }
+
+/* Statik oyun sayfalarındaki bağlantı listesi (JS yüklenene kadar görünür, sonra yerini kartlar alır) */
+.seo-links { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 0; margin: 0; }
+.seo-links a { color: inherit; opacity: .8; }

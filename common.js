@@ -1,3 +1,4 @@
+import { STATIC_SLUGS } from './slugs.js';
 // Ortak parçalar: veritabanı bağlantısı, oturum, menüler, kartlar, reklamlar
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { CONFIG } from './config.js';
@@ -27,7 +28,7 @@ export function timeAgo(iso) {
 export const fmtDate = iso => new Date(iso).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 export const catById = id => CONFIG.CATEGORIES.find(c => c.id === id) || { id, name: id || 'Diğer', icon: '🎮', color: ['#444', '#222'] };
 export const isNew = g => { const t = g.approved_at || g.created_at; return t && Date.now() - new Date(t).getTime() < 10 * 864e5; };
-export const gameUrl = g => `/oyun.html?id=${g.id}`;
+export const gameUrl = g => STATIC_SLUGS[g.id] ? `/g/${STATIC_SLUGS[g.id]}` : `/oyun.html?id=${g.id}`;
 export const devName = g => g.yg_profiles?.username || 'Yörükhan';
 
 export function fallbackThumb(title) {

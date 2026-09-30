@@ -1,7 +1,8 @@
 import { sb, $, $$, esc, fmtNum, fmtDate, catById, imgHTML, gameCard, GAME_SELECT, getMe, toast, openModal, devName, gameUrl, PLAY_ICON } from './common.js';
 import { startGame, toggleFullscreen } from './player.js';
+import { STATIC_SLUGS } from './slugs.js';
 
-const id = new URLSearchParams(location.search).get('id') || location.pathname.split('/').filter(Boolean)[1];
+const id = window.YG_GAME_ID || new URLSearchParams(location.search).get('id') || location.pathname.split('/').filter(Boolean)[1];
 const autoplay = new URLSearchParams(location.search).get('oyna') !== null;
 const player = $('#player');
 
@@ -16,7 +17,12 @@ async function main() {
   if (error || !g) return notFound();
   const cat = catById(g.category), dev = devName(g);
 
-  document.title = `${g.title} — Ücretsiz Oyna | YÖRÜKHAN GAMES`;
+  if (!window.YG_GAME_ID) {
+    document.title = `${g.title} — Ücretsiz Oyna | YÖRÜKHAN GAMES`;
+    // Statik sayfası olan oyunlarda arama motoruna asıl adresi bildir (çift içerik olmasın)
+    const st = STATIC_SLUGS[g.id];
+    if (st) { const c = document.createElement('link'); c.rel = 'canonical'; c.href = `${location.origin}/g/${st}`; document.head.appendChild(c); }
+  }
   $('meta[name="description"]')?.setAttribute('content', (g.description || g.title).slice(0, 155));
   $('meta[property="og:title"]')?.setAttribute('content', g.title + ' — YÖRÜKHAN GAMES');
   if (g.thumb_url) $('meta[property="og:image"]')?.setAttribute('content', g.thumb_url);

@@ -56,9 +56,19 @@ function SHIM(init) {
   }
 }
 
+// Oyun dili (tr/en): oyuncunun seçimi, yoksa tarayıcı dili. Sitenin kendi oyunları bunu okur.
+const LANG_KEY = 'yg_lang';
+export function getGameLang() {
+  let l = null;
+  try { l = localStorage.getItem(LANG_KEY); } catch {}
+  if (l === 'tr' || l === 'en') return l;
+  return /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
+}
+export function setGameLang(l) { try { localStorage.setItem(LANG_KEY, l); } catch {} }
+
 export function buildSrcdoc(html, saveData) {
   const init = JSON.stringify(saveData || {}).replace(/</g, '\\u003c');
-  const shim = `<script>(${SHIM.toString()})(${init});<\/script>`;
+  const shim = `<script>window.__YG_LANG=${JSON.stringify(getGameLang())};(${SHIM.toString()})(${init});<\/script>`;
   const tryInsert = re => {
     const m = html.match(re);
     if (!m) return null;

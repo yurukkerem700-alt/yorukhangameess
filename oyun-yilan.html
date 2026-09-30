@@ -3,7 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Neon Yılan</title>
+<title data-en="Neon Snake">Neon Yılan</title>
+<script>
+// Dil desteği (Türkçe / English). Sıra: sitenin verdiği dil, ?lang=, kayıtlı seçim, tarayıcı dili.
+(function () {
+  var L = window.__YG_LANG, m = /[?&]lang=(tr|en)\b/.exec(location.search);
+  if (!L && m) L = m[1];
+  if (!L) try { L = localStorage.getItem('yg_lang'); } catch (e) {}
+  if (L !== 'tr' && L !== 'en') L = /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
+  window.LANG = L; document.documentElement.lang = L;
+  window.T = function (tr, en) { return L === 'en' ? en : tr; };
+  document.addEventListener('DOMContentLoaded', function () {
+    if (L === 'en') [].forEach.call(document.querySelectorAll('[data-en]'), function (el) { el.innerHTML = el.getAttribute('data-en'); });
+    if (window.parent !== window) return; // sitede oynarken dil düğmesi oyun sayfasında
+    var b = document.createElement('button');
+    b.textContent = L === 'en' ? '🌐 TR' : '🌐 EN'; b.title = L === 'en' ? 'Türkçe' : 'English';
+    b.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:9999;border:0;border-radius:999px;padding:6px 11px;font:700 13px system-ui,sans-serif;background:rgba(0,0,0,.45);color:#fff;cursor:pointer;opacity:.8';
+    b.onclick = function () { try { localStorage.setItem('yg_lang', L === 'en' ? 'tr' : 'en'); } catch (e) {} location.href = location.pathname + '?lang=' + (L === 'en' ? 'tr' : 'en'); };
+    document.body.appendChild(b);
+  });
+})();
+</script>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #07110d; touch-action: none; user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
   #wrap { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
@@ -19,14 +39,14 @@
 </head>
 <body>
 <div id="wrap">
-  <div id="hud"><div><small>SKOR</small><span id="sc">0</span></div><div><small>EN İYİ</small><span id="bs">0</span></div></div>
+  <div id="hud"><div><small data-en="SCORE">SKOR</small><span id="sc">0</span></div><div><small data-en="BEST">EN İYİ</small><span id="bs">0</span></div></div>
   <canvas id="c"></canvas>
 </div>
 <div id="ui"><div class="panel" id="panel">
-  <h1>NEON YILAN</h1>
-  <p>Işıkları topla, büyü, kendine çarpma!</p>
-  <p><b>Yön:</b> ok tuşları / WASD ya da ekranı kaydır</p>
-  <button class="btn" id="go">BAŞLA</button>
+  <h1 data-en="NEON SNAKE">NEON YILAN</h1>
+  <p data-en="Collect the lights, grow, and don't hit yourself!">Işıkları topla, büyü, kendine çarpma!</p>
+  <p data-en="<b>Steer:</b> arrow keys / WASD or swipe the screen"><b>Yön:</b> ok tuşları / WASD ya da ekranı kaydır</p>
+  <button class="btn" id="go" data-en="START">BAŞLA</button>
 </div></div>
 <script>
 (() => {
@@ -79,7 +99,7 @@
   function over() {
     state = 'over';
     if (score > best) { best = score; store.set('yilan_best', best); document.getElementById('bs').textContent = best; }
-    document.getElementById('panel').innerHTML = `<h1>OYUN BİTTİ</h1><p style="font-size:22px;color:#fff"><b>${score}</b> puan</p><p>En iyi: ${best}</p><button class="btn" id="go">TEKRAR</button>`;
+    document.getElementById('panel').innerHTML = `<h1>${T('OYUN BİTTİ', 'GAME OVER')}</h1><p style="font-size:22px;color:#fff"><b>${score}</b> ${T('puan', 'points')}</p><p>${T('En iyi', 'Best')}: ${best}</p><button class="btn" id="go">${T('TEKRAR', 'AGAIN')}</button>`;
     document.getElementById('go').onclick = start;
     document.getElementById('ui').style.display = 'flex';
   }

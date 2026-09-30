@@ -3,7 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Halat Çekme</title>
+<title data-en="Tug of War">Halat Çekme</title>
+<script>
+// Dil desteği (Türkçe / English). Sıra: sitenin verdiği dil, ?lang=, kayıtlı seçim, tarayıcı dili.
+(function () {
+  var L = window.__YG_LANG, m = /[?&]lang=(tr|en)\b/.exec(location.search);
+  if (!L && m) L = m[1];
+  if (!L) try { L = localStorage.getItem('yg_lang'); } catch (e) {}
+  if (L !== 'tr' && L !== 'en') L = /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
+  window.LANG = L; document.documentElement.lang = L;
+  window.T = function (tr, en) { return L === 'en' ? en : tr; };
+  document.addEventListener('DOMContentLoaded', function () {
+    if (L === 'en') [].forEach.call(document.querySelectorAll('[data-en]'), function (el) { el.innerHTML = el.getAttribute('data-en'); });
+    if (window.parent !== window) return; // sitede oynarken dil düğmesi oyun sayfasında
+    var b = document.createElement('button');
+    b.textContent = L === 'en' ? '🌐 TR' : '🌐 EN'; b.title = L === 'en' ? 'Türkçe' : 'English';
+    b.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:9999;border:0;border-radius:999px;padding:6px 11px;font:700 13px system-ui,sans-serif;background:rgba(0,0,0,.45);color:#fff;cursor:pointer;opacity:.8';
+    b.onclick = function () { try { localStorage.setItem('yg_lang', L === 'en' ? 'tr' : 'en'); } catch (e) {} location.href = location.pathname + '?lang=' + (L === 'en' ? 'tr' : 'en'); };
+    document.body.appendChild(b);
+  });
+})();
+</script>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #1a0f08; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
   canvas { display: block; width: 100vw; height: 100vh; }
@@ -37,7 +57,7 @@
   const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
 
   // ---------- DURUM ----------
-  const TEAMS = [{ name: 'KIZIL', col: '#ff4a3a', dark: '#6a120a' }, { name: 'MAVİ', col: '#3aa8ff', dark: '#0a3a6a' }];
+  const TEAMS = [{ name: T('KIZIL', 'RED'), col: '#ff4a3a', dark: '#6a120a' }, { name: T('MAVİ', 'BLUE'), col: '#3aa8ff', dark: '#0a3a6a' }];
   let mode = 'bot', diff = store.get('halat_diff', 1); // 0 kolay, 1 orta, 2 zor
   let state = 'menu', rope = 0, vel = 0, score = [0, 0], round = 1, winner = -1, t = 0, count = 0, flash = [0, 0], bursts = [null, null], taps = [0, 0], botT = 0, fx = [], shake = 0;
   const WIN_AT = 1, ROUNDS_TO_WIN = 2;
@@ -73,14 +93,14 @@
   const panel = document.getElementById('panel'), ui = document.getElementById('ui');
   function showMenu() {
     state = 'menu'; ui.style.display = 'flex';
-    const dn = ['KOLAY', 'ORTA', 'ZOR'];
-    panel.innerHTML = `<h1>HALAT ÇEKME</h1>
-      <p>Ekrana olabildiğince hızlı dokun, halatı kendi tarafına çek! Parlayan <b>güç halkasına</b> dokunursan 6 kat güçlü çekersin.</p>
-      <button class="btn two" id="duo">👥 İKİ KİŞİ · TEK TELEFON</button>
-      <p class="small">Telefonu masaya koyun: biri alttan, biri üstten dokunsun.</p>
-      <button class="btn" id="bot">🤖 BİLGİSAYARA KARŞI</button>
+    const dn = LANG === 'en' ? ['EASY', 'MEDIUM', 'HARD'] : ['KOLAY', 'ORTA', 'ZOR'];
+    panel.innerHTML = `<h1>${T('HALAT ÇEKME', 'TUG OF WAR')}</h1>
+      <p>${T('Ekrana olabildiğince hızlı dokun, halatı kendi tarafına çek! Parlayan <b>güç halkasına</b> dokunursan 6 kat güçlü çekersin.', 'Tap the screen as fast as you can and pull the rope to your side! Hit the glowing <b>power ring</b> to pull 6 times harder.')}</p>
+      <button class="btn two" id="duo">${T('👥 İKİ KİŞİ · TEK TELEFON', '👥 TWO PLAYERS · ONE PHONE')}</button>
+      <p class="small">${T('Telefonu masaya koyun: biri alttan, biri üstten dokunsun.', 'Put the phone on a table: one player taps from the bottom, the other from the top.')}</p>
+      <button class="btn" id="bot">${T('🤖 BİLGİSAYARA KARŞI', '🤖 VS COMPUTER')}</button>
       <div class="row">${dn.map((n, i) => `<button class="btn ${i === diff ? 'on' : ''}" data-d="${i}">${n}${stats.botWins[i] ? ' 🏆' + stats.botWins[i] : ''}</button>`).join('')}</div>
-      <p class="small" style="margin-top:12px">Klavye: A (Kızıl) · L (Mavi) · S / K güç halkası</p>`;
+      <p class="small" style="margin-top:12px">${T('Klavye: A (Kızıl) · L (Mavi) · S / K güç halkası', 'Keyboard: A (Red) · L (Blue) · S / K power ring')}</p>`;
     panel.querySelector('#duo').onclick = () => start('duo');
     panel.querySelector('#bot').onclick = () => start('bot');
     panel.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { diff = +b.dataset.d; store.set('halat_diff', diff); showMenu(); });
@@ -93,9 +113,9 @@
       setTimeout(() => {
         state = 'over'; ui.style.display = 'flex';
         if (mode === 'bot' && w === 0) { stats.botWins[diff]++; store.set('halat_stats', stats); }
-        const who = mode === 'bot' ? (w === 0 ? '🏆 KAZANDIN!' : '🤖 BİLGİSAYAR KAZANDI') : `🏆 ${TEAMS[w].name} KAZANDI!`;
+        const who = mode === 'bot' ? (w === 0 ? T('🏆 KAZANDIN!', '🏆 YOU WIN!') : T('🤖 BİLGİSAYAR KAZANDI', '🤖 COMPUTER WINS')) : `🏆 ${TEAMS[w].name} ${T('KAZANDI!', 'WINS!')}`;
         panel.innerHTML = `<h1>${who}</h1><p style="font-size:26px;font-weight:800"><span style="color:${TEAMS[0].col}">${score[0]}</span> — <span style="color:${TEAMS[1].col}">${score[1]}</span></p>
-          <button class="btn two" id="again">🔁 RÖVANŞ</button><button class="btn" id="menu" style="background:rgba(255,255,255,.14);color:#fff">ANA MENÜ</button>`;
+          <button class="btn two" id="again">${T('🔁 RÖVANŞ', '🔁 REMATCH')}</button><button class="btn" id="menu" style="background:rgba(255,255,255,.14);color:#fff">${T('ANA MENÜ', 'MAIN MENU')}</button>`;
         panel.querySelector('#again').onclick = () => start(mode); panel.querySelector('#menu').onclick = showMenu;
       }, 1400);
     } else setTimeout(() => { round++; newRound(); }, 1600);
@@ -171,21 +191,21 @@
     for (const f of fx) { ctx.strokeStyle = f.col; ctx.globalAlpha = 1 - f.t / 0.6; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(f.x, f.y, 20 + f.t * 220, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1; }
     ctx.restore();
     // Skor tabelaları (üst takımınki ters çevrilmiş, karşıdaki oyuncu okuyabilsin)
-    const label = (p) => { const me = mode === 'bot' ? (p === 0 ? 'SEN' : 'BİLGİSAYAR') : TEAMS[p].name; return `${me}  ${score[p]}`; };
+    const label = (p) => { const me = mode === 'bot' ? (p === 0 ? T('SEN', 'YOU') : T('BİLGİSAYAR', 'COMPUTER')) : TEAMS[p].name; return `${me}  ${score[p]}`; };
     ctx.font = `800 ${Math.max(16, k * 0.6)}px system-ui`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = TEAMS[0].col; ctx.fillText(label(0), W * 0.27, H - Math.max(26, k * 0.8));
     ctx.save(); ctx.translate(mode === 'duo' ? W * 0.73 : W * 0.27, Math.max(26, k * 0.8)); ctx.rotate(mode === 'duo' ? Math.PI : 0); ctx.fillStyle = TEAMS[1].col; ctx.fillText(label(1), 0, 0); ctx.restore();
     // Geri sayım / tur sonu yazısı (iki yöne)
     let msg = '';
-    if (state === 'count') msg = count > 0.2 ? String(Math.ceil(count)) : 'ÇEK!';
-    else if (state === 'roundEnd') msg = mode === 'bot' ? (winner === 0 ? 'TUR SENİN!' : 'TUR BİLGİSAYARIN') : TEAMS[winner].name + ' ALDI!';
-    else if (state === 'play' && taps[0] + taps[1] < 4) msg = 'DOKUN!';
+    if (state === 'count') msg = count > 0.2 ? String(Math.ceil(count)) : T('ÇEK!', 'PULL!');
+    else if (state === 'roundEnd') msg = mode === 'bot' ? (winner === 0 ? T('TUR SENİN!', 'ROUND IS YOURS!') : T('TUR BİLGİSAYARIN', 'COMPUTER TAKES IT')) : TEAMS[winner].name + T(' ALDI!', ' TAKES IT!');
+    else if (state === 'play' && taps[0] + taps[1] < 4) msg = T('DOKUN!', 'TAP!');
     if (msg) {
       ctx.font = `900 ${Math.min(W, H) * 0.13}px system-ui`; ctx.fillStyle = '#fff'; ctx.shadowBlur = 20; ctx.shadowColor = '#000';
       ctx.fillText(msg, W / 2, H * 0.75);
       if (mode === 'duo') { ctx.save(); ctx.translate(W / 2, H * 0.25); ctx.rotate(Math.PI); ctx.fillText(msg, 0, 0); ctx.restore(); }
       ctx.shadowBlur = 0;
-      if (state === 'count') { ctx.font = `700 ${Math.min(W, H) * 0.04}px system-ui`; ctx.fillStyle = '#eadbc8'; ctx.fillText('TUR ' + round + ' · ilk 2 turu alan kazanır', W / 2, H * 0.84); }
+      if (state === 'count') { ctx.font = `700 ${Math.min(W, H) * 0.04}px system-ui`; ctx.fillStyle = '#eadbc8'; ctx.fillText(T('TUR ' + round + ' · ilk 2 turu alan kazanır', 'ROUND ' + round + ' · first to win 2 rounds wins'), W / 2, H * 0.84); }
     }
   }
   let last = performance.now();

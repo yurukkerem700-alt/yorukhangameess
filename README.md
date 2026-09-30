@@ -18,6 +18,12 @@ Oyun sitesi. **Klasör yok:** tüm dosyalar tek yerde, GitHub'a yüklemesi kolay
 
 Sitede kayıt ol, sonra Claude'a e-postanı söyle ("beni admin yap"). Menüde **⚙️ Yönetim Paneli** çıkar.
 
+## Dil desteği (Türkçe / English)
+
+Sitenin kendi oyunları Türkçe ve İngilizce oynanabilir. Oyun sayfasındaki **English / Türkçe** düğmesi dili değiştirir;
+seçim hatırlanır, seçim yoksa tarayıcının dili kullanılır. Oyun dosyası tek başına açılırsa sol alttaki 🌐 düğmesi ya da
+`?lang=en` / `?lang=tr` kullanılabilir. Yeni metin eklerken HTML'de `data-en="..."`, kodda `T('Türkçe', 'English')` kullan.
+
 ## Ayarlar
 
 `config.js` dosyasında: site adresi, iletişim e-postası, AdSense kodu, kategoriler.

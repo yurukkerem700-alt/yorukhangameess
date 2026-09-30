@@ -3,7 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Refleks Düellosu</title>
+<title data-en="Reflex Duel">Refleks Düellosu</title>
+<script>
+// Dil desteği (Türkçe / English). Sıra: sitenin verdiği dil, ?lang=, kayıtlı seçim, tarayıcı dili.
+(function () {
+  var L = window.__YG_LANG, m = /[?&]lang=(tr|en)\b/.exec(location.search);
+  if (!L && m) L = m[1];
+  if (!L) try { L = localStorage.getItem('yg_lang'); } catch (e) {}
+  if (L !== 'tr' && L !== 'en') L = /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
+  window.LANG = L; document.documentElement.lang = L;
+  window.T = function (tr, en) { return L === 'en' ? en : tr; };
+  document.addEventListener('DOMContentLoaded', function () {
+    if (L === 'en') [].forEach.call(document.querySelectorAll('[data-en]'), function (el) { el.innerHTML = el.getAttribute('data-en'); });
+    if (window.parent !== window) return; // sitede oynarken dil düğmesi oyun sayfasında
+    var b = document.createElement('button');
+    b.textContent = L === 'en' ? '🌐 TR' : '🌐 EN'; b.title = L === 'en' ? 'Türkçe' : 'English';
+    b.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:9999;border:0;border-radius:999px;padding:6px 11px;font:700 13px system-ui,sans-serif;background:rgba(0,0,0,.45);color:#fff;cursor:pointer;opacity:.8';
+    b.onclick = function () { try { localStorage.setItem('yg_lang', L === 'en' ? 'tr' : 'en'); } catch (e) {} location.href = location.pathname + '?lang=' + (L === 'en' ? 'tr' : 'en'); };
+    document.body.appendChild(b);
+  });
+})();
+</script>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #0e0b14; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
   canvas { display: block; width: 100vw; height: 100vh; }
@@ -32,7 +52,7 @@
   const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
 
   const COLS = ['#ff4a5a', '#3aa8ff', '#ffc83a', '#b07dff'];
-  const NAMES = ['KIRMIZI', 'MAVİ', 'SARI', 'MOR'];
+  const NAMES = LANG === 'en' ? ['RED', 'BLUE', 'YELLOW', 'PURPLE'] : ['KIRMIZI', 'MAVİ', 'SARI', 'MOR'];
   const TARGET = 5;
   let n = 2, bot = false, players = [], state = 'menu', phase = 'wait', timer = 0, goAt = 0, fakeAt = 0, fake = false, msg = '', msgCol = '#fff', t = 0, best = store.get('refleks_best', 0), roundWinner = -1, lastMs = 0;
 
@@ -54,13 +74,13 @@
     if (phase === 'go') {
       phase = 'result'; roundWinner = i; p.score++; lastMs = Math.round(performance.now() - goAt);
       if (!(bot && i === 1) && (!best || lastMs < best)) { best = lastMs; store.set('refleks_best', best); }
-      msg = (bot ? (i === 0 ? 'SEN' : 'BİLGİSAYAR') : NAMES[i]) + ' +1 · ' + lastMs + ' ms'; msgCol = COLS[i];
+      msg = (bot ? (i === 0 ? T('SEN', 'YOU') : T('BİLGİSAYAR', 'COMPUTER')) : NAMES[i]) + ' +1 · ' + lastMs + ' ms'; msgCol = COLS[i];
       beep(880, 0.15, 'triangle', 0.08); buzz(40);
       if (p.score >= TARGET) setTimeout(gameOver, 1300); else setTimeout(nextRound, 1500);
     } else if (phase === 'wait') {
       // Erken basan bu tur dışarıda kalır ve 1 puan kaybeder
       p.out = true; p.score = Math.max(0, p.score - 1); p.shake = 1; beep(140, 0.25, 'sawtooth', 0.06); buzz([80, 40, 80]);
-      msg = (bot ? (i === 0 ? 'SEN' : 'BİLGİSAYAR') : NAMES[i]) + ' ERKEN! −1'; msgCol = COLS[i];
+      msg = (bot ? (i === 0 ? T('SEN', 'YOU') : T('BİLGİSAYAR', 'COMPUTER')) : NAMES[i]) + T(' ERKEN! −1', ' TOO EARLY! −1'); msgCol = COLS[i];
       if (players.every(q => q.out)) { phase = 'result'; setTimeout(nextRound, 1300); }
     }
   }
@@ -71,37 +91,37 @@
   const panel = document.getElementById('panel'), ui = document.getElementById('ui');
   function menu() {
     state = 'menu'; ui.style.display = 'flex';
-    panel.innerHTML = `<h1>REFLEKS DÜELLOSU</h1>
-      <p>Ekran <b style="color:#7dff9a">YEŞİL</b> olunca kendi bölgene ilk dokunan kazanır. Erken dokunan o turdan düşer ve 1 puan kaybeder. <b style="color:#ffc83a">Sarı</b> tuzak: basma!</p>
-      <p class="small">Tek telefon, arkadaşlarla: telefonu ortaya koyun.</p>
-      <div class="row">${[2, 3, 4].map(k => `<button class="btn" data-n="${k}">👥 ${k} KİŞİ</button>`).join('')}</div>
-      <button class="btn" id="bot" style="background:rgba(255,255,255,.14);color:#fff">🤖 BİLGİSAYARA KARŞI</button>
-      <p class="small" style="margin-top:12px">${best ? 'En hızlı tepkin: <b>' + best + ' ms</b> · ' : ''}${TARGET} puana ilk ulaşan kazanır · Klavye: A · L · G · P</p>`;
+    panel.innerHTML = `<h1>${T('REFLEKS DÜELLOSU', 'REFLEX DUEL')}</h1>
+      <p>${T('Ekran <b style="color:#7dff9a">YEŞİL</b> olunca kendi bölgene ilk dokunan kazanır. Erken dokunan o turdan düşer ve 1 puan kaybeder. <b style="color:#ffc83a">Sarı</b> tuzak: basma!', 'When the screen turns <b style="color:#7dff9a">GREEN</b>, the first to tap their own zone wins. Tap too early and you are out for that round and lose 1 point. <b style="color:#ffc83a">Yellow</b> is a trap: don\'t tap!')}</p>
+      <p class="small">${T('Tek telefon, arkadaşlarla: telefonu ortaya koyun.', 'One phone, with friends: put the phone in the middle.')}</p>
+      <div class="row">${[2, 3, 4].map(k => `<button class="btn" data-n="${k}">👥 ${k} ${T('KİŞİ', 'PLAYERS')}</button>`).join('')}</div>
+      <button class="btn" id="bot" style="background:rgba(255,255,255,.14);color:#fff">${T('🤖 BİLGİSAYARA KARŞI', '🤖 VS COMPUTER')}</button>
+      <p class="small" style="margin-top:12px">${best ? T('En hızlı tepkin: <b>', 'Your fastest reaction: <b>') + best + ' ms</b> · ' : ''}${T(TARGET + ' puana ilk ulaşan kazanır · Klavye: A · L · G · P', 'First to ' + TARGET + ' points wins · Keyboard: A · L · G · P')}</p>`;
     panel.querySelectorAll('[data-n]').forEach(b => b.onclick = () => start(+b.dataset.n, false));
     panel.querySelector('#bot').onclick = () => start(2, true);
   }
   function start(k, b) { n = k; bot = b; players = Array.from({ length: n }, () => ({ score: 0, out: false, flash: 0, shake: 0 })); ui.style.display = 'none'; state = 'play'; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) {} nextRound(); }
   function nextRound() {
     if (state !== 'play') return;
-    players.forEach(p => { p.out = false; }); phase = 'wait'; msg = 'BEKLE…'; msgCol = '#ff6a6a'; roundWinner = -1;
+    players.forEach(p => { p.out = false; }); phase = 'wait'; msg = T('BEKLE…', 'WAIT…'); msgCol = '#ff6a6a'; roundWinner = -1;
     timer = 1.4 + Math.random() * 3.2; fake = Math.random() < 0.3; fakeAt = fake ? timer * (0.35 + Math.random() * 0.3) : -1;
   }
   function gameOver() {
     state = 'over'; ui.style.display = 'flex';
     const w = players.reduce((a, p, i) => p.score > players[a].score ? i : a, 0);
-    const who = bot ? (w === 0 ? '🏆 KAZANDIN!' : '🤖 BİLGİSAYAR KAZANDI') : '🏆 ' + NAMES[w] + ' KAZANDI!';
+    const who = bot ? (w === 0 ? T('🏆 KAZANDIN!', '🏆 YOU WIN!') : T('🤖 BİLGİSAYAR KAZANDI', '🤖 COMPUTER WINS')) : '🏆 ' + NAMES[w] + T(' KAZANDI!', ' WINS!');
     panel.innerHTML = `<h1>${who}</h1><p style="font-size:22px;font-weight:800">${players.map((p, i) => `<span style="color:${COLS[i]}">${p.score}</span>`).join(' · ')}</p>
-      ${best ? `<p class="small">En hızlı tepkin: ${best} ms</p>` : ''}
-      <button class="btn" id="again">🔁 RÖVANŞ</button><button class="btn" id="m" style="background:rgba(255,255,255,.14);color:#fff">ANA MENÜ</button>`;
+      ${best ? `<p class="small">${T('En hızlı tepkin', 'Your fastest reaction')}: ${best} ms</p>` : ''}
+      <button class="btn" id="again">${T('🔁 RÖVANŞ', '🔁 REMATCH')}</button><button class="btn" id="m" style="background:rgba(255,255,255,.14);color:#fff">${T('ANA MENÜ', 'MAIN MENU')}</button>`;
     panel.querySelector('#again').onclick = () => start(n, bot); panel.querySelector('#m').onclick = menu;
   }
   function update(dt) {
     t += dt; players.forEach(p => { p.flash = Math.max(0, p.flash - dt * 4); p.shake = Math.max(0, p.shake - dt * 3); });
     if (state !== 'play' || phase !== 'wait') return;
     timer -= dt;
-    if (fake && fakeAt > 0 && timer <= fakeAt) { fakeAt = -1; phase = 'fake'; msg = 'BASMA!'; msgCol = '#ffc83a'; beep(330, 0.2); setTimeout(() => { if (phase === 'fake') { phase = 'wait'; msg = 'BEKLE…'; msgCol = '#ff6a6a'; } }, 700); return; }
+    if (fake && fakeAt > 0 && timer <= fakeAt) { fakeAt = -1; phase = 'fake'; msg = T('BASMA!', "DON'T TAP!"); msgCol = '#ffc83a'; beep(330, 0.2); setTimeout(() => { if (phase === 'fake') { phase = 'wait'; msg = T('BEKLE…', 'WAIT…'); msgCol = '#ff6a6a'; } }, 700); return; }
     if (timer <= 0) {
-      phase = 'go'; goAt = performance.now(); msg = 'ŞİMDİ!'; msgCol = '#7dff9a'; beep(1046, 0.12, 'square', 0.07);
+      phase = 'go'; goAt = performance.now(); msg = T('ŞİMDİ!', 'NOW!'); msgCol = '#7dff9a'; beep(1046, 0.12, 'square', 0.07);
       if (bot && !players[1].out) { const rt = 240 + Math.random() * 180; setTimeout(() => { if (phase === 'go' && state === 'play') press(1); }, rt); }
     }
   }
@@ -127,7 +147,7 @@
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = COLS[i];
       ctx.font = `900 ${fs * (n === 2 ? 0.2 : 0.14)}px system-ui`; ctx.fillText(p.score, 0, -fs * 0.02);
       ctx.fillStyle = '#fff';
-      fit(p.out ? '✖ BU TUR DIŞARIDA' : (bot ? (i === 0 ? 'SEN' : '🤖 BİLGİSAYAR') : NAMES[i]), 0, fs * (n === 2 ? 0.14 : 0.11), a.w * 0.88, fs * 0.045, 800);
+      fit(p.out ? T('✖ BU TUR DIŞARIDA', '✖ OUT THIS ROUND') : (bot ? (i === 0 ? T('SEN', 'YOU') : T('🤖 BİLGİSAYAR', '🤖 COMPUTER')) : NAMES[i]), 0, fs * (n === 2 ? 0.14 : 0.11), a.w * 0.88, fs * 0.045, 800);
       // Her oyuncu kendi bölgesinde durum yazısını kendine dönük görür
       ctx.fillStyle = msgCol; ctx.shadowBlur = 12; ctx.shadowColor = '#000';
       fit(msg, 0, -a.h * 0.32, a.w * 0.9, fs * (n === 2 ? 0.1 : 0.07), 900); ctx.shadowBlur = 0;

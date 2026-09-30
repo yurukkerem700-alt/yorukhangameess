@@ -1,5 +1,5 @@
 import { sb, $, $$, esc, fmtNum, fmtDate, catById, imgHTML, gameCard, GAME_SELECT, getMe, toast, openModal, devName, gameUrl, PLAY_ICON } from './common.js';
-import { startGame, toggleFullscreen } from './player.js';
+import { startGame, toggleFullscreen, getGameLang, setGameLang } from './player.js';
 
 const id = new URLSearchParams(location.search).get('id') || location.pathname.split('/').filter(Boolean)[1];
 const autoplay = new URLSearchParams(location.search).get('oyna') !== null;
@@ -55,6 +55,11 @@ async function main() {
   $('#play-btn').onclick = () => { player.scrollIntoView({ behavior: 'smooth', block: 'center' }); play(); };
   $('#restart-btn').onclick = () => { started = false; play(false); };
   $('#fs-btn').onclick = () => { toggleFullscreen(player); if (!started) play(false); };
+  // Oyun dili: Türkçe / English (sitenin kendi oyunlarında metinler değişir)
+  const langBtn = $('#lang-btn');
+  const paintLang = () => { $('#lang-l').textContent = getGameLang() === 'en' ? 'Türkçe' : 'English'; langBtn.title = getGameLang() === 'en' ? 'Oyunu Türkçe oyna' : 'Play the game in English'; };
+  paintLang();
+  langBtn.onclick = () => { setGameLang(getGameLang() === 'en' ? 'tr' : 'en'); paintLang(); if (started) { started = false; play(false); } };
   if (autoplay && !touch) play(false);
 
   const share = async () => {

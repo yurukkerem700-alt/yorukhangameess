@@ -3,7 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Birleştir</title>
+<title data-en="Merge">Birleştir</title>
+<script>
+// Dil desteği (Türkçe / English). Sıra: sitenin verdiği dil, ?lang=, kayıtlı seçim, tarayıcı dili.
+(function () {
+  var L = window.__YG_LANG, m = /[?&]lang=(tr|en)\b/.exec(location.search);
+  if (!L && m) L = m[1];
+  if (!L) try { L = localStorage.getItem('yg_lang'); } catch (e) {}
+  if (L !== 'tr' && L !== 'en') L = /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
+  window.LANG = L; document.documentElement.lang = L;
+  window.T = function (tr, en) { return L === 'en' ? en : tr; };
+  document.addEventListener('DOMContentLoaded', function () {
+    if (L === 'en') [].forEach.call(document.querySelectorAll('[data-en]'), function (el) { el.innerHTML = el.getAttribute('data-en'); });
+    if (window.parent !== window) return; // sitede oynarken dil düğmesi oyun sayfasında
+    var b = document.createElement('button');
+    b.textContent = L === 'en' ? '🌐 TR' : '🌐 EN'; b.title = L === 'en' ? 'Türkçe' : 'English';
+    b.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:9999;border:0;border-radius:999px;padding:6px 11px;font:700 13px system-ui,sans-serif;background:rgba(0,0,0,.45);color:#fff;cursor:pointer;opacity:.8';
+    b.onclick = function () { try { localStorage.setItem('yg_lang', L === 'en' ? 'tr' : 'en'); } catch (e) {} location.href = location.pathname + '?lang=' + (L === 'en' ? 'tr' : 'en'); };
+    document.body.appendChild(b);
+  });
+})();
+</script>
 <style>
   :root { --s: min(88vw, 70vh, 480px); --gap: calc(var(--s) * 0.028); }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1325; touch-action: none; user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
@@ -29,10 +49,10 @@
 </head>
 <body>
 <div id="wrap">
-  <header><h1>BİRLEŞTİR</h1><div class="box"><small>SKOR</small><b id="sc">0</b></div><div class="box"><small>EN İYİ</small><b id="bs">0</b></div></header>
+  <header><h1 data-en="MERGE">BİRLEŞTİR</h1><div class="box"><small data-en="SCORE">SKOR</small><b id="sc">0</b></div><div class="box"><small data-en="BEST">EN İYİ</small><b id="bs">0</b></div></header>
   <div id="board"></div>
-  <div class="hint">Kaydır ya da ok tuşlarını kullan · Aynı sayıları birleştir, 2048'e ulaş!</div>
-  <button class="btn" id="restart" style="margin:0;padding:9px 22px;font-size:15px;background:#3a2e4c;color:#fff">Yeniden başla</button>
+  <div class="hint" data-en="Swipe or use the arrow keys · Merge equal numbers and reach 2048!">Kaydır ya da ok tuşlarını kullan · Aynı sayıları birleştir, 2048'e ulaş!</div>
+  <button class="btn" id="restart" style="margin:0;padding:9px 22px;font-size:15px;background:#3a2e4c;color:#fff" data-en="Restart">Yeniden başla</button>
 </div>
 <div id="ui"><div class="panel" id="panel"></div></div>
 <script>
@@ -91,8 +111,8 @@
     }
     if (!moved) return;
     const n = add(); render([n], merged); upd();
-    if (won === true) { won = 'shown'; show('🎉 2048!', 'Başardın! Devam edip rekorunu büyütebilirsin.', 'DEVAM', () => document.getElementById('ui').style.display = 'none'); }
-    else if (!canMove()) setTimeout(() => show('Hamle kalmadı', `Skorun: <b>${score}</b>`, 'TEKRAR', start), 300);
+    if (won === true) { won = 'shown'; show('🎉 2048!', T('Başardın! Devam edip rekorunu büyütebilirsin.', 'You did it! Keep going to raise your record.'), T('DEVAM', 'CONTINUE'), () => document.getElementById('ui').style.display = 'none'); }
+    else if (!canMove()) setTimeout(() => show(T('Hamle kalmadı', 'No moves left'), `${T('Skorun', 'Your score')}: <b>${score}</b>`, T('TEKRAR', 'AGAIN'), start), 300);
   }
   function canMove() { for (let r = 0; r < 4; r++) for (let q = 0; q < 4; q++) { const t = grid[r][q]; if (!t) return true; if (q < 3 && grid[r][q + 1]?.v === t.v) return true; if (r < 3 && grid[r + 1][q]?.v === t.v) return true; } return false; }
   function show(title, text, btn, fn) { document.getElementById('panel').innerHTML = `<h2>${title}</h2><p>${text}</p><button class="btn" id="pb">${btn}</button>`; document.getElementById('pb').onclick = fn; document.getElementById('ui').style.display = 'flex'; }

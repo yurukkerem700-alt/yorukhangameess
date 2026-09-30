@@ -3,7 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Kartal Uçuşu</title>
+<title data-en="Eagle Flight">Kartal Uçuşu</title>
+<script>
+// Dil desteği (Türkçe / English). Sıra: sitenin verdiği dil, ?lang=, kayıtlı seçim, tarayıcı dili.
+(function () {
+  var L = window.__YG_LANG, m = /[?&]lang=(tr|en)\b/.exec(location.search);
+  if (!L && m) L = m[1];
+  if (!L) try { L = localStorage.getItem('yg_lang'); } catch (e) {}
+  if (L !== 'tr' && L !== 'en') L = /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
+  window.LANG = L; document.documentElement.lang = L;
+  window.T = function (tr, en) { return L === 'en' ? en : tr; };
+  document.addEventListener('DOMContentLoaded', function () {
+    if (L === 'en') [].forEach.call(document.querySelectorAll('[data-en]'), function (el) { el.innerHTML = el.getAttribute('data-en'); });
+    if (window.parent !== window) return; // sitede oynarken dil düğmesi oyun sayfasında
+    var b = document.createElement('button');
+    b.textContent = L === 'en' ? '🌐 TR' : '🌐 EN'; b.title = L === 'en' ? 'Türkçe' : 'English';
+    b.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:9999;border:0;border-radius:999px;padding:6px 11px;font:700 13px system-ui,sans-serif;background:rgba(0,0,0,.45);color:#fff;cursor:pointer;opacity:.8';
+    b.onclick = function () { try { localStorage.setItem('yg_lang', L === 'en' ? 'tr' : 'en'); } catch (e) {} location.href = location.pathname + '?lang=' + (L === 'en' ? 'tr' : 'en'); };
+    document.body.appendChild(b);
+  });
+})();
+</script>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #6ec6ff; touch-action: none; user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
   canvas { display: block; width: 100vw; height: 100vh; }
@@ -19,11 +39,11 @@
 <canvas id="c"></canvas>
 <div id="sc">0</div>
 <div id="ui"><div class="panel" id="panel">
-  <h1>KARTAL UÇUŞU</h1>
-  <p>Taş sütunların arasından uç!</p>
-  <p><b>Kanat çırp:</b> dokun / tıkla / Boşluk</p>
+  <h1 data-en="EAGLE FLIGHT">KARTAL UÇUŞU</h1>
+  <p data-en="Fly between the stone pillars!">Taş sütunların arasından uç!</p>
+  <p data-en="<b>Flap:</b> tap / click / Space"><b>Kanat çırp:</b> dokun / tıkla / Boşluk</p>
   <p id="bestline"></p>
-  <button class="btn" id="go">UÇ!</button>
+  <button class="btn" id="go" data-en="FLY!">UÇ!</button>
 </div></div>
 <script>
 (() => {
@@ -33,7 +53,7 @@
   addEventListener('resize', resize); resize();
   const store = { get(k) { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
   let best = store.get('kartal_best');
-  document.getElementById('bestline').textContent = best ? 'En iyi: ' + best : '';
+  document.getElementById('bestline').textContent = best ? T('En iyi: ', 'Best: ') + best : '';
   let state = 'menu', bird, pipes, score, t = 0, spawnX, clouds = Array.from({ length: 7 }, () => ({ x: Math.random(), y: Math.random() * 0.5, s: 0.6 + Math.random() }));
   function reset() { bird = { y: H * 0.45, vy: 0, r: 0 }; pipes = []; score = 0; spawnX = 0; document.getElementById('sc').textContent = 0; }
   reset();
@@ -46,7 +66,7 @@
     if (state !== 'play') return; state = 'dead';
     if (score > best) { best = score; store.set('kartal_best', best); }
     setTimeout(() => { state = 'over';
-      document.getElementById('panel').innerHTML = `<h1>DÜŞTÜN!</h1><p style="font-size:24px;color:#fff"><b>${score}</b> sütun</p><p>En iyi: ${best}</p><button class="btn" id="go">TEKRAR</button>`;
+      document.getElementById('panel').innerHTML = `<h1>${T('DÜŞTÜN!', 'YOU FELL!')}</h1><p style="font-size:24px;color:#fff"><b>${score}</b> ${T('sütun', 'pillars')}</p><p>${T('En iyi', 'Best')}: ${best}</p><button class="btn" id="go">${T('TEKRAR', 'AGAIN')}</button>`;
       document.getElementById('go').onclick = e => { e.stopPropagation(); start(); }; document.getElementById('ui').style.display = 'flex'; }, 700);
   }
   const BX = () => W * 0.28, GROUND = () => H - 70 * S, SPEED = () => 3.2 * S * (1 + Math.min(score, 40) * 0.01);

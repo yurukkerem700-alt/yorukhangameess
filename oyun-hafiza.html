@@ -3,7 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Hafıza Ustası</title>
+<title data-en="Memory Master">Hafıza Ustası</title>
+<script>
+// Dil desteği (Türkçe / English). Sıra: sitenin verdiği dil, ?lang=, kayıtlı seçim, tarayıcı dili.
+(function () {
+  var L = window.__YG_LANG, m = /[?&]lang=(tr|en)\b/.exec(location.search);
+  if (!L && m) L = m[1];
+  if (!L) try { L = localStorage.getItem('yg_lang'); } catch (e) {}
+  if (L !== 'tr' && L !== 'en') L = /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
+  window.LANG = L; document.documentElement.lang = L;
+  window.T = function (tr, en) { return L === 'en' ? en : tr; };
+  document.addEventListener('DOMContentLoaded', function () {
+    if (L === 'en') [].forEach.call(document.querySelectorAll('[data-en]'), function (el) { el.innerHTML = el.getAttribute('data-en'); });
+    if (window.parent !== window) return; // sitede oynarken dil düğmesi oyun sayfasında
+    var b = document.createElement('button');
+    b.textContent = L === 'en' ? '🌐 TR' : '🌐 EN'; b.title = L === 'en' ? 'Türkçe' : 'English';
+    b.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:9999;border:0;border-radius:999px;padding:6px 11px;font:700 13px system-ui,sans-serif;background:rgba(0,0,0,.45);color:#fff;cursor:pointer;opacity:.8';
+    b.onclick = function () { try { localStorage.setItem('yg_lang', L === 'en' ? 'tr' : 'en'); } catch (e) {} location.href = location.pathname + '?lang=' + (L === 'en' ? 'tr' : 'en'); };
+    document.body.appendChild(b);
+  });
+})();
+</script>
 <style>
   :root { --s: min(92vw, 74vh, 520px); }
   html, body { margin: 0; height: 100%; overflow: hidden; background: radial-gradient(circle at 50% 0%, #243b6b, #0c1224 70%); user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
@@ -29,7 +49,7 @@
 </head>
 <body>
 <div id="wrap">
-  <header><h1>HAFIZA USTASI</h1><div class="box"><small>HAMLE</small><b id="mv">0</b></div><div class="box"><small>SÜRE</small><b id="tm">0</b></div><div class="box"><small>REKOR</small><b id="bs">–</b></div></header>
+  <header><h1 data-en="MEMORY MASTER">HAFIZA USTASI</h1><div class="box"><small data-en="MOVES">HAMLE</small><b id="mv">0</b></div><div class="box"><small data-en="TIME">SÜRE</small><b id="tm">0</b></div><div class="box"><small data-en="BEST">REKOR</small><b id="bs">–</b></div></header>
   <div id="grid"></div>
 </div>
 <div id="ui"><div class="panel" id="panel"></div></div>
@@ -62,7 +82,7 @@
     clearInterval(timer);
     const rec = !best || moves < best; if (rec) { best = moves; store.set('hafiza_best', best); bsEl.textContent = best; }
     setTimeout(() => {
-      document.getElementById('panel').innerHTML = `<h2>${rec ? '🏆 Yeni rekor!' : '🎉 Bitti!'}</h2><p><b>${moves}</b> hamle · <b>${time}</b> saniye</p><button class="btn" id="pb">TEKRAR OYNA</button>`;
+      document.getElementById('panel').innerHTML = `<h2>${rec ? T('🏆 Yeni rekor!', '🏆 New record!') : T('🎉 Bitti!', '🎉 Done!')}</h2><p><b>${moves}</b> ${T('hamle', 'moves')} · <b>${time}</b> ${T('saniye', 'seconds')}</p><button class="btn" id="pb">${T('TEKRAR OYNA', 'PLAY AGAIN')}</button>`;
       document.getElementById('pb').onclick = start; document.getElementById('ui').style.display = 'flex';
     }, 600);
   }

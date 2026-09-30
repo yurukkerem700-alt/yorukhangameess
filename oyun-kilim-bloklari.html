@@ -3,7 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Kilim Blokları</title>
+<title data-en="Kilim Blocks">Kilim Blokları</title>
+<script>
+// Dil desteği (Türkçe / English). Sıra: sitenin verdiği dil, ?lang=, kayıtlı seçim, tarayıcı dili.
+(function () {
+  var L = window.__YG_LANG, m = /[?&]lang=(tr|en)\b/.exec(location.search);
+  if (!L && m) L = m[1];
+  if (!L) try { L = localStorage.getItem('yg_lang'); } catch (e) {}
+  if (L !== 'tr' && L !== 'en') L = /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
+  window.LANG = L; document.documentElement.lang = L;
+  window.T = function (tr, en) { return L === 'en' ? en : tr; };
+  document.addEventListener('DOMContentLoaded', function () {
+    if (L === 'en') [].forEach.call(document.querySelectorAll('[data-en]'), function (el) { el.innerHTML = el.getAttribute('data-en'); });
+    if (window.parent !== window) return; // sitede oynarken dil düğmesi oyun sayfasında
+    var b = document.createElement('button');
+    b.textContent = L === 'en' ? '🌐 TR' : '🌐 EN'; b.title = L === 'en' ? 'Türkçe' : 'English';
+    b.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:9999;border:0;border-radius:999px;padding:6px 11px;font:700 13px system-ui,sans-serif;background:rgba(0,0,0,.45);color:#fff;cursor:pointer;opacity:.8';
+    b.onclick = function () { try { localStorage.setItem('yg_lang', L === 'en' ? 'tr' : 'en'); } catch (e) {} location.href = location.pathname + '?lang=' + (L === 'en' ? 'tr' : 'en'); };
+    document.body.appendChild(b);
+  });
+})();
+</script>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #150b0b; touch-action: none; user-select: none; -webkit-user-select: none; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #fff; }
   canvas { display: block; margin: 0 auto; }
@@ -17,13 +37,13 @@
 </style>
 </head>
 <body>
-<div id="hud"><div><small>SKOR</small><span id="sc">0</span></div><div><small>SEVİYE</small><span id="lvl">1</span></div><div><small>CAN</small><span id="lv">3</span></div><div><small>EN İYİ</small><span id="bs">0</span></div></div>
+<div id="hud"><div><small data-en="SCORE">SKOR</small><span id="sc">0</span></div><div><small data-en="LEVEL">SEVİYE</small><span id="lvl">1</span></div><div><small data-en="LIVES">CAN</small><span id="lv">3</span></div><div><small data-en="BEST">EN İYİ</small><span id="bs">0</span></div></div>
 <canvas id="c"></canvas>
 <div id="ui"><div class="panel" id="panel">
-  <h1>KİLİM BLOKLARI</h1>
-  <p>Topu sektir, kilim desenli blokları kır!</p>
-  <p><b>Raket:</b> parmağını/fareyi kaydır ya da ← →</p>
-  <button class="btn" id="go">BAŞLA</button>
+  <h1 data-en="KILIM BLOCKS">KİLİM BLOKLARI</h1>
+  <p data-en="Bounce the ball and break the kilim-patterned blocks!">Topu sektir, kilim desenli blokları kır!</p>
+  <p data-en="<b>Paddle:</b> slide your finger/mouse or ← →"><b>Raket:</b> parmağını/fareyi kaydır ya da ← →</p>
+  <button class="btn" id="go" data-en="START">BAŞLA</button>
 </div></div>
 <script>
 (() => {
@@ -66,7 +86,7 @@
   function over(win) {
     state = 'over';
     if (score > best) { best = score; store.set('kilim_best', best); document.getElementById('bs').textContent = best; }
-    document.getElementById('panel').innerHTML = `<h1>${win ? 'TEBRİKLER!' : 'OYUN BİTTİ'}</h1><p style="font-size:22px;color:#fff"><b>${score}</b> puan · ${level}. seviye</p><p>En iyi: ${best}</p><button class="btn" id="go">TEKRAR</button>`;
+    document.getElementById('panel').innerHTML = `<h1>${win ? T('TEBRİKLER!', 'CONGRATULATIONS!') : T('OYUN BİTTİ', 'GAME OVER')}</h1><p style="font-size:22px;color:#fff"><b>${score}</b> ${T('puan', 'points')} · ${T(level + '. seviye', 'level ' + level)}</p><p>${T('En iyi', 'Best')}: ${best}</p><button class="btn" id="go">${T('TEKRAR', 'AGAIN')}</button>`;
     document.getElementById('go').onclick = start; document.getElementById('ui').style.display = 'flex';
   }
   function update() {
@@ -116,7 +136,7 @@
     const g = ctx.createLinearGradient(pad.x - pad.w / 2, 0, pad.x + pad.w / 2, 0); g.addColorStop(0, '#ff7a1a'); g.addColorStop(1, '#ffc23d');
     ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(pad.x - pad.w / 2, pad.y - 6, pad.w, 12, 6); ctx.fill();
     ctx.fillStyle = '#fff'; ctx.shadowColor = '#ffc23d'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
-    if (state === 'play' && stuck) { ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.font = '700 16px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Başlatmak için dokun', W / 2, H * 0.65); }
+    if (state === 'play' && stuck) { ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.font = '700 16px system-ui'; ctx.textAlign = 'center'; ctx.fillText(T('Başlatmak için dokun', 'Tap to launch'), W / 2, H * 0.65); }
   }
   score = 0; lives = 3; level = 1; pad = { x: W / 2, y: H - 70, w: W * 0.2 }; build(); resetBall();
   loop();

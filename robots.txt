@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /panelim
 Disallow: /giris
 
-Sitemap: https://yorukhan-games.vercel.app/sitemap.xml
+Sitemap: https://yorukhangameess.vercel.app/sitemap.xml

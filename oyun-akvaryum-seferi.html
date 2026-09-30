@@ -192,13 +192,24 @@ for(let s=0;s<schools.length;s++){const list=schools[s];for(let i=0;i<list.lengt
 
 function submarine(){
   const g=new THREE.Group();
-  const hull=new THREE.Mesh(new THREE.CapsuleGeometry(1.35,3.3,10,22),new THREE.MeshStandardMaterial({color:0xb7c3c7,roughness:.3,metalness:.55}));hull.rotation.z=Math.PI/2;g.add(hull);
-  const nose=new THREE.Mesh(new THREE.SphereGeometry(1.35,20,14),new THREE.MeshStandardMaterial({color:0xa9b6bb,roughness:.28,metalness:.6}));nose.position.x=2.05;nose.scale.set(.82,1,1);g.add(nose);
-  const canopy=new THREE.Mesh(new THREE.SphereGeometry(.92,18,12),new THREE.MeshStandardMaterial({color:0x083e50,roughness:.12,metalness:.2,transparent:true,opacity:.86}));canopy.position.set(.2,.7,0);canopy.scale.set(1.15,.72,1.0);g.add(canopy);
-  const tower=new THREE.Mesh(new THREE.BoxGeometry(.6,.7,1.0),new THREE.MeshStandardMaterial({color:0x65777d,roughness:.4,metalness:.45}));tower.position.set(-.35,1.05,0);g.add(tower);
-  for(const z of [-1.55,1.55]){const fin=new THREE.Mesh(new THREE.BoxGeometry(1.35,.12,.75),new THREE.MeshStandardMaterial({color:0x718188,roughness:.4,metalness:.45}));fin.position.set(-1.2,-.62,z*.65);fin.rotation.x=.2;g.add(fin);}
-  const prop=new THREE.Mesh(new THREE.TorusGeometry(.48,.07,8,18),new THREE.MeshStandardMaterial({color:0x738086,roughness:.35,metalness:.7}));prop.position.x=-2.15;prop.rotation.y=Math.PI/2;g.add(prop);
-  const light=new THREE.SpotLight(0xdffaff,28,28,Math.PI/8,.7,1.1);light.position.set(2.45,-.15,0);light.target.position.set(12,-.8,0);g.add(light,light.target);
+  const hullMat=new THREE.MeshStandardMaterial({color:0x4d6870,roughness:.32,metalness:.72});
+  const darkMat=new THREE.MeshStandardMaterial({color:0x1b3037,roughness:.42,metalness:.62});
+  const steelMat=new THREE.MeshStandardMaterial({color:0x9fb4b8,roughness:.28,metalness:.78});
+  const glassMat=new THREE.MeshStandardMaterial({color:0x123f50,roughness:.08,metalness:.25,transparent:true,opacity:.9});
+  const hull=new THREE.Mesh(new THREE.CapsuleGeometry(1.28,3.9,12,24),hullMat);hull.rotation.z=Math.PI/2;g.add(hull);
+  const bow=new THREE.Mesh(new THREE.SphereGeometry(1.27,24,16),steelMat);bow.position.x=2.15;bow.scale.set(.78,1,1);g.add(bow);
+  const noseRing=new THREE.Mesh(new THREE.TorusGeometry(1.04,.075,8,24),darkMat);noseRing.position.x=2.34;noseRing.rotation.y=Math.PI/2;g.add(noseRing);
+  const tower=new THREE.Mesh(new THREE.BoxGeometry(.72,.62,.86),darkMat);tower.position.set(-.25,1.12,0);g.add(tower);
+  const bridge=new THREE.Mesh(new THREE.CapsuleGeometry(.22,.58,6,12),steelMat);bridge.position.set(-.25,1.53,0);bridge.rotation.z=Math.PI/2;g.add(bridge);
+  const periscope=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.62,10),steelMat);periscope.position.set(-.25,1.88,0);g.add(periscope);
+  const scopeTop=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.22,10),steelMat);scopeTop.position.set(-.25,2.18,.1);scopeTop.rotation.x=Math.PI/2;g.add(scopeTop);
+  const windowMat=new THREE.MeshStandardMaterial({color:0x9de5ec,roughness:.12,metalness:.35,emissive:0x0d3942,emissiveIntensity:.6});
+  for(const x of [1.35,.7,.05,-.6,-1.25]){const p=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.035,16),windowMat);p.position.set(x,.25,1.22);p.rotation.x=Math.PI/2;g.add(p);}
+  for(const z of [-1.55,1.55]){const fin=new THREE.Mesh(new THREE.BoxGeometry(1.45,.12,.72),steelMat);fin.position.set(-1.15,-.82,z*.55);fin.rotation.x=z>0?.2:-.2;g.add(fin);}
+  const rearFin=new THREE.Mesh(new THREE.BoxGeometry(.95,.12,.72),steelMat);rearFin.position.set(-1.75,.05,0);rearFin.rotation.z=.28;g.add(rearFin);
+  const propHub=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.65,12),darkMat);propHub.position.x=-2.3;propHub.rotation.z=Math.PI/2;g.add(propHub);
+  for(let i=0;i<4;i++){const blade=new THREE.Mesh(new THREE.BoxGeometry(.7,.07,.18),steelMat);blade.position.set(-2.55,0,0);blade.rotation.x=i*Math.PI/2;g.add(blade);}
+  const light=new THREE.SpotLight(0xdffaff,32,30,Math.PI/8,.7,1.1);light.position.set(2.5,-.18,0);light.target.position.set(12,-.8,0);g.add(light,light.target);
   return {g,light};
 }
 const subData=submarine();const sub=subData.g;sub.position.set(-20,-2,8);scene.add(sub);

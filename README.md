@@ -30,5 +30,7 @@ Sitede kayıt ol, sonra Claude'a e-postanı söyle ("beni admin yap"). Menüde *
 | `oyun.html` | Oyun sayfası |
 | `yukle.html`, `giris.html`, `panelim.html`, `profil.html`, `admin.html` | Hesap ve yükleme sayfaları |
 | `oyun-*.html` + `oyun-*.jpg` | Sitenin kendi 7 oyunu ve kapakları |
+| `logo.svg`, `logo-mark.svg` | Logo (yatay) ve amblem (koçboynuzu Y) |
+| `favicon.svg`, `favicon.ico`, `icon-*.png`, `og.png` | Sekme ikonu, uygulama ikonları, paylaşım görseli |
 | `style.css` | Tasarım |
 | `*.js` | Sitenin çalışan kodları |

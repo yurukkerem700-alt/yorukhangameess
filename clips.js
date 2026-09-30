@@ -23,7 +23,7 @@ css.textContent = `
 `;
 document.head.appendChild(css);
 
-function slugOf(img) { const m = RX.exec(img.getAttribute('src') || ''); return m && CLIPS.has(m[1]) ? m[1] : null; }
+function slugOf(img) { const m = RX.exec(img.getAttribute('src') || ''); return m && (CLIPS.has(m[1]) || SVG_CLIPS.has(m[1])) ? m[1] : null; }
 
 function play(v) {
   if (!v.src) v.src = v.dataset.src;

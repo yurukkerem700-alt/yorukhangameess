@@ -104,6 +104,11 @@ export async function startGame(container, game, opts = {}) {
       // Yönetici tarafından eklenen, başka adreste barınan resmi oyunlar
       frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-pointer-lock allow-modals allow-forms allow-popups allow-orientation-lock');
       frame.src = game.game_url;
+    } else if (!opts.html && /^\\/oyun-[a-z0-9-]+\\.html$/i.test(game.file_path || '')) {
+      // YÖRÜKHAN'ın kendi statik oyunları: fetch/srcdoc yerine doğrudan aynı-origin iframe.
+      // Böylece Vercel statik dosya sunumunda gereksiz bir ara fetch katmanı oluşmaz.
+      frame.setAttribute('sandbox', 'allow-scripts allow-pointer-lock allow-modals allow-orientation-lock');
+      frame.src = new URL(game.file_path, location.href).href;
     } else {
       let html = opts.html;
       if (html == null) {

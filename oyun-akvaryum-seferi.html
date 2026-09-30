@@ -3,152 +3,298 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Akvaryum Seferi</title>
+<title>Akvaryum Seferi — 3D</title>
 <style>
-:root{--ink:#f5fcff;--muted:#9cb9c6;--line:rgba(255,255,255,.1);--panel:rgba(2,14,22,.72);--cyan:#69e3f6;--green:#6fe1ad;--gold:#f4c45a;--blue:#4ca6ff}
-*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#021018;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}body{display:grid;place-items:center}
-.wrap{width:min(1360px,100vw);height:min(880px,100vh);display:grid;grid-template-rows:auto 1fr auto;background:#032033}
-.hud{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:10px 14px;background:rgba(2,9,15,.93);border-bottom:1px solid var(--line);backdrop-filter:blur(14px);z-index:4}.brand{font-weight:950;letter-spacing:.5px}.stats{display:flex;gap:8px;flex-wrap:wrap}.stat{min-width:84px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.035);font-size:9px;color:var(--muted)}.stat b{display:block;color:#fff;font-size:14px;margin-top:2px}.actions{display:flex;gap:7px}button{font:inherit;border:0;border-radius:10px;padding:9px 11px;background:#123348;color:#fff;font-weight:850;cursor:pointer}.lang{background:var(--gold);color:#241a05}.icon{width:39px;padding:9px 0}
-.game{position:relative;min-height:0;overflow:hidden}.game canvas{display:block;width:100%;height:100%;touch-action:none}
-.ui{position:absolute;inset:0;pointer-events:none}.left,.right{position:absolute;top:12px;display:grid;gap:8px}.left{left:12px}.right{right:12px;width:245px}.panel{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);backdrop-filter:blur(9px);box-shadow:0 18px 50px #0006}.label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}.value{font-size:13px;font-weight:900;margin-top:3px}.bar{height:7px;background:#123140;border-radius:8px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#56c8ff,#d8fbff)}.bar.green i{background:linear-gradient(90deg,#42aa7c,#75efb3)}.bar.gold i{background:linear-gradient(90deg,#c78a2c,#f4c45a)}
-.hint{position:absolute;left:12px;bottom:12px;max-width:min(920px,calc(100% - 24px));padding:9px 11px;border-radius:11px;background:rgba(2,10,16,.72);border:1px solid rgba(255,255,255,.07);font-size:11px;color:#deeff6;backdrop-filter:blur(8px)}.toast{position:absolute;left:50%;top:16px;transform:translateX(-50%);padding:9px 13px;border-radius:999px;background:rgba(4,15,22,.91);border:1px solid rgba(255,255,255,.1);font-size:12px;font-weight:900;opacity:0;transition:opacity .2s}.toast.on{opacity:1}
-.species{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:7px}.chip{height:28px;display:grid;place-items:center;border-radius:8px;background:#0d2635;border:1px solid rgba(255,255,255,.07);font-size:10px;color:#7191a0}.chip.found{color:#fff;background:rgba(75,175,163,.14);border-color:rgba(111,225,173,.24)}
-.modal{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,7,13,.72);padding:18px;z-index:8;backdrop-filter:blur(8px)}.card{width:min(780px,100%);padding:26px;border:1px solid rgba(255,255,255,.13);border-radius:20px;background:linear-gradient(180deg,#0a2d3e,#061a26);box-shadow:0 38px 110px #000d}.eyebrow{font-size:10px;letter-spacing:1.8px;color:var(--cyan);font-weight:900}.card h1{font-size:35px;line-height:1.05;margin:8px 0}.card p{margin:0 0 16px;color:#bad2dd;line-height:1.65}.tips{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px}.tip{padding:11px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);font-size:11px;color:#c8dde4}.tip b{display:block;color:#fff;margin-bottom:3px}.primary{background:var(--cyan);color:#061218;padding:11px 15px}.small{margin-top:11px;color:#7f9dad;font-size:10px}.footer{padding:7px 12px;text-align:center;color:#6f8c9a;font-size:10px;border-top:1px solid var(--line)}
-@media(max-width:900px){.hud{grid-template-columns:1fr auto}.stats{grid-column:1/-1;grid-row:2}.right{width:200px}.tips{grid-template-columns:1fr}.card h1{font-size:29px}.hint{font-size:9px}.species{grid-template-columns:repeat(2,1fr)}}
+:root{--ink:#f4fbff;--muted:#9fbac8;--line:rgba(255,255,255,.12);--panel:rgba(2,13,21,.62);--cyan:#73dcff;--gold:#ffd36a}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02131e;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+body{display:grid;place-items:center}.wrap{position:relative;width:100vw;height:100vh;overflow:hidden;background:#031a28}.game{position:absolute;inset:0}.game canvas{display:block;width:100%;height:100%;touch-action:none}
+.hud{position:absolute;inset:0 0 auto 0;z-index:5;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;pointer-events:none}
+.leftHud,.rightHud{display:flex;gap:8px;flex-wrap:wrap;pointer-events:auto}.brand{padding:8px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(3,14,22,.7);backdrop-filter:blur(10px);font-weight:950;letter-spacing:.7px}.stat{min-width:92px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(3,14,22,.62);backdrop-filter:blur(10px);font-size:9px;color:var(--muted)}.stat b{display:block;margin-top:2px;color:#fff;font-size:14px}.btn{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:rgba(4,20,30,.76);color:#fff;font:inherit;font-weight:900;cursor:pointer}.btn.primary{background:var(--cyan);color:#03121a}.btn.gold{background:var(--gold);color:#281d05}
+.panel{position:absolute;z-index:4;padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:var(--panel);backdrop-filter:blur(10px);box-shadow:0 18px 50px rgba(0,0,0,.22);pointer-events:none}.panel.left{left:14px;bottom:14px;width:min(340px,calc(100vw - 28px))}.panel.right{right:14px;top:76px;width:min(255px,calc(100vw - 28px))}.k{font-size:9px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted)}.v{margin-top:3px;font-size:13px;font-weight:950}.small{font-size:10px;line-height:1.45;color:#c9dfe8}.meter{height:7px;margin-top:7px;background:#123040;border-radius:9px;overflow:hidden}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#56c9ff,#dffaff)}
+.catalog{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:7px}.chip{padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);font-size:9px;color:#708b98}.chip.found{color:#fff;background:rgba(113,220,169,.12);border-color:rgba(113,220,169,.24)}
+.hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;max-width:calc(100vw - 28px);padding:8px 11px;border-radius:11px;background:rgba(3,12,18,.68);border:1px solid var(--line);backdrop-filter:blur(9px);font-size:10px;color:#d9edf4;pointer-events:none;text-align:center}.toast{position:absolute;top:82px;left:50%;transform:translateX(-50%);z-index:6;padding:9px 13px;border-radius:999px;background:rgba(4,14,21,.9);border:1px solid var(--line);font-size:11px;font-weight:900;opacity:0;transition:opacity .2s;pointer-events:none}.toast.on{opacity:1}
+.modal{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:20px;background:rgba(0,7,13,.52);backdrop-filter:blur(6px)}.card{width:min(760px,100%);padding:28px;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:linear-gradient(180deg,rgba(7,37,52,.92),rgba(3,18,28,.95));box-shadow:0 36px 100px rgba(0,0,0,.55)}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--cyan);font-weight:950}.card h1{margin:8px 0;font-size:clamp(30px,5vw,48px);line-height:1.03}.card p{margin:0 0 17px;color:#bad2dc;line-height:1.6}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:0 0 18px}.tip{padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);font-size:10px;color:#c8dde4}.tip b{display:block;color:#fff;margin-bottom:3px;font-size:11px}.foot{margin-top:10px;font-size:10px;color:#7f99a6}
+.err{position:absolute;inset:0;display:grid;place-items:center;padding:20px;background:#03131d;color:#fff;z-index:30}.err div{max-width:700px;padding:22px;border:1px solid #ffffff16;border-radius:18px;background:#081f2b}.err b{color:#73dcff}
+@media(max-width:900px){.right{top:auto;bottom:76px}.hint{bottom:8px}.brand{font-size:11px}.stat{min-width:74px}.stat b{font-size:12px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="hud">
-<div class="brand" id="brand">AKVARYUM SEFERİ</div>
-<div class="stats">
-<div class="stat"><span id="batteryL">Batarya</span><b id="battery">100%</b></div>
-<div class="stat"><span id="discoverL">Keşif</span><b id="discover">0/8</b></div>
-<div class="stat"><span id="depthL">Derinlik</span><b id="depth">0 m</b></div>
-<div class="stat"><span id="sonarL">Sonar</span><b id="sonar">Hazır</b></div>
-</div>
-<div class="actions"><button class="lang" id="lang">EN</button><button class="icon" id="restart">↻</button></div>
-</header>
+  <div class="game" id="game"></div>
 
-<div class="game">
-<canvas id="c"></canvas>
-<div class="ui">
-<div class="left">
-<div class="panel"><div class="label" id="lightL">Denizaltı ışığı</div><div class="value" id="light">AÇIK</div></div>
-<div class="panel"><div class="label" id="missionL">Görev</div><div class="value" id="mission">8 türü keşfet</div><div class="bar green"><i id="missionBar"></i></div></div>
-</div>
-<div class="right">
-<div class="panel"><div class="label" id="catalogL">Tür kataloğu</div><div class="species" id="species"></div></div>
-<div class="panel"><div class="label" id="areaL">Bölge</div><div class="value" id="area">Sığ Resif</div></div>
-</div>
-<div class="hint" id="hint">WASD / ok: hareket · SHIFT: hızlan · SPACE: sonar · E: ışık · Yaklaş ve türleri keşfet</div>
-<div class="toast" id="toast"></div>
-<div class="modal" id="modal">
-<div class="card">
-<div class="eyebrow">YÖRÜKHAN ORIGINAL</div>
-<h1 id="title">Akvaryum Seferi</h1>
-<p id="desc">Büyük bir cam akvaryumun içine küçük denizaltınla gir. Suyun berraklığında resifleri, yosunları, kayaları ve serbest dolaşan balık sürülerini keşfet.</p>
-<div class="tips">
-<div class="tip"><b id="t1h">Berrak su</b><span id="t1">Suyun içindeki görüş mesafesi yüksek; akvaryumun cam sınırlarını görebilirsin.</span></div>
-<div class="tip"><b id="t2h">Canlılar</b><span id="t2">8 farklı türü yakından gözlemleyip kataloğa kaydet.</span></div>
-<div class="tip"><b id="t3h">Sonar</b><span id="t3">SPACE ile kısa bir sonar darbesi gönder; yakındaki canlılar parlar.</span></div>
-<div class="tip"><b id="t4h">Gezi</b><span id="t4">SHIFT hızlandırır, E denizaltı projektörünü açıp kapatır.</span></div>
-</div>
-<button class="primary" id="start">Seferi Başlat</button>
-<div class="small" id="how">Amaç: akvaryumu gez, 8 türü keşfet ve cam duvarın yanında tüm tankı seyret.</div>
-</div>
-</div>
-</div>
-</div>
-<footer class="footer">Yörükhan Games · Akvaryum Seferi</footer>
+  <div class="hud">
+    <div class="leftHud">
+      <div class="brand">AKVARYUM SEFERİ</div>
+      <div class="stat"><span id="batteryL">BATARYA</span><b id="battery">100%</b></div>
+      <div class="stat"><span id="speciesL">CANLI</span><b id="species">0/8</b></div>
+      <div class="stat"><span id="depthL">DERİNLİK</span><b id="depth">0 m</b></div>
+    </div>
+    <div class="rightHud">
+      <button class="btn gold" id="lang">EN</button>
+      <button class="btn" id="reset">YENİDEN</button>
+    </div>
+  </div>
+
+  <div class="panel left">
+    <div class="k" id="missionK">GÖREV</div>
+    <div class="v" id="mission">8 deniz canlısını keşfet</div>
+    <div class="meter"><i id="progress"></i></div>
+    <div class="small" id="zone" style="margin-top:7px">Büyük Okyanus Akvaryumu · Açık Cam Tank</div>
+  </div>
+
+  <div class="panel right">
+    <div class="k" id="catalogK">TÜR KATALOĞU</div>
+    <div class="catalog" id="catalog"></div>
+  </div>
+
+  <div class="hint" id="hint">WASD: sür · Q/E: yüksel/alçal · SHIFT: hızlan · fareyi sürükle: kameraya bak · SPACE: sonar · F: yem bırak</div>
+  <div class="toast" id="toast"></div>
+
+  <div class="modal" id="modal">
+    <div class="card">
+      <div class="eyebrow">YÖRÜKHAN ORIGINAL · 3D AQUARIUM</div>
+      <h1 id="title">Akvaryum Seferi</h1>
+      <p id="desc">Devasa ve şeffaf bir cam tankın içinde küçük keşif denizaltınla serbestçe dolaş. Balık sürülerinin arasından geç, yosunların ve mercanların yanına yaklaş ve akvaryumu yaşayan bir sualtı dünyası gibi keşfet.</p>
+      <div class="grid">
+        <div class="tip"><b id="a1h">Gerçek 3B görüş</b><span id="a1">Denizaltını dışarıdan görürsün; kamera hareket sırasında arkasından doğal biçimde takip eder.</span></div>
+        <div class="tip"><b id="a2h">Akvaryumun içi görünür</b><span id="a2">Şeffaf cam duvarlar, açık su görüşü ve üstten süzülen ışıklarla tankın tamamı okunur.</span></div>
+        <div class="tip"><b id="a3h">Canlı dünya</b><span id="a3">Balık sürüleri, kaplumbağa, vatoz, denizanası, yosun ve mercanlar sürekli hareket eder.</span></div>
+        <div class="tip"><b id="a4h">Serbest keşif</b><span id="a4">Yakınlaştığın türler kataloğa kaydolur. Sonar ve yem ile canlıları kendine çekebilirsin.</span></div>
+      </div>
+      <button class="btn primary" id="start">SEFERE BAŞLA</button>
+      <div class="foot" id="how">Masaüstü: klavye + fare. Oyun tek oyunculudur.</div>
+    </div>
+  </div>
 </div>
 
-<script>
-var cv=document.getElementById('c'),ctx=cv.getContext('2d');
-var W=900,H=560,dpr=1,lang='tr',running=false,last=0,time=0,battery=100,found=0,sonarCooldown=0,lights=true,score=0,keys={},pulse=0;
-var world={w:3000,h:1700},sub={x:300,y:900,vx:0,vy:0},cam={x:0,y:0},fish=[],schools=[],plants=[],rocks=[],bubbles=[],speciesFound=new Set(),region='Sığ Resif';
-var TYPES=[
-{id:'palyaço',tr:'Palyaço balığı',en:'Clownfish',c:'#f47b43',size:13,depth:0.25},
-{id:'mavi',tr:'Mavi tang',en:'Blue tang',c:'#5fa8ff',size:16,depth:0.35},
-{id:'melek',tr:'Melek balığı',en:'Angelfish',c:'#f1d06a',size:18,depth:0.48},
-{id:'balon',tr:'Balon balığı',en:'Pufferfish',c:'#b9d27f',size:14,depth:0.6},
-{id:'denizati',tr:'Denizatı',en:'Seahorse',c:'#d58bc7',size:12,depth:0.7},
-{id:'vatoz',tr:'Vatoz',en:'Stingray',c:'#8499ad',size:22,depth:0.78},
-{id:'denizanasi',tr:'Denizanası',en:'Jellyfish',c:'#8adcf0',size:17,depth:0.86},
-{id:'kaplumbaga',tr:'Deniz kaplumbağası',en:'Sea turtle',c:'#6fc58e',size:21,depth:0.66}
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+
+const root = document.getElementById('game');
+const modal = document.getElementById('modal');
+const startBtn = document.getElementById('start');
+const resetBtn = document.getElementById('reset');
+const langBtn = document.getElementById('lang');
+const toast = document.getElementById('toast');
+
+let tr = true;
+let running = false;
+let clock = new THREE.Clock();
+let battery = 100;
+let score = 0;
+let sonarTimer = 0;
+let feedTimer = 0;
+let discovered = new Set();
+let foodPellets = [];
+let aquarium = { x: 118, y: 42, z: 68 };
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a789c);
+scene.fog = new THREE.FogExp2(0x0c7896, 0.011);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.14;
+root.appendChild(renderer.domElement);
+
+const camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.1, 260);
+camera.position.set(0,5,12);
+
+const hemi = new THREE.HemisphereLight(0xcef8ff, 0x08202a, 2.0);
+scene.add(hemi);
+
+const sun = new THREE.DirectionalLight(0xffffff, 3.0);
+sun.position.set(-26,42,-18);
+scene.add(sun);
+
+const rim = new THREE.DirectionalLight(0x77dcff, 1.7);
+rim.position.set(36,12,24);
+scene.add(rim);
+
+function mat(color, rough=.55, metal=0){
+  return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});
+}
+
+function irregularRock(scale=1){
+  const g = new THREE.IcosahedronGeometry(1.7,2);
+  const pos = g.attributes.position;
+  for(let i=0;i<pos.count;i++){
+    const v = new THREE.Vector3().fromBufferAttribute(pos,i);
+    const n = 0.75 + 0.45*(0.5+0.5*Math.sin(v.x*4.7+v.z*2.2))*0.5 + 0.18*Math.cos(v.y*5.1);
+    v.multiplyScalar(n);
+    pos.setXYZ(i,v.x,v.y,v.z);
+  }
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g,mat(0x4f6970,.98));
+  m.scale.set(scale*1.5,scale,scale*1.2);
+  return m;
+}
+
+function makePlant(x,y,z,s=1, tint=0x287f5f){
+  const group = new THREE.Group();
+  const material = new THREE.MeshStandardMaterial({color:tint,roughness:.9,side:THREE.DoubleSide});
+  for(let i=0;i<6;i++){
+    const curve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0,0,0),
+      new THREE.Vector3((i-2.5)*.28,1.3,(i%2-.5)*.18),
+      new THREE.Vector3((i-2)*.33,2.8,(i%3-1)*.24),
+      new THREE.Vector3((i-3)*.44,4.1,(i%2-.5)*.35)
+    ]);
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(curve,14,.09+((i%3)*.02),5,false),material);
+    tube.rotation.y = (i-3)*.12;
+    group.add(tube);
+  }
+  group.position.set(x,y,z);
+  group.scale.setScalar(s);
+  return group;
+}
+
+function makeCoral(x,y,z,s=1, color=0xd27564){
+  const g = new THREE.Group();
+  const m = mat(color,.88);
+  for(let i=0;i<7;i++){
+    const h = 1.3 + (i%4)*.48;
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(.11,.2,h,9),m);
+    stem.position.set((i-3)*.34,h/2,(i%2-.5)*.32);
+    stem.rotation.z = (i-3)*.11;
+    stem.rotation.x = (i%3-1)*.09;
+    g.add(stem);
+  }
+  const crown = new THREE.Mesh(new THREE.SphereGeometry(0.7,14,8),new THREE.MeshStandardMaterial({color:color,roughness:.72}));
+  crown.position.y = 2.55;
+  crown.scale.set(1.6,.65,1.25);
+  g.add(crown);
+  g.position.set(x,y,z);
+  g.scale.setScalar(s);
+  return g;
+}
+
+function fishMesh(type, scale=1){
+  const g = new THREE.Group();
+  const bodyMat = new THREE.MeshStandardMaterial({color:type.color,roughness:.5,metalness:.02});
+  const dark = new THREE.MeshStandardMaterial({color:type.dark,roughness:.65});
+  const body = new THREE.Mesh(new THREE.SphereGeometry(1,16,10),bodyMat);
+  body.scale.set(type.body[0],type.body[1],type.body[2]);
+  g.add(body);
+
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(.6,1.3,3),bodyMat);
+  tail.rotation.z = Math.PI/2;
+  tail.position.x = -type.body[0]*.85;
+  tail.scale.y = .78;
+  g.add(tail);
+
+  const fin = new THREE.Mesh(new THREE.ConeGeometry(.35,.9,3),dark);
+  fin.rotation.z = Math.PI/2;
+  fin.position.set(0,.15,-.55);
+  fin.scale.set(.7,.7,.5);
+  g.add(fin);
+
+  const eye = new THREE.Mesh(new THREE.SphereGeometry(.1,8,8),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.25}));
+  const pupil = new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),new THREE.MeshStandardMaterial({color:0x071018}));
+  eye.position.set(type.body[0]*.72,.2,type.body[2]*.72); pupil.position.set(type.body[0]*.78,.2,type.body[2]*.76);
+  g.add(eye,pupil);
+
+  if(type.kind==='ray'){
+    const wing1 = new THREE.Mesh(new THREE.CapsuleGeometry(.42,1.5,4,10),bodyMat);
+    wing1.rotation.z = Math.PI/2; wing1.rotation.y = .15; wing1.position.set(.1,.05,.95); wing1.scale.set(.85,.55,.45);
+    const wing2 = wing1.clone(); wing2.position.z=-.95; wing2.rotation.y=-.15; g.add(wing1,wing2);
+  }
+  if(type.kind==='turtle'){
+    const shell = new THREE.Mesh(new THREE.SphereGeometry(1,14,8),new THREE.MeshStandardMaterial({color:0x547e55,roughness:.95}));
+    shell.scale.set(1.12,.48,.9); shell.position.set(-.04,.2,0); g.add(shell);
+    for(const z of [-.72,.72]){
+      const fl = new THREE.Mesh(new THREE.CapsuleGeometry(.14,.65,4,8),new THREE.MeshStandardMaterial({color:0x6c966b,roughness:.9}));
+      fl.rotation.z=.5; fl.position.set(.05,.02,z); g.add(fl);
+    }
+  }
+  if(type.kind==='jelly'){
+    body.scale.set(.92,.55,.92);
+    for(let i=0;i<5;i++){
+      const c = new THREE.CatmullRomCurve3([
+        new THREE.Vector3((i-2)*.2,-.4,0),
+        new THREE.Vector3((i-2)*.16,-1.0,(i%2-.5)*.1),
+        new THREE.Vector3((i-2)*.22,-1.7,(i%3-1)*.12)
+      ]);
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(c,12,.05,5,false),new THREE.MeshStandardMaterial({color:type.color,transparent:true,opacity:.78})));
+    }
+  }
+  g.scale.setScalar(scale);
+  return g;
+}
+
+const TYPES = [
+  {id:'clown',tr:'Palyaço balığı',en:'Clownfish',color:0xff713c,dark:0x132029,body:[.8,.48,.46],kind:'fish'},
+  {id:'tang',tr:'Mavi tang',en:'Blue tang',color:0x367bc4,dark:0xf4d54e,body:[1.0,.65,.48],kind:'fish'},
+  {id:'angel',tr:'Melek balığı',en:'Angelfish',color:0xffcf58,dark:0x5a4630,body:[.86,.98,.38],kind:'fish'},
+  {id:'puffer',tr:'Balon balığı',en:'Pufferfish',color:0xaacb7d,dark:0x42573b,body:[.64,.64,.64],kind:'fish'},
+  {id:'seahorse',tr:'Denizatı',en:'Seahorse',color:0xde93c9,dark:0x7d4a71,body:[.38,.82,.3],kind:'fish'},
+  {id:'ray',tr:'Vatoz',en:'Stingray',color:0x788995,dark:0x4d5b64,body:[.9,.25,.95],kind:'ray'},
+  {id:'jelly',tr:'Denizanası',en:'Jellyfish',color:0x8be5ff,dark:0x6abbd1,body:[.82,.42,.82],kind:'jelly'},
+  {id:'turtle',tr:'Deniz kaplumbagasi',en:'Sea turtle',color:0x5d9a69,dark:0x27432e,body:[.95,.42,.78],kind:'turtle'}
 ];
-var I18N={
-tr:{brand:'AKVARYUM SEFERİ',battery:'Batarya',discover:'Keşif',depth:'Derinlik',sonar:'Sonar',light:'Denizaltı ışığı',catalog:'Tür kataloğu',area:'Bölge',mission:'Görev',hint:'WASD / ok: hareket · SHIFT: hızlan · SPACE: sonar · E: ışık · Yaklaş ve türleri keşfet',title:'Akvaryum Seferi',desc:'Büyük bir cam akvaryumun içine küçük denizaltınla gir. Suyun berraklığında resifleri, yosunları, kayaları ve serbest dolaşan balık sürülerini keşfet.',t1h:'Berrak su',t1:'Suyun içindeki görüş mesafesi yüksek; akvaryumun cam sınırlarını görebilirsin.',t2h:'Canlılar',t2:'8 farklı türü yakından gözlemleyip kataloğa kaydet.',t3h:'Sonar',t3:'SPACE ile kısa bir sonar darbesi gönder; yakındaki canlılar parlar.',t4h:'Gezi',t4:'SHIFT hızlandırır, E denizaltı projektörünü açıp kapatır.',start:'Seferi Başlat',how:'Amaç: akvaryumu gez, 8 türü keşfet ve cam duvarın yanında tüm tankı seyret.',ready:'Hazır',on:'AÇIK',off:'KAPALI',region1:'Sığ Resif',region2:'Mercan Bahçesi',region3:'Derin Mavi',region4:'Jelatin Bölgesi',sonarUsed:'Sonar kullanıldı',found:'Keşfedildi',win:'Akvaryum tamamen keşfedildi!',again:'Tekrar gez',edge:'Cam duvar',turtle:'Kaplumbağa sürüsü'}, 
-en:{brand:'AQUARIUM EXPEDITION',battery:'Battery',discover:'Discovery',depth:'Depth',sonar:'Sonar',light:'Submarine lights',catalog:'Species log',area:'Zone',mission:'Mission',hint:'WASD / arrows: move · SHIFT: boost · SPACE: sonar · E: lights · Approach species to discover them',title:'Aquarium Expedition',desc:'Take a small submarine into a giant glass aquarium. Explore clear water, reefs, kelp, rocks and free-swimming schools of fish.',t1h:'Clear water',t1:'Visibility stays high so you can see the glass boundaries and the whole tank.',t2h:'Wildlife',t2:'Get close to 8 species and add them to your log.',t3h:'Sonar',t3:'SPACE sends a short sonar pulse that highlights nearby wildlife.',t4h:'Cruise',t4:'SHIFT boosts speed; E toggles the submarine spotlight.',start:'Start Expedition',how:'Goal: explore the aquarium, discover all 8 species and enjoy the glass-wall views.',ready:'Ready',on:'ON',off:'OFF',region1:'Shallow Reef',region2:'Coral Garden',region3:'Deep Blue',region4:'Jelly Zone',sonarUsed:'Sonar fired',found:'Discovered',win:'Aquarium fully explored!',again:'Explore again',edge:'Glass wall',turtle:'Turtle school'}};
-var TT=I18N.tr;
-function fit(){dpr=Math.min(2,devicePixelRatio||1);var r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',fit);fit();
 
-function reset(){battery=100;found=0;score=0;sonarCooldown=0;lights=true;pulse=0;speciesFound=new Set();sub={x:300,y:900,vx:0,vy:0};cam={x:0,y:0};gen();sync(true)}
-function rand(a,b){return a+Math.random()*(b-a)}
-function gen(){
-fish=[];schools=[];plants=[];rocks=[];bubbles=[];
-for(var i=0;i<38;i++){var type=TYPES[i%TYPES.length],x=rand(180,2820),y=rand(130,1570),s=rand(.65,1.25);fish.push({x:x,y:y,baseY:y,baseX:x,type:type,phase:rand(0,7),speed:rand(8,22)*s,dir:Math.random()>.5?1:-1,amp:rand(10,55),school:i%7})}
-for(i=0;i<7;i++)schools.push({x:rand(300,2700),y:rand(250,1450),count:5+Math.floor(Math.random()*6),phase:rand(0,7),speed:rand(12,23),size:rand(.7,1.25),type:i%3});
-for(i=0;i<95;i++)plants.push({x:rand(50,2950),y:rand(1360,1650),h:rand(45,180),w:rand(3,10),c:Math.random()>.42?'#2a9a72':'#397d63',phase:rand(0,7)});
-for(i=0;i<54;i++)rocks.push({x:rand(40,2960),y:rand(1420,1690),r:rand(14,55),c:Math.random()>.45?'#43555d':'#536761'});
-for(i=0;i<90;i++)bubbles.push({x:rand(70,2930),y:rand(120,1680),r:rand(1,4),s:rand(6,18),phase:rand(0,7)})}
-function txt(s,x,y,size,alpha,weight,color){ctx.save();ctx.globalAlpha=alpha==null?1:alpha;ctx.fillStyle=color||'#f5fcff';ctx.font=(weight||700)+' '+(size||14)+'px Inter,system-ui,sans-serif';ctx.fillText(s,x,y);ctx.restore()}
-function circle(x,y,r,f,st){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(f){ctx.fillStyle=f;ctx.fill()}if(st){ctx.strokeStyle=st;ctx.stroke()}}
-function screen(x,y){return{x:x-cam.x,y:y-cam.y}}
-function speciesAt(x,y,type,near){return Math.hypot(x-sub.x,y-sub.y)<near}
-function worldToZone(y){var p=y/world.h;return p<.28?TT.region1:p<.55?TT.region2:p<.78?TT.region3:TT.region4}
-function drawGlass(){ctx.save();var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(170,240,255,.11)');g.addColorStop(.5,'rgba(80,208,231,.05)');g.addColorStop(1,'rgba(4,32,48,.12)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);var left=18,right=W-18,top=18,bottom=H-18;ctx.strokeStyle='rgba(220,251,255,.42)';ctx.lineWidth=3;ctx.strokeRect(left,top,right-left,bottom-top);ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=9;ctx.strokeRect(left+5,top+5,right-left-10,bottom-top-10);for(var i=0;i<7;i++){var x=left+70+i*160;ctx.strokeStyle='rgba(255,255,255,.045)';ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x+50,bottom);ctx.stroke()}ctx.restore()}
-function drawFish(f,nearSonar){
-var p=screen(f.x,f.y);if(p.x<-60||p.x>W+60||p.y<-60||p.y>H+60)return;var t=f.type,wig=Math.sin(time*.002*f.speed+f.phase)*.3;ctx.save();ctx.translate(p.x,p.y);ctx.scale(f.dir,1);ctx.rotate(wig*.08);
-if(t.id==='vatoz'){ctx.fillStyle=t.c;ctx.beginPath();ctx.moveTo(-24,0);ctx.quadraticCurveTo(0,-17,24,0);ctx.quadraticCurveTo(0,22,-24,0);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke();ctx.fillStyle='#d4e0e6';ctx.beginPath();ctx.arc(5,-2,2,0,Math.PI*2);ctx.fill()}
-else if(t.id==='denizanası'){ctx.fillStyle=t.c;ctx.globalAlpha=.65;ctx.beginPath();ctx.arc(0,-5,t.size*.72,Math.PI,0);ctx.lineTo(t.size*.72,12);ctx.quadraticCurveTo(9,22,3,11);ctx.quadraticCurveTo(0,23,-4,11);ctx.quadraticCurveTo(-10,22,-t.size*.72,12);ctx.closePath();ctx.fill();ctx.globalAlpha=.9;ctx.strokeStyle='#b6f2ff';ctx.stroke()}
-else if(t.id==='denizati'){ctx.strokeStyle=t.c;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,9,0.2,5.5);ctx.stroke();ctx.beginPath();ctx.moveTo(-2,6);ctx.quadraticCurveTo(-9,14,-5,20);ctx.stroke()}
-else if(t.id==='kaplumbaga'){ctx.fillStyle=t.c;ctx.beginPath();ctx.ellipse(0,0,t.size,t.size*.72,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#3f8b5d';for(var k=0;k<4;k++){ctx.beginPath();ctx.ellipse((k<2?-1:1)*15,(k%2?-10:10),8,12,(k%2?-0.6:0.6),0,Math.PI*2);ctx.fill()}circle(18,0,6,t.c)}
-else {ctx.fillStyle=t.c;ctx.beginPath();ctx.ellipse(0,0,t.size,t.size*.56,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.28)';ctx.beginPath();ctx.ellipse(-t.size*.22,-t.size*.18,t.size*.45,t.size*.18,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=t.c;ctx.beginPath();ctx.moveTo(-t.size,0);ctx.lineTo(-t.size-10,-8);ctx.lineTo(-t.size-10,8);ctx.closePath();ctx.fill();ctx.fillStyle='#08151c';circle(t.size*.48,-2,2,ctx.fillStyle)}
-if(nearSonar){ctx.strokeStyle='rgba(105,227,246,.75)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,t.size+9+Math.sin(time*.02)*2,0,Math.PI*2);ctx.stroke()}
-ctx.restore()}
-function drawSub(){var p=screen(sub.x,sub.y);ctx.save();ctx.translate(p.x,p.y);ctx.scale(.95,.95);ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=13;ctx.fillStyle='#d8e3e8';ctx.beginPath();ctx.ellipse(0,0,42,16,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#32484f';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#6bc8d6';ctx.beginPath();ctx.ellipse(-9,-2,14,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#5a6c73';ctx.fillRect(-2,-21,7,10);ctx.strokeStyle='#7be7f1';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(1,-20);ctx.lineTo(1,-30);ctx.stroke();ctx.fillStyle='#f5c35b';ctx.beginPath();ctx.arc(35,0,5,0,Math.PI*2);ctx.fill();ctx.restore();
-if(lights){var g=ctx.createRadialGradient(p.x,p.y,10,p.x,p.y,220);g.addColorStop(0,'rgba(255,249,219,.28)');g.addColorStop(1,'rgba(255,249,219,0)');ctx.fillStyle=g;ctx.fillRect(p.x-240,p.y-240,480,480)}}
-function draw(){
-ctx.clearRect(0,0,W,H);
-var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0e5b75');bg.addColorStop(.48,'#0d8ca0');bg.addColorStop(1,'#07536b');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-for(var i=0;i<12;i++){ctx.strokeStyle='rgba(210,247,255,.045)';ctx.lineWidth=1;ctx.beginPath();var yy=40+i*55+Math.sin(time*.001+i)*5;ctx.moveTo(0,yy);ctx.quadraticCurveTo(W*.35,yy+8,W*.65,yy-6);ctx.quadraticCurveTo(W*.84,yy-10,W,yy+2);ctx.stroke()}
-ctx.save();ctx.translate(-cam.x*.25,-cam.y*.12);for(i=0;i<6;i++){var sx=120+i*540,sy=170+i%3*280;ctx.fillStyle='rgba(255,255,255,.055)';ctx.beginPath();ctx.ellipse(sx,sy,230,100,0,0,Math.PI*2);ctx.fill()}ctx.restore();
-ctx.save();ctx.translate(-cam.x*.72,-cam.y*.72);
-for(i=0;i<rocks.length;i++){var r=rocks[i];ctx.fillStyle=r.c;ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(150,200,180,.16)';ctx.beginPath();ctx.arc(r.x-r.r*.22,r.y-r.r*.3,r.r*.4,0,Math.PI*2);ctx.fill()}
-for(i=0;i<plants.length;i++){var pl=plants[i],wave=Math.sin(time*.0018+pl.phase)*8;ctx.strokeStyle=pl.c;ctx.lineWidth=pl.w;ctx.beginPath();ctx.moveTo(pl.x,world.h-28);ctx.quadraticCurveTo(pl.x+wave,world.h-pl.h*.5,pl.x-wave*.3,world.h-pl.h);ctx.stroke();if(i%5===0){ctx.fillStyle=pl.c;ctx.beginPath();ctx.ellipse(pl.x+wave*.2,world.h-pl.h*.65,11,5,.5,0,Math.PI*2);ctx.fill()}}
-ctx.restore();
-for(i=0;i<bubbles.length;i++){var b=bubbles[i],bx=b.x,by=((b.y-time*b.s*.025)%world.h+world.h)%world.h,pb=screen(bx,by);if(pb.x>-10&&pb.x<W+10&&pb.y>-10&&pb.y<H+10){circle(pb.x,pb.y,b.r,'rgba(220,250,255,.11)','rgba(255,255,255,.2)')}}
-for(i=0;i<schools.length;i++){var sc=schools[i];for(var j=0;j<sc.count;j++){var a=sc.phase+j*1.6,fx=sc.x+Math.sin(time*.001*sc.speed+a)*90+Math.cos(time*.0008*(sc.speed*.7)+a)*35,fy=sc.y+Math.cos(time*.0013*(sc.speed*.7)+a)*52;var type=TYPES[sc.type+((j%2)?1:0)];drawFish({x:fx,y:fy,type:type,phase:a,speed:sc.speed,dir:Math.cos(time*.001+a)>0?1:-1},{})}}
-for(i=0;i<fish.length;i++){var f=fish[i],fx=f.baseX+Math.sin(time*.001*f.speed+f.phase)*f.amp+Math.sin(time*.0004+f.phase)*38,fy=f.baseY+Math.cos(time*.001*f.speed*.8+f.phase)*f.amp*.75;f.x+=f.dir*f.speed*.01;f.y=fy;if(f.x<130||f.x>2870)f.dir*=-1;var sonarNear=pulse>0&&Math.hypot(f.x-sub.x,f.y-sub.y)<220;drawFish({x:f.x,y:f.y,type:f.type,phase:f.phase,speed:f.speed,dir:f.dir},sonarNear)}
-drawSub();
-if(pulse>0){var pp=screen(sub.x,sub.y),maxR=330*(1-pulse);ctx.strokeStyle='rgba(105,227,246,'+(pulse*.7)+')';ctx.lineWidth=3;ctx.beginPath();ctx.arc(pp.x,pp.y,maxR,0,Math.PI*2);ctx.stroke()}
-drawGlass();
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(aquarium.x,aquarium.z,2,2),
+  new THREE.MeshStandardMaterial({color:0xc6b990,roughness:1})
+);
+floor.rotation.x=-Math.PI/2; floor.position.y=-aquarium.y/2+1.2; scene.add(floor);
+
+const sand = new THREE.Mesh(
+  new THREE.PlaneGeometry(aquarium.x-2,aquarium.z-2,24,16),
+  new THREE.MeshStandardMaterial({color:0xd7c99c,roughness:1})
+);
+sand.rotation.x=-Math.PI/2; sand.position.y=floor.position.y+.02; scene.add(sand);
+
+for(let i=0;i<52;i++){
+  const r=irregularRock(.45+Math.random()*1.45);
+  r.position.set(-aquarium.x/2+2+Math.random()*(aquarium.x-4),floor.position.y+.3+Math.random()*.4,-aquarium.z/2+2+Math.random()*(aquarium.z-4));
+  r.rotation.set(Math.random(),Math.random(),Math.random());
+  scene.add(r);
 }
-function update(dt){
-var ax=0,ay=0;if(keys.a||keys.arrowleft)ax--;if(keys.d||keys.arrowright)ax++;if(keys.w||keys.arrowup)ay--;if(keys.s||keys.arrowdown)ay++;var boost=keys.shift?1.65:1;var accel=keys.shift?210:140;
-if(ax||ay){var n=Math.hypot(ax,ay);ax/=n;ay/=n;sub.vx+=(ax*accel-sub.vx*1.1)*dt;sub.vy+=(ay*accel-sub.vy*1.1)*dt}else{sub.vx*=Math.pow(.08,dt);sub.vy*=Math.pow(.08,dt)}
-var max=boost*190,sp=Math.hypot(sub.vx,sub.vy);if(sp>max){sub.vx=sub.vx/sp*max;sub.vy=sub.vy/sp*max}
-sub.x=Math.max(90,Math.min(world.w-90,sub.x+sub.vx*dt));sub.y=Math.max(100,Math.min(world.h-100,sub.y+sub.vy*dt));
-cam.x=Math.max(0,Math.min(world.w-W,sub.x-W*.5));cam.y=Math.max(0,Math.min(world.h-H,sub.y-H*.5));
-if(keys.shift&&sp>90)battery=Math.max(0,battery-dt*2.5);else battery=Math.min(100,battery+dt*.5);
-if(sonarCooldown>0)sonarCooldown=Math.max(0,sonarCooldown-dt);if(pulse>0)pulse=Math.max(0,pulse-dt*.8);
-if(keys[' ']&&!keys._space&&sonarCooldown<=0){keys._space=true;sonarCooldown=4;pulse=1;score+=5;toast(TT.sonarUsed)}if(!keys[' '])keys._space=false;
-if(keys.e&&!keys._e){keys._e=true;lights=!lights;toast(lights?TT.on:TT.off)}if(!keys.e)keys._e=false;
-for(var i=0;i<fish.length;i++){var f=fish[i];if(speciesFound.has(f.type.id))continue;var d=Math.hypot(f.x-sub.x,f.y-sub.y);if(d<58){speciesFound.add(f.type.id);found=speciesFound.size;score+=100;toast(TYPES.find(function(t){return t.id===f.type.id})[lang]+' · '+TT.found);break}}
-region=worldToZone(sub.y);if(battery<=0){sub.vx*=.97;sub.vy*=.97}
-if(found===TYPES.length&&score<950){score+=300;toast(TT.win)}
-sync(false)
+for(let i=0;i<28;i++){
+  const x=-aquarium.x/2+4+Math.random()*(aquarium.x-8);
+  const z=-aquarium.z/2+4+Math.random()*(aquarium.z-8);
+  scene.add(makePlant(x,floor.position.y+.05,z,.75+Math.random()*1.4, i%3===0?0x2c8a6e:0x1f7c59));
 }
-function sync(full){
-TT=I18N[lang];document.getElementById('brand').textContent=TT.brand;document.getElementById('batteryL').textContent=TT.battery;document.getElementById('discoverL').textContent=TT.discover;document.getElementById('depthL').textContent=TT.depth;document.getElementById('sonarL').textContent=TT.sonar;document.getElementById('lightL').textContent=TT.light;document.getElementById('catalogL').textContent=TT.catalog;document.getElementById('areaL').textContent=TT.area;document.getElementById('missionL').textContent=TT.mission;document.getElementById('hint').textContent=TT.hint;document.getElementById('battery').textContent=Math.floor(battery)+'%';document.getElementById('discover').textContent=found+'/8';document.getElementById('depth').textContent=Math.floor(sub.y/world.h*180)+' m';document.getElementById('sonar').textContent=sonarCooldown>0?Math.ceil(sonarCooldown)+'s':TT.ready;document.getElementById('light').textContent=lights?TT.on:TT.off;document.getElementById('area').textContent=region;document.getElementById('mission').textContent=found<8?TT.discover+' · '+(8-found):TT.win;document.getElementById('missionBar').style.width=(found/8*100)+'%';var box=document.getElementById('species');box.innerHTML=TYPES.map(function(t){return '<div class="chip '+(speciesFound.has(t.id)?'found':'')+'">'+(speciesFound.has(t.id)?t[lang]:'?')+'</div>'}).join('');
+for(let i=0;i<13;i++){
+  const x=-aquarium.x/2+5+Math.random()*(aquarium.x-10);
+  const z=-aquarium.z/2+5+Math.random()*(aquarium.z-10);
+  scene.add(makeCoral(x,floor.position.y+.05,z,.55+Math.random()*.9,[0xde7d67,0xd890bf,0x7eabcf][i%3]));
 }
-function loop(t){var dt=Math.min(.033,(t-last)/1000||.016);last=t;time=t;if(running)update(dt);draw();requestAnimationFrame(loop)}
-document.getElementById('start').onclick=function(){reset();running=true;document.getElementById('modal').style.display='none';last=performance.now()};
-document.getElementById('restart').onclick=function(){reset();running=true;document.getElementById('modal').style.display='none';last=performance.now()};
-document.getElementById('lang').onclick=function(){lang=lang==='tr'?'en':'tr';sync(true);document.getElementById('modal').style.display='grid';running=false};
-addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;if(e.code==='Space')e.preventDefault()});addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
-reset();sync(true);requestAnimationFrame(loop);
+
+const waterTop = new THREE.Mesh(
+  new THREE.PlaneGeometry(aquarium.x,aquarium.z,1,1),
+  new THREE.MeshStandardMaterial({color:0x9befff,transparent:true,opacity:.06,roughness:.05,metalness:0,side:THREE.DoubleSide,depthWrite:false})
+);
+waterTop.rotation.x=-Math.PI/2; waterTop.position.y=aquarium.y/2-.8; waterTop.renderOrder=1; scene.add(waterTop);
+
+function glassPanel(pos,rot,w,h){
+  const m=new THREE.MeshPhysicalMaterial({color:0xdaf8ff,transparent:true,opacity:.10,roughness:.04,metalness:0,transmission:.18,thickness:.12,side:THREE.DoubleSide,depthWrite:false});
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m);
+  mesh.position.copy(pos); mesh.rotation.copy(rot); mesh.renderOrder=5; scene.add(mesh);
+}
+glassPanel(new THREE.Vector3(0,0,-aquarium.z/2),new THREE.Euler(0,0,0),aquarium.x,aquarium.y);
+glassPanel(new THREE.Vector3(0,0,aquarium.z/2),new THREE.Euler(0,Math.PI,0),aquarium.x,aquarium.y);
+glassPanel(new THREE.Vector3(-aquarium.x/2,0,0),new THREE.Euler(0,Math.PI/2,0),aquarium.z,aquarium.y);
+glassPanel(new THREE.Vector3(aquarium.x/2,0,0),new THREE.Euler(0,-Math.PI/2,0),aquarium.z,aquarium.y);
+
+const frameMat=new THREE.MeshStandardMaterial({color:0x91a7ad,roughness:.3,metalness:.75});
+function frameBar(x,y,z,sx,sy,sz){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),frameMat);m.position.set(x,y,z);scene.add(m)}
+for(const x of [-aquarium.x/2,aquarium.x/2]) for(const z of [-aquarium.z/2,aquarium.z/2]) frameBar(x,0,z,.34,aquarium.y,.34);
+for(const x of [-aquarium.x/2,aquarium.x/2]) for(const y of [-aquarium.y/2,aquarium.y/2]) frameBar(x,y,0,.34,.34,aquarium.z);
+for(const z of [-aquarium.z/2,aquarium.z/2]) for(const y of [-aquarium.y/2,aquarium.y/2]) frameBar(0,y,z,aquarium.x,.34,.34);
+
+const caustic=new THREE.Group();
+const lineMat=new THREE.LineBasicMaterial({color:0xcaffff,transparent:true,opacity:.08});
+for(let i=0;i<95;i++){
+  const pts=[];
+  const x=-aquarium.x/2+Math.random()*aquarium.x, z=-aquarium.z/2+Math.random()*aquarium.z;
+  const len=2.3+Math.random()*4;
+  for(let j=0;j<5;j++) pts.push(new THREE.Vector3(x+(j-2)*len*.23,y= aquariум.y/2-1.0,z+Math.sin(i+j)*.7));
+}
 </script>
 </body>
 </html>

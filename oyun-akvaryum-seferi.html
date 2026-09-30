@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Akvaryum Seferi — Online 3D Denizaltı</title>
 <style>
 :root{--ink:#f4fbff;--muted:#96b9c6;--line:rgba(255,255,255,.13);--panel:rgba(2,14,24,.64);--cyan:#6fe0ff;--gold:#ffd56c;--green:#7ef0b9}
@@ -84,7 +84,7 @@ input.txt:focus{border-color:var(--cyan)}
 #deadV{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:15;display:none;text-align:center;padding:22px 34px;border-radius:18px;border-color:rgba(255,90,74,.5);pointer-events:none}
 #deadV b{display:block;font-size:26px;letter-spacing:2px;color:#ff7a6a}#deadV span{display:block;margin-top:6px;font-size:13px;color:#dceff5}
 #wpn{position:fixed;left:50%;bottom:58px;transform:translateX(-50%);z-index:9;display:flex;gap:6px;padding:6px;border-radius:13px;pointer-events:auto}
-#wpn .slot{display:flex;flex-direction:column;align-items:center;min-width:74px;padding:5px 8px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);font-size:10px;color:#9fbac5;cursor:pointer}
+#wpn .slot{display:flex;flex-direction:column;align-items:center;min-width:66px;padding:5px 8px;border-radius:9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);font-size:10px;color:#9fbac5;cursor:pointer}
 #wpn .slot kbd{font:inherit;font-size:9px;letter-spacing:1px;color:#6f8d99}
 #wpn .slot b{font-size:14px;color:#fff}
 #wpn .slot.on{background:rgba(111,224,255,.16);border-color:var(--cyan);color:#fff}
@@ -93,6 +93,37 @@ input.txt:focus{border-color:var(--cyan)}
 @media(max-width:720px){#wpn{bottom:auto;top:118px;gap:3px}#wpn .slot{min-width:52px;padding:3px 5px}.modes{grid-template-columns:1fr}.stat{min-width:60px;padding:5px 7px}.stat b{font-size:12px}.brand{display:none}
  #catalogP{width:170px;top:auto;bottom:10px;padding:8px}#catalogP .chip{font-size:9.5px;padding:3px 5px}#catalogP .chip small{display:none}
  #radar{width:120px;height:120px}#zoneTag{left:150px;bottom:12px}#roomP{width:170px}#chat{left:150px;bottom:62px;width:calc(100vw - 340px)}#joy{bottom:170px}.tb{bottom:170px}}
+body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.rotHint{display:none}
+#touch button{pointer-events:auto;touch-action:none;border:1px solid rgba(255,255,255,.24);background:rgba(2,14,24,.55);color:#fff;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:50%;font:inherit;font-size:20px;display:grid;place-items:center;padding:0;position:relative;user-select:none;-webkit-user-select:none}
+#touch button:active{background:rgba(111,224,255,.4)}
+#touch small{position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:9px;font-weight:900;color:#ffd56c;line-height:1}
+.touch #joy{left:calc(18px + env(safe-area-inset-left));bottom:calc(22px + env(safe-area-inset-bottom));width:136px;height:136px}
+.tfire{position:fixed;right:calc(14px + env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));width:88px;height:88px;pointer-events:none}
+#touch .tfire .fire{position:absolute;right:0;bottom:0;width:88px;height:88px;font-size:34px;background:rgba(255,90,74,.5);border-color:rgba(255,170,160,.75)}
+#touch .tfire .sm{position:absolute;right:22px;bottom:22px;width:46px;height:46px;font-size:18px;transform:rotate(var(--a)) translateX(-126px) rotate(calc(var(--a) * -1))}
+.tvb{position:fixed;display:flex;gap:8px;left:calc(176px + env(safe-area-inset-left));bottom:calc(30px + env(safe-area-inset-bottom));pointer-events:none}
+#touch .tvb button{width:52px;height:52px}
+.ttop{position:fixed;top:calc(52px + env(safe-area-inset-top));right:calc(8px + env(safe-area-inset-right));display:flex;gap:6px;pointer-events:none}
+#touch .ttop button{width:40px;height:40px;font-size:16px}
+.touch .brand,.touch .stat.opt,.touch #zoneTag,.touch #wpn,.touch .hint{display:none!important}
+.touch .hud{padding:calc(6px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 0 calc(8px + env(safe-area-inset-left));gap:6px}
+.touch .side{gap:5px}
+.touch .stat{min-width:0;padding:4px 8px;font-size:8px;border-radius:9px}.touch .stat b{font-size:12px}
+.touch .btn{padding:7px 9px;font-size:11px}
+.touch #radarP{left:calc(8px + env(safe-area-inset-left));top:calc(56px + env(safe-area-inset-top));bottom:auto;padding:3px}
+.touch #radar{width:96px;height:96px}
+.touch #catalogP,.touch #roomP{display:none!important;top:calc(96px + env(safe-area-inset-top))}
+.touch #catalogP.open{display:block!important;right:8px;width:210px;bottom:auto}
+.touch #roomP.open{display:block!important;left:116px;width:190px}
+.touch #chat{left:8px;right:8px;width:auto;bottom:auto;top:calc(160px + env(safe-area-inset-top))}
+.touch #discCard{top:calc(96px + env(safe-area-inset-top))}
+.touch .toast{top:calc(50px + env(safe-area-inset-top));font-size:11px;white-space:normal;text-align:center;max-width:70vw}
+.touch .card{padding:16px}.touch .card h1{font-size:28px}.touch .card p{font-size:12.5px;margin-bottom:10px}
+.touch .grid{display:none}.touch .modes{grid-template-columns:1fr}
+.touch .modal{place-items:start center}
+.touch .aimInfo{font-size:9px}
+@media (orientation:portrait){.touch #soundBtn{display:none}.tvb{left:calc(18px + env(safe-area-inset-left));bottom:calc(176px + env(safe-area-inset-bottom))}.touch .rotHint{display:block;color:var(--gold)}}
 </style>
 </head>
 <body>
@@ -104,16 +135,16 @@ input.txt:focus{border-color:var(--cyan)}
   <div class="side">
     <div class="brand glass">AKVARYUM SEFERİ</div>
     <div class="stat glass"><span data-i="battery">BATARYA</span><b id="battery">100%</b><div class="meterB"><i id="batteryBar"></i></div></div>
-    <div class="stat glass"><span data-i="depth">DERİNLİK</span><b id="depth">0 m</b></div>
-    <div class="stat glass"><span data-i="speed">HIZ</span><b id="speed">0 kn</b></div>
-    <div class="stat glass"><span data-i="species">TÜRLER</span><b id="live">0/8</b></div>
+    <div class="stat glass opt"><span data-i="depth">DERİNLİK</span><b id="depth">0 m</b></div>
+    <div class="stat glass opt"><span data-i="speed">HIZ</span><b id="speed">0 kn</b></div>
+    <div class="stat glass opt"><span data-i="species">TÜRLER</span><b id="live">0/8</b></div>
     <div class="stat glass"><span data-i="hull">GÖVDE</span><b id="hull">100%</b><div class="meterB h"><i id="hullBar"></i></div></div>
     <div class="stat glass"><span data-i="torp">TORPİDO</span><b id="torp">6/6</b><div class="meterB"><i id="torpBar"></i></div></div>
   </div>
   <div class="side">
     <button class="btn" id="soundBtn">🔊</button>
     <button class="btn gold" id="langBtn">EN</button>
-    <button class="btn" id="menuBtn" data-i="menu">MENÜ</button>
+    <button class="btn" id="fsBtn">⛶</button><button class="btn" id="menuBtn" data-i="menu">MENÜ</button>
   </div>
 </div>
 
@@ -141,8 +172,16 @@ input.txt:focus{border-color:var(--cyan)}
 
 <div id="touch">
   <div id="joy"><i id="joyK"></i></div>
-  <div class="tb"><button data-t="up">▲</button><button data-t="down">▼</button><button data-t="boost">⚡</button></div>
-  <div class="tb l"><button data-t="sonar">📡</button><button data-t="food">🍤</button><button data-t="light">💡</button><button data-t="wpn">⇄</button><button data-t="fire">🚀</button></div>
+  <div class="tvb"><button data-t="down">▼</button><button data-t="up">▲</button><button data-t="boost">⚡</button></div>
+  <div class="ttop"><button data-t="cat">📖</button><button data-t="room" id="roomB">👥</button><button data-t="map">🗺</button><button data-t="chatb" id="chatB">💬</button><button data-t="light">💡</button></div>
+  <div class="tfire">
+    <button class="fire" data-t="fire" id="fireB">🚀</button>
+    <button class="sm" style="--a:0deg" data-t="wpn" id="wpnB">⇄</button>
+    <button class="sm" style="--a:22deg" data-t="shield" id="shB">🛡</button>
+    <button class="sm" style="--a:45deg" data-t="repair" id="rpB">🔧</button>
+    <button class="sm" style="--a:67deg" data-t="sonar">📡</button>
+    <button class="sm" style="--a:90deg" data-t="food">🍤</button>
+  </div>
 </div>
 
 <div class="modal" id="lobby">
@@ -166,6 +205,7 @@ input.txt:focus{border-color:var(--cyan)}
       <div class="tip"><b data-i="t3h"></b><span data-i="t3"></span></div>
       <div class="tip"><b data-i="t4h"></b><span data-i="t4"></span></div>
     </div>
+    <div class="foot rotHint" data-i="rotHint"></div>
     <div class="foot" data-i="foot"></div>
   </div>
 </div>
@@ -189,24 +229,24 @@ const $=id=>document.getElementById(id);
 const TEXT={
 tr:{title:'Akvaryum Seferi',desc:'Kocaman bir cam akvaryumun içinde denizaltınla süzül, 8 canlı türünü keşfet ve köpekbalıklarına, elektrikli yılan balıklarına, dev kalamarlara, piranhalara karşı hayatta kal. Torpido ve mayınlarla kayaları, gemileri, sütunları yık. Oda kur, kodu gönder: online modda birbirinize de zarar verirsiniz. Sunucu yok: oyuncular tarayıcıdan tarayıcıya doğrudan bağlanır.',
 nameL:'KAPTAN ADI',colorL:'DENİZALTI RENGİ',solo:'TEK BAŞINA KEŞFET',host:'ODA KUR (ONLINE)',join:'KATIL',codePh:'KOD',
-t1h:'Sürüş',t1:'WASD sür ve dön · Q/E yüksel/alçal · SHIFT hızlan',t2h:'Kamera',t2:'Oyuna tıkla, fareyle etrafa bak · tekerlek: yakınlaştır',t3h:'Silahlar',t3:'Sol tık ateş · 1 torpido · 2 salvo · 3 mayın · 4 EMP · SPACE sonar · F yem · L ışık · M harita',t4h:'Online',t4:'8 kişiye kadar · torpidolar birbirinize zarar verir · ENTER sohbet',
+t1h:'Sürüş',t1:'WASD sür ve dön · Q/E yüksel/alçal · SHIFT hızlan',t2h:'Kamera',t2:'Oyuna tıkla, fareyle etrafa bak · tekerlek: yakınlaştır',t3h:'Silahlar',t3:'Sol tık ateş · 1 torpido · 2 salvo · 3 mayın · 4 EMP · 5/C kalkan · 6/R tamir · SPACE sonar · F yem · L ışık · M harita',t4h:'Online',t4:'8 kişiye kadar · torpidolar birbirinize zarar verir · ENTER sohbet',
 foot:'Online mod, bağlantıyı kurmak için yalnızca ücretsiz ve herkese açık PeerJS eşleştirme hizmetini kullanır; oyun verisi doğrudan oyuncular arasında akar. Oda sahibi çıkarsa oda kapanır.',
 battery:'BATARYA',torp:'TORPİDO',noTorp:'Torpido kalmadı — tüpler dolduruluyor…',hit:' vuruldu!',lock:'KİLİTLENDİ',torpBy:' torpido fırlattı',depth:'DERİNLİK',speed:'HIZ',species:'TÜRLER',catalog:'TÜR KATALOĞU',room:'ODA KODU',copy:'DAVET LİNKİNİ KOPYALA',copied:'Davet linki kopyalandı',copyManual:'Kodu arkadaşına söyle: ',zone:'BÖLGE',menu:'MENÜ',
-hint:'Tıkla: fareyle bak · Sol tık: ateş · 1-4 silah · WASD sür · Q/E yüksel/alçal · SHIFT hız · SPACE sonar · F yem · L ışık · M harita · ENTER sohbet',
+hint:'Tıkla: fareyle bak · Sol tık: ateş · 1-4 silah · 5/C kalkan · 6/R tamir · WASD sür · Q/E yüksel/alçal · SHIFT hız · SPACE sonar · F yem · L ışık · M harita · ENTER sohbet',
 connecting:'Odaya bağlanılıyor…',hosting:'Oda açılıyor…',netFail:'Bağlantı kurulamadı. İnternetini kontrol et ya da tek başına oyna.',noRoom:'Bu kodla açık bir oda bulunamadı.',badCode:'5 haneli oda kodunu yaz.',full:'Oda dolu (8/8).',hostLeft:'Oda sahibi ayrıldı. Tek başına devam ediyorsun.',joined:'odaya katıldı',left:'ayrıldı',welcome:'Odaya hoş geldin! Birlikte keşfedin.',roomOpen:'Oda hazır! Kodu arkadaşlarına gönder: ',
 found:'YENİ TÜR KEŞFEDİLDİ',by:'Keşfeden: ',byYou:'Keşfeden: sen',allFound:'Tebrikler! Akvaryumdaki 8 türün hepsi keşfedildi!',sonar:'Sonar darbesi',sonarCd:'Sonar şarj oluyor…',food:'Yem bırakıldı — balıklar geliyor!',foodCd:'Yem hazırlanıyor…',lightOn:'Işıklar açık',lightOff:'Işıklar kapalı',chatPh:'Mesaj yaz · ENTER gönder · ESC kapat',map:'AKVARYUM HARİTASI',mapClose:'M ya da ESC ile kapat',you:'sen',start:'Sefer başladı! Oyuna tıklayıp fareyle bakabilirsin.',sonarBy:' sonar gönderdi',foodBy:' yem bıraktı',leave:'Menüye dönmek sefer bağlantısını kapatır. Emin misin?',
-hull:'GÖVDE',w1:'TORPİDO',w2:'SALVO',w3:'MAYIN',w4:'EMP',noMine:'Mayın kalmadı — yenisi hazırlanıyor…',mineDrop:'Mayın bırakıldı',empCd:'EMP şarj oluyor…',lowBat:'EMP için batarya yetersiz',stunned:'Sistemler devre dışı!',salvoNeed:'Salvo için en az 3 torpido gerek',slain:' yok edildi!',youSunk:'DENİZALTIN BATTI',respawnIn:'Yeniden doğuyor:',
+hull:'GÖVDE',w1:'TORPİDO',w2:'SALVO',w3:'MAYIN',w4:'EMP',w5:'KALKAN',w6:'TAMİR',shieldOn:'Kalkan açık!',shieldCd:'Kalkan şarj oluyor…',shieldDown:'Kalkan kırıldı!',repairStart:'Tamir başladı…',repairFull:'Gövde zaten tam',noKit:'Tamir kiti kalmadı — yenisi hazırlanıyor…',repairDone:'Tamir tamamlandı',kitGain:'+1 tamir kiti',rotHint:'Daha rahat oynamak için telefonu yatay tut',noMine:'Mayın kalmadı — yenisi hazırlanıyor…',mineDrop:'Mayın bırakıldı',empCd:'EMP şarj oluyor…',lowBat:'EMP için batarya yetersiz',stunned:'Sistemler devre dışı!',salvoNeed:'Salvo için en az 3 torpido gerek',slain:' yok edildi!',youSunk:'DENİZALTIN BATTI',respawnIn:'Yeniden doğuyor:',
 sunk:(v,k)=>v+', '+k+' tarafından batırıldı',
 zones:{trench:'Derin Çukur',temple:'Kayıp Tapınak',graveyard:'Gemi Mezarlığı',dunes:'Kum Tepeleri',coral:'Mercan Bahçesi',kelp:'Yosun Ormanı',grass:'Deniz Çayırı',wreck:'Batık Gemi Çukuru',arch:'Kaya Kemerleri',jelly:'Denizanası Koyu',open:'Açık Su'}},
 en:{title:'Aquarium Expedition',desc:'Glide through a gigantic glass aquarium in your submarine, discover 8 species and survive sharks, electric eels, giant squids and piranhas. Smash rocks, ships and pillars with torpedoes and mines. Open a room and share the code: in online mode you can hurt each other too. No server: players connect browser to browser.',
 nameL:'CAPTAIN NAME',colorL:'SUBMARINE COLOR',solo:'EXPLORE SOLO',host:'HOST ROOM (ONLINE)',join:'JOIN',codePh:'CODE',
-t1h:'Driving',t1:'WASD drive & turn · Q/E rise/dive · SHIFT boost',t2h:'Camera',t2:'Click the game, look with the mouse · wheel: zoom',t3h:'Weapons',t3:'Left click fire · 1 torpedo · 2 salvo · 3 mine · 4 EMP · SPACE sonar · F food · L light · M map',t4h:'Online',t4:'Up to 8 players · torpedoes hurt each other · ENTER chat',
+t1h:'Driving',t1:'WASD drive & turn · Q/E rise/dive · SHIFT boost',t2h:'Camera',t2:'Click the game, look with the mouse · wheel: zoom',t3h:'Weapons',t3:'Left click fire · 1 torpedo · 2 salvo · 3 mine · 4 EMP · 5/C shield · 6/R repair · SPACE sonar · F food · L light · M map',t4h:'Online',t4:'Up to 8 players · torpedoes hurt each other · ENTER chat',
 foot:'Online mode only uses the free public PeerJS matchmaking service to open the connection; game data flows directly between players. The room closes if the host leaves.',
 battery:'BATTERY',torp:'TORPEDO',noTorp:'Out of torpedoes — reloading tubes…',hit:' hit!',lock:'LOCKED',torpBy:' fired a torpedo',depth:'DEPTH',speed:'SPEED',species:'SPECIES',catalog:'SPECIES CATALOG',room:'ROOM CODE',copy:'COPY INVITE LINK',copied:'Invite link copied',copyManual:'Tell your friend the code: ',zone:'ZONE',menu:'MENU',
-hint:'Click: mouse look · Left click: fire · 1-4 weapon · WASD drive · Q/E rise/dive · SHIFT boost · SPACE sonar · F food · L light · M map · ENTER chat',
+hint:'Click: mouse look · Left click: fire · 1-4 weapon · 5/C shield · 6/R repair · WASD drive · Q/E rise/dive · SHIFT boost · SPACE sonar · F food · L light · M map · ENTER chat',
 connecting:'Connecting to room…',hosting:'Opening room…',netFail:'Could not connect. Check your internet or play solo.',noRoom:'No open room with this code.',badCode:'Type the 5-character room code.',full:'Room is full (8/8).',hostLeft:'The host left. You continue solo.',joined:'joined the room',left:'left',welcome:'Welcome aboard! Explore together.',roomOpen:'Room ready! Send the code to your friends: ',
 found:'NEW SPECIES DISCOVERED',by:'Found by: ',byYou:'Found by: you',allFound:'Congratulations! All 8 species in the aquarium are discovered!',sonar:'Sonar pulse',sonarCd:'Sonar recharging…',food:'Food dropped — fish incoming!',foodCd:'Preparing food…',lightOn:'Lights on',lightOff:'Lights off',chatPh:'Type a message · ENTER send · ESC close',map:'AQUARIUM MAP',mapClose:'Close with M or ESC',you:'you',start:'Expedition started! Click the game to look around with the mouse.',sonarBy:' sent a sonar pulse',foodBy:' dropped food',leave:'Returning to the menu closes the expedition connection. Sure?',
-hull:'HULL',w1:'TORPEDO',w2:'SALVO',w3:'MINE',w4:'EMP',noMine:'Out of mines — building a new one…',mineDrop:'Mine dropped',empCd:'EMP recharging…',lowBat:'Not enough battery for EMP',stunned:'Systems disabled!',salvoNeed:'Salvo needs at least 3 torpedoes',slain:' destroyed!',youSunk:'YOUR SUBMARINE SANK',respawnIn:'Respawning:',
+hull:'HULL',w1:'TORPEDO',w2:'SALVO',w3:'MINE',w4:'EMP',w5:'SHIELD',w6:'REPAIR',shieldOn:'Shield up!',shieldCd:'Shield recharging…',shieldDown:'Shield broken!',repairStart:'Repairing…',repairFull:'Hull is already full',noKit:'Out of repair kits — building a new one…',repairDone:'Repair complete',kitGain:'+1 repair kit',rotHint:'Hold your phone in landscape for a better view',noMine:'Out of mines — building a new one…',mineDrop:'Mine dropped',empCd:'EMP recharging…',lowBat:'Not enough battery for EMP',stunned:'Systems disabled!',salvoNeed:'Salvo needs at least 3 torpedoes',slain:' destroyed!',youSunk:'YOUR SUBMARINE SANK',respawnIn:'Respawning:',
 sunk:(v,k)=>v+' was sunk by '+k,
 zones:{trench:'Deep Trench',temple:'Lost Temple',graveyard:'Ship Graveyard',dunes:'Sand Dunes',coral:'Coral Garden',kelp:'Kelp Forest',grass:'Seagrass Meadow',wreck:'Shipwreck Trench',arch:'Rock Arches',jelly:'Jellyfish Cove',open:'Open Water'}}
 };
@@ -225,6 +265,9 @@ const COLORS=['#ffcf3f','#ff6b5a','#4fd1ff','#7ef0b9','#c792ff','#ff8fd0','#ffff
 let lang='tr',T=TEXT.tr;
 const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
 const qs=new URLSearchParams(location.search);
+const isTouch=matchMedia('(pointer:coarse)').matches||('ontouchstart' in window&&!matchMedia('(pointer:fine)').matches);
+if(isTouch)document.body.classList.add('touch');
+const lowCount=(m,f)=>{if(isTouch)m.count=Math.ceil(m.count*f);return m;};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cleanName=n=>String(n||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,16)||'Kaptan';
 const cleanColor=c=>COLORS.includes(c)?c:COLORS[0];
@@ -268,8 +311,8 @@ const scene=new THREE.Scene();
 const WATER=new THREE.Color(0x0c7390);
 scene.background=WATER.clone();
 scene.fog=new THREE.FogExp2(WATER,.0056);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
+const renderer=new THREE.WebGLRenderer({antialias:!isTouch,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,isTouch?1.25:1.75));
 renderer.setSize(innerWidth,innerHeight);
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -315,7 +358,7 @@ function regFlora(mesh,list,rad){list.forEach((o,i)=>flora.push({mesh,idx:i,x:o.
 
 /* ================= Akvaryum: zemin, cam, salon ================= */
 {
-  const g=new THREE.PlaneGeometry(TW,TD,300,170);g.rotateX(-Math.PI/2);
+  const g=new THREE.PlaneGeometry(TW,TD,isTouch?200:300,isTouch?113:170);g.rotateX(-Math.PI/2);
   const p=g.attributes.position,col=new Float32Array(p.count*3),c=new THREE.Color();
   for(let i=0;i<p.count;i++){
     const x=p.getX(i),z=p.getZ(i),h=floorH(x,z);p.setY(i,h);
@@ -395,7 +438,7 @@ function rockGeo(seed){
   const gl=[];const addG=(x,z)=>gl.push({x,y:floorH(x,z)-.05,z,ry:rr(0,6),sx:rr(.8,1.3),sy:rr(1.2,3.6),sz:rr(.8,1.3),c:['#4c9a3c','#6aa23a','#3b8a4a','#8aa83a'][(R()*4)|0]});
   for(let i=0;i<2600;i++){const [x,z]=zp('grass');addG(x,z);}
   for(let p=0;p<100;p++){const cx=rr(-HX+10,HX-10),cz=rr(-HZ+10,HZ-10);for(let i=0;i<30;i++)addG(cx+rr(-5,5),cz+rr(-5,5));}
-  regFlora(inst(grassGeo,stdMat({roughness:.9,side:THREE.DoubleSide},'grass',{v:'transformed.x+=sin(uT*1.3+ip.x*.4+ip.z*.3)*.45*position.y*position.y;transformed.z+=cos(uT*1.1+ip.z*.35)*.3*position.y*position.y;',caus:.7}),gl,true),gl,6);
+  lowCount(regFlora(inst(grassGeo,stdMat({roughness:.9,side:THREE.DoubleSide},'grass',{v:'transformed.x+=sin(uT*1.3+ip.x*.4+ip.z*.3)*.45*position.y*position.y;transformed.z+=cos(uT*1.1+ip.z*.35)*.3*position.y*position.y;',caus:.7}),gl,true),gl,6),.5);
 }
 
 /* ================= Mercanlar ve şakayıklar ================= */
@@ -483,14 +526,14 @@ const rays=[];
   const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,uniforms:{uT:U.t},
     vertexShader:'varying vec2 vUv;varying float vF;void main(){vUv=uv;vec4 mv=modelViewMatrix*vec4(position,1.);vec3 n=normalize(normalMatrix*normal);vF=abs(dot(n,normalize(-mv.xyz)));gl_Position=projectionMatrix*mv;}',
     fragmentShader:'uniform float uT;varying vec2 vUv;varying float vF;void main(){float a=pow(vUv.y,1.6)*vF*vF*.085*(.75+.25*sin(uT*.6+vUv.x*6.28));gl_FragColor=vec4(.8,.97,1.,a);}'});
-  for(let i=0;i<60;i++){const h=rr(55,74),m=new THREE.Mesh(new THREE.CylinderGeometry(rr(2,4),rr(7,12),h,20,1,true),mat);m.position.set(rr(-HX+15,HX-15),SURF-h/2,rr(-HZ+12,HZ-12));m.rotation.set(rr(-.12,.12),0,rr(-.12,.12));m.userData.b=m.rotation.clone();m.userData.p=R()*6;scene.add(m);rays.push(m);}
+  for(let i=0;i<60;i++){const h=rr(55,74),m=new THREE.Mesh(new THREE.CylinderGeometry(rr(2,4),rr(7,12),h,20,1,true),mat);m.position.set(rr(-HX+15,HX-15),SURF-h/2,rr(-HZ+12,HZ-12));m.rotation.set(rr(-.12,.12),0,rr(-.12,.12));m.userData.b=m.rotation.clone();m.userData.p=R()*6;if(isTouch&&i%3)m.visible=false;scene.add(m);rays.push(m);}
 }
 {
   const n=3000,a=new Float32Array(n*3);for(let i=0;i<n*3;i++)a[i]=Math.random()*60;
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(a,3));
   const pm=new THREE.PointsMaterial({color:0xe2fbff,size:.12,transparent:true,opacity:.5,depthWrite:false});
   pm.onBeforeCompile=sh=>{sh.uniforms.uT=U.t;sh.uniforms.uCam=U.cam;sh.vertexShader='uniform float uT;uniform vec3 uCam;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed=mod(position+vec3(sin(uT*.1+position.z)*1.5,uT*.35,cos(uT*.08+position.x)*1.5)-uCam+30.,60.)-30.+uCam;');};
-  const pts=new THREE.Points(g,pm);pts.frustumCulled=false;scene.add(pts);
+  if(isTouch)g.setDrawRange(0,1200);const pts=new THREE.Points(g,pm);pts.frustumCulled=false;scene.add(pts);
 }
 
 /* ================= Kabarcıklar ================= */
@@ -663,7 +706,8 @@ function makeSub(color){
   for(const x of [-.75,.75]){const tube=new THREE.Mesh(new THREE.TorusGeometry(.24,.06,8,18),dark);tube.position.set(x,-.95,1.35);g.add(tube);const hole=new THREE.Mesh(new THREE.CircleGeometry(.22,18),new THREE.MeshBasicMaterial({color:0x05080a}));hole.position.set(x,-.95,1.37);g.add(hole);}
   const beamG=new THREE.ConeGeometry(6,26,24,1,true);beamG.rotateX(-Math.PI/2);beamG.translate(0,-.3,13+2.1);
   const beam=new THREE.Mesh(beamG,beamMat);beam.renderOrder=8;g.add(beam);
-  return {g,prop,beam,lampM,paint};
+  const shield=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),new THREE.MeshBasicMaterial({color:0x6fe0ff,transparent:true,opacity:.2,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));shield.scale.set(3.4,2.8,5);shield.visible=false;shield.renderOrder=10;g.add(shield);
+  return {g,prop,beam,lampM,paint,shield};
 }
 const me={name:'Kaptan',color:COLORS[0]};
 const local=makeSub(me.color);
@@ -680,7 +724,7 @@ const players=new Map();// uzaktaki oyuncular
 const net={mode:'solo',peer:null,conns:new Map(),host:null,myId:'me',code:null,offset:0,bestRtt:1e9};
 const worldTime=()=>(performance.now()+net.offset)/1000;
 let sonarReveal={until:0,x:0,z:0};
-let hull=100,dead=false,deadT=0,invuln=0,hurtT=0,inkT=0,stunT=0,lastHit={by:null,t:-1e9},weapon=0,mineAmmo=3,mineReload=0,mineSeq=0,empCd=0,netEnT=0;
+let hull=100,dead=false,deadT=0,invuln=0,hurtT=0,inkT=0,stunT=0,lastHit={by:null,t:-1e9},shieldT=0,shieldHp=0,shieldCd=0,shieldFlash=0,repairT=0,kits=3,kitReload=0,weapon=0,mineAmmo=3,mineReload=0,mineSeq=0,empCd=0,netEnT=0;
 const kills=new Map(),blastLog=[];
 const sonarFx=[];
 
@@ -697,7 +741,8 @@ function tone(f0,f1,dur,type='sine',vol=.3,delay=0){if(!ac||muted)return;const t
 const sfx={sonar(v=1){tone(1500,900,1.1,'sine',.28*v);tone(1500,900,1.1,'sine',.12*v,.35);tone(1500,900,1.1,'sine',.05*v,.7);},food(){tone(500,200,.18,'triangle',.2);},disc(){[660,880,1320].forEach((f,i)=>tone(f,f*1.01,.35,'triangle',.18,i*.11));},chat(){tone(900,1100,.08,'sine',.08);},
   launch(v=1){tone(95,38,.4,'sine',.55*v);noise(.55,2400,300,.22*v);},motor(v=1){tone(260,1300,1.1,'sawtooth',.035*v);noise(.9,5000,1800,.05*v,.05);},
   boom(v=1){tone(70,24,1.6,'sine',.7*v);noise(2.2,900,60,.6*v);noise(.35,5000,800,.2*v);},empty(){tone(1300,1000,.05,'square',.05);},
-  hurt(v=1){tone(120,45,.35,'sawtooth',.4*v);noise(.4,1800,200,.35*v);},zap(v=1){tone(1900,300,.5,'sawtooth',.16*v);noise(.5,6000,900,.22*v);tone(90,60,.7,'square',.12*v);},bite(v=1){tone(220,70,.25,'square',.3*v);noise(.25,3000,400,.3*v);},emp(v=1){tone(300,1600,.5,'sine',.3*v);tone(1600,80,.9,'triangle',.25*v,.4);},mine(){tone(700,700,.06,'square',.06);},squish(v=1){tone(180,60,.3,'sine',.3*v);noise(.3,900,200,.25*v);},crash(v=1){noise(1.4,700,80,.5*v);tone(60,30,1,'sine',.4*v);}};
+  hurt(v=1){tone(120,45,.35,'sawtooth',.4*v);noise(.4,1800,200,.35*v);},zap(v=1){tone(1900,300,.5,'sawtooth',.16*v);noise(.5,6000,900,.22*v);tone(90,60,.7,'square',.12*v);},bite(v=1){tone(220,70,.25,'square',.3*v);noise(.25,3000,400,.3*v);},emp(v=1){tone(300,1600,.5,'sine',.3*v);tone(1600,80,.9,'triangle',.25*v,.4);},mine(){tone(700,700,.06,'square',.06);},squish(v=1){tone(180,60,.3,'sine',.3*v);noise(.3,900,200,.25*v);},crash(v=1){noise(1.4,700,80,.5*v);tone(60,30,1,'sine',.4*v);},
+  shield(){tone(400,900,.4,'sine',.25);tone(600,1200,.5,'triangle',.15,.15);},shieldHit(){tone(900,300,.15,'triangle',.2);},repair(){[500,650,800].forEach((f,i)=>tone(f,f*1.05,.25,'square',.06,i*.2));}};
 function noise(dur,f0,f1,vol,delay=0){if(!ac||muted||vol<.005)return;const t=ac.currentTime+delay,b=ac.createBuffer(1,Math.ceil(ac.sampleRate*dur),ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);const g=ac.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);s.connect(f).connect(g).connect(master);s.start(t);}
 
 /* ================= Arayüz ================= */
@@ -1129,17 +1174,18 @@ const enemies=[];
 function enemyTargets(){
   if(!running)return [];const a=[];
   if(!dead)a.push({id:net.myId,me:true,pos:sub.position,vel:subVel});
-  for(const p of players.values())if(!p.dead)a.push({id:p.id,me:false,pos:p.pos,vel:p.vel,inv:p.inv||0});
+  for(const p of players.values())if(!p.dead)a.push({id:p.id,me:false,pos:p.pos,vel:p.vel,inv:p.inv||0,shield:!!p.shield});
   return a;
 }
-function hitTarget(a,dmg,by,ink,kx,ky,kz){
+function hitTarget(a,dmg,by,ink,kx,ky,kz,e){
+  if(e&&(a.me?shieldT>0:a.shield))e.stun=Math.max(e.stun,1.8);
   if(a.me){hurt(dmg,by,ink,new THREE.Vector3(kx||0,ky||0,kz||0));return;}
   const c=net.conns.get(a.id);if(!c||!c.open||a.inv>performance.now())return;
   try{c.send({t:'hit',d:dmg,by,ink:ink?1:0,kb:[+(kx||0).toFixed(1),+(ky||0).toFixed(1),+(kz||0).toFixed(1)]});}catch{}
 }
 function hostFx(m){broadcast({t:'fx',...m});enemyFx(m);}
 function biteHit(e,a,dmg){
-  const k=e.type==='shark'?12:2;hitTarget(a,dmg,e.type,false,Math.sin(e.yaw)*k,1.5,Math.cos(e.yaw)*k);
+  const k=e.type==='shark'?12:2;hitTarget(a,dmg,e.type,false,Math.sin(e.yaw)*k,1.5,Math.cos(e.yaw)*k,e);
   hostFx({k:'bite',p:r3(a.pos)});
 }
 function steer(e,gx,gy,gz,speed,turn,dt){
@@ -1163,7 +1209,7 @@ function fireInk(e,tt){
 }
 function eelShock(e,tg){
   const vs=[];
-  for(const a of tg){const d=Math.hypot(a.pos.x-e.x,a.pos.y-e.y,a.pos.z-e.z);if(d<26){hitTarget(a,Math.round(6+16*(1-d/26)),'eel',false,0,0,0);vs.push(r3(a.pos));}}
+  for(const a of tg){const d=Math.hypot(a.pos.x-e.x,a.pos.y-e.y,a.pos.z-e.z);if(d<26){hitTarget(a,Math.round(6+16*(1-d/26)),'eel',false,0,0,0,e);vs.push(r3(a.pos));}}
   hostFx({k:'shock',i:e.i,v:vs.slice(0,8)});
 }
 const AI={
@@ -1269,7 +1315,7 @@ function killEnemyFx(e,by){
   const center=new THREE.Vector3(e.x,e.y,e.z),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(e.pitch,e.yaw,0,'YXZ'));
   shatter(e.type,center,q,e.cfg.sc,center,e.cfg.col,null);
   for(let i=0;i<40;i++)spawnBubble(e.x+rr(-2,2),e.y+rr(-1,1),e.z+rr(-2,2),.06+Math.random()*.2,rr(-4,4),rr(0,4),rr(-4,4));
-  if(by===net.myId)toast(ETYPE[e.type][lang]+T.slain);
+  if(by===net.myId){toast(ETYPE[e.type][lang]+T.slain);if(kits<3){kits++;setTimeout(()=>toast(T.kitGain),1700);}}
   sfx.boom(clamp(1-Math.hypot(e.x-camera.position.x,e.y-camera.position.y,e.z-camera.position.z)/140,.05,.6));
 }
 
@@ -1325,6 +1371,12 @@ function enemyFx(m){
 /* ================= Gövde, ölüm ve oyuncular arası hasar ================= */
 function hurt(d,by,ink,kb){
   if(dead||invuln>0||!(d>0))return;
+  if(shieldT>0){
+    const a=Math.min(shieldHp,d);shieldHp-=a;d-=a;shieldFlash=.35;sfx.shieldHit();shake=Math.max(shake,.12);
+    if(kb&&kb.isVector3)subVel.add(kb.clampLength(0,20).multiplyScalar(.3));
+    if(shieldHp<=0){shieldT=0;toast(T.shieldDown);}
+    if(d<=0)return;ink=false;
+  }
   hull=Math.max(0,hull-d);lastHit={by,t:performance.now()};hurtT=.6;shake=Math.max(shake,clamp(d/30,.2,1));
   if(kb&&kb.isVector3)subVel.add(kb.clampLength(0,20));
   if(ink)inkT=Math.max(inkT,6);
@@ -1341,14 +1393,14 @@ function registerKill(vid,k){
   sysMsg(T.sunk(v,kn));renderPlayers();
 }
 function die(by){
-  dead=true;deadT=4.5;hull=0;const p=sub.position;
+  dead=true;deadT=4.5;hull=0;repairT=0;shieldT=0;const p=sub.position;
   explode(p.x,p.y,p.z,-1,'d:'+net.myId+':'+(++torpSeq));
   sub.visible=false;subVel.set(0,0,0);
   sendNet({t:'dead',p:r3(p),k:by||null});registerKill(net.myId,by);
   $('deadV').style.display='block';
 }
 function respawn(){
-  dead=false;hull=100;invuln=3.5;torpAmmo=TORP_MAX;mineAmmo=3;battery=100;inkT=0;stunT=0;
+  dead=false;hull=100;invuln=3.5;torpAmmo=TORP_MAX;mineAmmo=3;kits=3;shieldT=0;repairT=0;battery=100;inkT=0;stunT=0;
   const a=Math.random()*6.28;sub.position.set(Math.cos(a)*10,-4,8+Math.sin(a)*6);subVel.set(0,0,0);sub.visible=true;
   $('deadV').style.display='none';sendNet({t:'resp'});
 }
@@ -1414,14 +1466,32 @@ function fireWeapon(){
   if(!running||chatOpen()||dead)return;
   if(weapon===0)fireTorpedo();else if(weapon===1)fireSalvo();else if(weapon===2)dropMine();else doEmp();
 }
+function doShield(){
+  if(!running||dead||chatOpen()||shieldT>0)return;
+  if(shieldCd>0){toast(T.shieldCd);return;}if(battery<20){toast(T.lowBat);return;}
+  battery-=20;shieldT=6;shieldHp=70;shieldCd=16;sfx.shield();toast(T.shieldOn);
+}
+function doRepair(){
+  if(!running||dead||chatOpen()||repairT>0)return;
+  if(hull>=100){toast(T.repairFull);return;}if(kits<=0){toast(T.noKit);sfx.empty();return;}
+  kits--;repairT=3;sfx.repair();toast(T.repairStart);
+}
+const WPN_ICON=['🚀','🚀','💣','⚡'];
 function renderWpn(){
-  $('wpn').innerHTML=[T.w1,T.w2,T.w3,T.w4].map((n,i)=>`<div class="slot ${i===weapon?'on':''}" data-w="${i}"><kbd>${i+1}</kbd><span>${esc(n)}</span><b id="wc${i}">–</b></div>`).join('');
+  $('wpn').innerHTML=[T.w1,T.w2,T.w3,T.w4,T.w5,T.w6].map((n,i)=>`<div class="slot ${i===weapon?'on':''}" data-w="${i}"><kbd>${i+1}</kbd><span>${esc(n)}</span><b id="wc${i}">–</b></div>`).join('');
   updateWpnHUD();
 }
-function setWeapon(i){weapon=i;renderWpn();}
+function setWeapon(i){if(i===4){doShield();return;}if(i===5){doRepair();return;}weapon=i;renderWpn();}
 function updateWpnHUD(){
-  const v=[torpAmmo,torpAmmo>=3?'✓':'✗',mineAmmo,empCd>0?Math.ceil(empCd)+'s':'✓'];
+  const sh=shieldT>0?'●':shieldCd>0?String(Math.ceil(shieldCd)):'✓',v=[torpAmmo,torpAmmo>=3?'✓':'✗',mineAmmo,empCd>0?Math.ceil(empCd)+'s':'✓',sh,repairT>0?'+':kits];
   v.forEach((x,i)=>{const el=$('wc'+i);if(el&&el.textContent!==String(x))el.textContent=x;});
+  if(isTouch){
+    const set=(id,h)=>{const el=$(id);if(el&&el.dataset.h!==h){el.dataset.h=h;el.innerHTML=h;}};
+    set('fireB',WPN_ICON[weapon]);
+    set('wpnB',WPN_ICON[weapon]+(weapon===1?'×3':'')+'<small>'+(weapon<2?torpAmmo:weapon===2?mineAmmo:(empCd>0?Math.ceil(empCd):'✓'))+'</small>');
+    set('shB','🛡<small>'+(shieldT>0?'●':shieldCd>0?Math.ceil(shieldCd):'')+'</small>');
+    set('rpB','🔧<small>'+(repairT>0?'+':kits)+'</small>');
+  }
 }
 
 /* Nişan: kameranın merkezinden ışın; canlılar, düşmanlar, oyuncular, sonra zemin/kaya/duvar */
@@ -1441,6 +1511,12 @@ function updateAim(){
   for(const pl of players.values()){if(pl.dead)continue;const g=pl.sub.g.position;
     _oc.set(g.x-o.x,g.y-o.y,g.z-o.z);const tca=_oc.dot(_rd);if(tca<minT||tca>best)continue;
     const d2=_oc.lengthSq()-tca*tca;if(d2<3.8*3.8){best=tca;bk='p';bi=pl.id;}}
+  if(isTouch&&!bk){
+    let ba=.2;const cand=(x,y,z,k,id)=>{_oc.set(x-o.x,y-o.y,z-o.z);const dl=_oc.length();if(dl<minT||dl>110)return;const ang=Math.acos(clamp(_oc.dot(_rd)/dl,-1,1));if(ang<ba){ba=ang;bk=k;bi=id;best=dl;}};
+    for(const e of enemies)if(!e.dead)cand(e.x,e.y,e.z,'e',e.i);
+    for(const pl of players.values())if(!pl.dead){const g=pl.sub.g.position;cand(g.x,g.y,g.z,'p',pl.id);}
+    if(!bk)for(let i=0;i<creatures.length;i++){const c=creatures[i];if(c.deadUntil>wt)continue;cand(c.wx,c.wy,c.wz,'c',i);}
+  }
   aim.ci=bk==='c'?bi:-1;aim.ei=bk==='e'?bi:-1;aim.pid=bk==='p'?bi:null;aim.dist=best;
   if(bk==='c'){const c=creatures[bi];aim.p.set(c.wx,c.wy,c.wz);}
   else if(bk==='e'){const e=enemies[bi];aim.p.set(e.x,e.y,e.z);}
@@ -1480,7 +1556,7 @@ function applyState(p,d){
   if(!Array.isArray(d.p)||!Array.isArray(d.r))return;
   p.pos.set(clamp(num(d.p[0]),-HX,HX),clamp(num(d.p[1]),-45,SURF),clamp(num(d.p[2]),-HZ,HZ));
   if(Array.isArray(d.v))p.vel.set(clamp(num(d.v[0]),-30,30),clamp(num(d.v[1]),-30,30),clamp(num(d.v[2]),-30,30));
-  p.yaw=num(d.r[0]);p.pitch=num(d.r[1]);p.roll=num(d.r[2]);p.light=!!d.l;p.boost=!!d.b;p.hull=clamp(num(d.h,100),0,100);p.rt=performance.now();
+  p.yaw=num(d.r[0]);p.pitch=num(d.r[1]);p.roll=num(d.r[2]);p.light=!!d.l;p.boost=!!d.b;p.hull=clamp(num(d.h,100),0,100);p.shield=!!d.s;p.rt=performance.now();
   if(!p.seen){p.seen=true;p.sub.g.position.copy(p.pos);}
 }
 function handleCommon(d,from){
@@ -1594,7 +1670,7 @@ function hostGone(){
 }
 function sendState(){
   if(net.mode==='solo')return;const p=sub.position;
-  sendNet({t:'st',p:[+p.x.toFixed(2),+p.y.toFixed(2),+p.z.toFixed(2)],v:[+subVel.x.toFixed(2),+subVel.y.toFixed(2),+subVel.z.toFixed(2)],r:[+subYaw.toFixed(3),+subPitch.toFixed(3),+subRoll.toFixed(3)],l:lightOn?1:0,b:keys.shift?1:0,h:Math.round(hull)});
+  sendNet({t:'st',p:[+p.x.toFixed(2),+p.y.toFixed(2),+p.z.toFixed(2)],v:[+subVel.x.toFixed(2),+subVel.y.toFixed(2),+subVel.z.toFixed(2)],r:[+subYaw.toFixed(3),+subPitch.toFixed(3),+subRoll.toFixed(3)],l:lightOn?1:0,b:keys.shift?1:0,h:Math.round(hull),s:shieldT>0?1:0});
 }
 
 /* ================= Kontroller ================= */
@@ -1626,7 +1702,8 @@ addEventListener('keydown',e=>{
   if(e.repeat){keys[k]=true;return;}
   keys[k]=true;
   if(k===' ')doSonar();else if(k==='f')doFood();else if(k==='l')toggleLight();else if(k==='m')toggleMap();
-  else if(k.length===1&&k>='1'&&k<='4')setWeapon(+k-1);
+  else if(k.length===1&&k>='1'&&k<='6')setWeapon(+k-1);
+  else if(k==='c')doShield();else if(k==='r')doRepair();
   else if(k==='escape'&&$('mapM').style.display==='grid')toggleMap(false);
   else if(k==='enter'&&net.mode!=='solo'){e.preventDefault();openChat();}
 });
@@ -1638,7 +1715,6 @@ function toggleMap(force){const open=force??$('mapM').style.display!=='grid';$('
 $('mapM').addEventListener('click',()=>toggleMap(false));
 $('wpn').addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b)setWeapon(+b.dataset.w);});
 // Dokunmatik
-const isTouch=matchMedia('(pointer:coarse)').matches||('ontouchstart' in window&&!matchMedia('(pointer:fine)').matches);
 if(isTouch){
   let jid=null,jx=0,jy=0;const joy=$('joy'),knob=$('joyK');
   joy.addEventListener('pointerdown',e=>{jid=e.pointerId;const r=joy.getBoundingClientRect();jx=r.left+r.width/2;jy=r.top+r.height/2;joy.setPointerCapture(e.pointerId);moveJ(e);});
@@ -1649,9 +1725,11 @@ if(isTouch){
   canvas.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'||lid!==null)return;lid=e.pointerId;tx=e.clientX;ty=e.clientY;});
   canvas.addEventListener('pointermove',e=>{if(e.pointerId!==lid||!running)return;camYaw-=(e.clientX-tx)*.005;camPitch=clamp(camPitch+(e.clientY-ty)*.004,-.75,1.2);tx=e.clientX;ty=e.clientY;});
   const endL=e=>{if(e.pointerId===lid)lid=null;};canvas.addEventListener('pointerup',endL);canvas.addEventListener('pointercancel',endL);
+  let fireIv=null;const stopFire=()=>{clearInterval(fireIv);fireIv=null;};
+  const ACT={sonar:doSonar,food:doFood,light:toggleLight,shield:doShield,repair:doRepair,map:()=>toggleMap(),chatb:()=>{if(net.mode!=='solo')openChat();},cat:()=>$('catalogP').classList.toggle('open'),room:()=>$('roomP').classList.toggle('open'),wpn:()=>setWeapon((weapon+1)%4)};
   document.querySelectorAll('#touch button').forEach(b=>{const t=b.dataset.t;
-    b.addEventListener('pointerdown',e=>{e.preventDefault();if(t==='sonar')doSonar();else if(t==='fire')fireWeapon();else if(t==='wpn')setWeapon((weapon+1)%4);else if(t==='food')doFood();else if(t==='light')toggleLight();else vk[t]=1;});
-    const up=()=>{if(t in vk)vk[t]=0;};b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);});
+    b.addEventListener('pointerdown',e=>{e.preventDefault();if(t==='fire'){fireWeapon();if(weapon===0){stopFire();fireIv=setInterval(fireWeapon,160);}}else if(ACT[t])ACT[t]();else vk[t]=1;});
+    const up=()=>{if(t==='fire')stopFire();if(t in vk)vk[t]=0;};b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);});
 }
 
 /* ================= Güncelleme ================= */
@@ -1697,7 +1775,7 @@ function updateRemotes(dt,now){
     const g=p.sub.g,age=Math.min((now-p.rt)/1000,.4);
     _tmp.copy(p.pos).addScaledVector(p.vel,age);g.position.lerp(_tmp,1-Math.exp(-10*dt));
     const yaw=angLerp(g.rotation.y,p.yaw,1-Math.exp(-10*dt));g.rotation.set(p.pitch,yaw,p.roll,'YXZ');
-    p.sub.prop.rotation.z+=dt*(3+p.vel.length()*2.2);p.sub.beam.visible=p.light;
+    p.sub.prop.rotation.z+=dt*(3+p.vel.length()*2.2);p.sub.beam.visible=p.light;p.sub.shield.visible=!!p.shield;
     const spd=p.vel.length();if(spd>2&&Math.random()<spd*dt*1.6){_tmp.set(0,0,-3.2).applyQuaternion(g.quaternion).add(g.position);spawnBubble(_tmp.x,_tmp.y,_tmp.z,.06+Math.random()*.1);}
     const tt=p.name+' · '+Math.round(p.hull)+'%';if(p.tagTxt!==tt){p.tagTxt=tt;p.tag.textContent=tt;}
     _tmp.copy(g.position);_tmp.y+=2.6;const dist=_tmp.distanceTo(camera.position);_tmp.project(camera);
@@ -1716,7 +1794,7 @@ function updateHUD(spd){
   $('battery').textContent=Math.round(battery)+'%';$('batteryBar').style.width=battery+'%';
   $('depth').textContent=Math.max(0,Math.round(SURF-sub.position.y))+' m';$('speed').textContent=(spd*1.94).toFixed(0)+' kn';
   $('zone').textContent=T.zones[zoneAt(sub.position.x,sub.position.z)];
-  $('hull').textContent=Math.round(hull)+'%';$('hullBar').style.width=hull+'%';updateWpnHUD();
+  $('hull').textContent=Math.round(hull)+'%'+(shieldT>0?' 🛡':'')+(repairT>0?' 🔧':'');$('hullBar').style.width=hull+'%';updateWpnHUD();
   $('torp').textContent=torpAmmo+'/'+TORP_MAX;$('torpBar').style.width=(torpAmmo>=TORP_MAX?100:torpReload/TORP_RELOAD*100)+'%';
 }
 
@@ -1780,6 +1858,11 @@ function loop(){
     sonarCd=Math.max(0,sonarCd-dt);foodCd=Math.max(0,foodCd-dt);torpCd=Math.max(0,torpCd-dt);empCd=Math.max(0,empCd-dt);
     if(mineAmmo<3){mineReload+=dt;if(mineReload>=8){mineReload=0;mineAmmo++;}}
     hurtT=Math.max(0,hurtT-dt);inkT=Math.max(0,inkT-dt);
+    shieldCd=Math.max(0,shieldCd-dt);shieldFlash=Math.max(0,shieldFlash-dt);
+    if(shieldT>0){shieldT=Math.max(0,shieldT-dt);if(shieldT<=0)shieldHp=0;}
+    if(kits<3){kitReload+=dt;if(kitReload>=25){kitReload=0;kits++;}}
+    if(repairT>0){if(dead)repairT=0;else{repairT=Math.max(0,repairT-dt);hull=Math.min(100,hull+15*dt);if(Math.random()<dt*14)addPuff(sub.position.x+rr(-2,2),sub.position.y+rr(-1,2),sub.position.z+rr(-2,2),0x7ef0b9,0,rr(.5,1.5),0,.5,1.6,.35,1.8);if(repairT<=0)toast(T.repairDone);}}
+    local.shield.visible=shieldT>0&&!dead;local.shield.material.opacity=.16+.1*Math.sin(now*.012)+shieldFlash*1.6;
     if(dead){deadT-=dt;$('deadT').textContent=Math.ceil(Math.max(0,deadT));if(deadT<=0)respawn();}
     else{invuln=Math.max(0,invuln-dt);stunT=Math.max(0,stunT-dt);if(now-lastHit.t>9000&&hull<100)hull=Math.min(100,hull+2*dt);sub.visible=invuln>0?((now/120|0)%2===0):true;}
     $('hurtV').style.opacity=String(clamp(hurtT*1.4,0,.75)+(!dead&&hull<30?.12+.1*Math.sin(now*.008):0));$('inkV').style.opacity=String(clamp(inkT/1.5,0,.92));
@@ -1801,7 +1884,7 @@ function enterGame(){
   ['catalogP','radarP','zoneTag'].forEach(id=>$(id).style.display='');
   $('hint').style.display=isTouch?'none':'';setTimeout(()=>$('hint').style.opacity='0',14000);
   $('chat').style.display=net.mode==='solo'?'none':'flex';
-  if(isTouch)$('touch').style.display='block';
+  if(isTouch){$('touch').style.display='block';$('roomB').style.display=$('chatB').style.display=net.mode==='solo'?'none':'';}
   const spawnA=Math.random()*6.28;sub.position.set(Math.cos(spawnA)*10,-4,8+Math.sin(spawnA)*6);
   renderCatalog();renderPlayers();
   if(net.mode==='solo')toast(T.start);
@@ -1825,6 +1908,8 @@ $('copyBtn').onclick=()=>{
   const ok=()=>toast(T.copied),manual=()=>{toast(T.copyManual+net.code);sysMsg(link);};
   try{navigator.clipboard.writeText(link).then(ok,manual);}catch{manual();}
 };
+{const de=document.documentElement;if(!de.requestFullscreen&&!de.webkitRequestFullscreen)$('fsBtn').style.display='none';
+$('fsBtn').onclick=()=>{if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}else{(de.requestFullscreen||de.webkitRequestFullscreen).call(de);try{screen.orientation.lock('landscape').catch(()=>{});}catch{}}};}
 $('langBtn').onclick=()=>{lang=lang==='tr'?'en':'tr';store.set('aqua-lang',lang);applyLang();};
 $('soundBtn').onclick=()=>{muted=!muted;store.set('aqua-mute',muted?'1':'0');$('soundBtn').textContent=muted?'🔇':'🔊';if(master)master.gain.value=muted?0:.55;};
 $('soundBtn').textContent=muted?'🔇':'🔊';

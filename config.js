@@ -5,14 +5,14 @@
 
 export const CONFIG = {
   SITE_NAME: 'YÖRÜKHAN GAMES',
-  SITE_URL: 'https://yorukhan-games.vercel.app', // Vercel adresin belli olunca güncelle
+  SITE_URL: 'https://yorukhangameess.vercel.app', // Özel alan adı alınınca burayı, robots.txt ve sitemap.xml'i güncelle
 
   // Veritabanı bağlantısı (Supabase). Bu anahtar herkese açık olacak şekilde tasarlandı, gizli değil.
   SUPABASE_URL: 'https://rgikdorrzksidkvdsyfn.supabase.co',
   SUPABASE_KEY: 'sb_publishable_ChOS06DqAyESAxdAvVThmw_Br5pSuQS',
 
   // İletişim e-postası (Hakkında sayfasında görünür — AdSense onayı için önemli)
-  CONTACT_EMAIL: '',
+  CONTACT_EMAIL: 'yurukkerem1903@gmail.com',
 
   // ---------- REKLAMLAR (Google AdSense) ----------
   // AdSense onaylanınca "ca-pub-..." kodunu buraya yaz.

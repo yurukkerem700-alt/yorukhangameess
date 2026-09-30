@@ -5,7 +5,7 @@
 //  - Kartlar: bilgisayarda fareyle üzerine gelince, telefonda kart ekranda tam görününce (aynı anda en fazla 2)
 // Veri tasarrufu açıksa ya da "az hareket" tercih edilmişse klipler hiç yüklenmez.
 const CLIPS = new Set(['boru', 'kapkac', 'nazar-degmesin', 'stack-up', 'scorpy', 'restore-and-sell', 'halat-cekme', 'refleks-duellosu', 'kurt-kosusu', 'gok-savascisi', 'kilim-bloklari', 'yilan', 'birlestir', 'kartal', 'hafiza']);
-const SVG_CLIPS = new Set(['ruzgar-limani', 'golge-laboratuvari']);
+const SVG_CLIPS = new Set(['ruzgar-limani', 'golge-laboratuvari', 'akvaryum-seferi']);
 const RX = /\/oyun-([a-z0-9-]+?)(?:-genis)?\.(?:jpg|jpeg|png|webp|svg)(?:$|\?)/;
 const saveData = !!(navigator.connection && navigator.connection.saveData);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;

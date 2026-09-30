@@ -1,103 +1,148 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Rüzgâr Limanı</title>
 <style>
-:root{--ink:#eff9ff;--muted:#9eb8c9;--line:rgba(255,255,255,.1);--panel:rgba(5,18,29,.82);--gold:#f6c453;--cyan:#72e7f5;--good:#59dca1;--danger:#ff6c74}
-*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#020a10;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}body{display:grid;place-items:center}
-.wrap{width:min(1200px,100vw);height:min(820px,100vh);display:grid;grid-template-rows:auto 1fr auto;background:linear-gradient(#092333,#03131d)}
-.hud{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:10px 14px;background:rgba(3,11,18,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);z-index:3}.brand{font-weight:950;letter-spacing:.4px}.stats{display:flex;gap:8px;flex-wrap:wrap}.stat{min-width:76px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.035);font-size:10px;color:var(--muted)}.stat b{display:block;color:#fff;font-size:14px;margin-top:2px}.actions{display:flex;gap:7px}button{font:inherit;border:0;border-radius:10px;padding:9px 11px;background:#153247;color:#fff;font-weight:850;cursor:pointer}button:hover{background:#1b4763}.lang{background:var(--gold);color:#221804}.icon{width:39px;padding:9px 0}
+:root{--ink:#f3fbff;--muted:#9bb6c8;--line:rgba(255,255,255,.1);--panel:rgba(4,16,25,.82);--gold:#f4c35b;--cyan:#79e9f6;--good:#68dc9f;--bad:#ff6a72}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#020910;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}body{display:grid;place-items:center}
+.wrap{width:min(1280px,100vw);height:min(860px,100vh);display:grid;grid-template-rows:auto 1fr auto;background:#061723}
+.hud{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:10px 14px;background:rgba(3,10,16,.95);border-bottom:1px solid var(--line);backdrop-filter:blur(14px);z-index:4}.brand{font-weight:950;letter-spacing:.6px}.stats{display:flex;gap:7px;flex-wrap:wrap}.stat{min-width:82px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.03);font-size:9px;color:var(--muted)}.stat b{display:block;color:#fff;font-size:14px;margin-top:2px}.actions{display:flex;gap:7px}button{font:inherit;border:0;border-radius:10px;padding:9px 11px;background:#16364c;color:#fff;font-weight:850;cursor:pointer}button:hover{background:#1e4a65}.lang{background:var(--gold);color:#241904}.icon{width:39px;padding:9px 0}
 .game{position:relative;min-height:0;overflow:hidden}.game canvas{width:100%;height:100%;display:block;touch-action:none}
-.overlay{position:absolute;inset:0;pointer-events:none}.left,.right{position:absolute;top:12px;display:grid;gap:8px}.left{left:12px}.right{right:12px;min-width:220px}.panel{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);backdrop-filter:blur(8px);box-shadow:0 16px 45px #0005}.label{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}.value{font-size:13px;font-weight:900;margin-top:3px}.bar{height:7px;background:#203c4c;border-radius:8px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),#bffaff)}.bar.gold i{background:linear-gradient(90deg,#d9962e,var(--gold))}.bar.red i{background:linear-gradient(90deg,#cf3d4e,var(--danger))}
-.map{width:180px;height:110px;border-radius:12px;border:1px solid var(--line);background:rgba(4,18,27,.86);box-shadow:0 16px 45px #0005}.hint{position:absolute;left:12px;bottom:12px;max-width:min(680px,calc(100% - 24px));padding:9px 11px;border-radius:11px;background:rgba(2,10,16,.74);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(8px);font-size:11px;color:#d7eaf4}
-.dock{position:absolute;right:12px;bottom:12px;width:min(345px,calc(100% - 24px));padding:14px;border-radius:14px;background:rgba(8,21,31,.95);border:1px solid rgba(246,196,83,.24);pointer-events:auto;display:none;box-shadow:0 20px 60px #0008}.dock.show{display:block}.dock h3{margin:0 0 4px;font-size:15px}.dock p{margin:0 0 10px;color:var(--muted);font-size:11px;line-height:1.45}.dockgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.dock button{padding:10px}.buy{background:#164638}.sell{background:#5a4515}.repair{background:#203c52}.note{margin-top:8px;font-size:10px;color:#88a1b2}
-.modal{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,6,11,.7);padding:18px;z-index:8;backdrop-filter:blur(7px)}.card{width:min(660px,100%);padding:25px;border:1px solid rgba(255,255,255,.13);border-radius:20px;background:linear-gradient(180deg,#10283a,#081825);box-shadow:0 32px 90px #000c}.eyebrow{font-size:10px;letter-spacing:1.8px;color:var(--gold);font-weight:900}.card h1{font-size:34px;line-height:1.05;margin:8px 0}.card p{margin:0 0 15px;color:#b9cddb;line-height:1.6}.tips{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px}.tip{padding:11px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);font-size:11px;color:#c9dbe5}.tip b{display:block;color:#fff;margin-bottom:3px}.primary{background:var(--gold);color:#251b04;padding:11px 15px}.footer{padding:7px 12px;text-align:center;border-top:1px solid var(--line);color:#7993a6;font-size:10px}
-@media(max-width:780px){.hud{grid-template-columns:1fr auto}.stats{grid-column:1/-1;grid-row:2}.map{width:140px;height:86px}.right{min-width:170px}.tips{grid-template-columns:1fr}.card h1{font-size:28px}.hint{font-size:9px}}
-</style></head>
+.overlay{position:absolute;inset:0;pointer-events:none}.left,.right{position:absolute;top:12px;display:grid;gap:8px}.left{left:12px}.right{right:12px;width:240px}.panel{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);backdrop-filter:blur(9px);box-shadow:0 18px 50px #0005}.label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}.value{font-size:13px;font-weight:900;margin-top:3px}.bar{height:7px;background:#203c4d;border-radius:8px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#66dff1,#d5fbff)}.bar.gold i{background:linear-gradient(90deg,#d28c28,var(--gold))}.bar.red i{background:linear-gradient(90deg,#c93849,var(--bad))}.bar.green i{background:linear-gradient(90deg,#3aa97c,var(--good))}
+.map{width:100%;height:122px;border-radius:12px;border:1px solid var(--line);background:#031924;display:block}.hint{position:absolute;left:12px;bottom:12px;max-width:min(760px,calc(100% - 24px));padding:9px 11px;border-radius:11px;background:rgba(2,10,16,.76);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(8px);font-size:11px;color:#dbedf4}
+.dock{position:absolute;right:12px;bottom:12px;width:min(410px,calc(100% - 24px));padding:15px;border-radius:15px;background:rgba(7,20,29,.97);border:1px solid rgba(244,195,91,.25);pointer-events:auto;display:none;box-shadow:0 22px 70px #0009}.dock.show{display:block}.dockhead{display:flex;justify-content:space-between;gap:12px;align-items:start}.dock h3{margin:0 0 4px;font-size:16px}.dock p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}.market{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:11px}.market button{padding:10px 7px;font-size:11px}.buy{background:#174f3b}.sell{background:#5d4717}.repair{background:#1b435d}.tradeinfo{margin-top:9px;display:flex;justify-content:space-between;gap:10px;font-size:10px;color:#8ea9ba}
+.modal{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,6,11,.73);padding:18px;z-index:8;backdrop-filter:blur(8px)}.card{width:min(720px,100%);padding:26px;border:1px solid rgba(255,255,255,.13);border-radius:20px;background:linear-gradient(180deg,#102c3e,#081825);box-shadow:0 36px 100px #000d}.eyebrow{font-size:10px;letter-spacing:1.8px;color:var(--gold);font-weight:900}.card h1{font-size:35px;line-height:1.05;margin:8px 0}.card p{margin:0 0 16px;color:#bad0dc;line-height:1.6}.tips{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px}.tip{padding:11px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);font-size:11px;color:#c9dbe4}.tip b{display:block;color:#fff;margin-bottom:3px}.primary{background:var(--gold);color:#241904;padding:11px 15px}.small{margin-top:11px;color:#7993a5;font-size:10px}.footer{padding:7px 12px;text-align:center;border-top:1px solid var(--line);color:#7893a5;font-size:10px}
+@media(max-width:840px){.hud{grid-template-columns:1fr auto}.stats{grid-column:1/-1;grid-row:2}.right{width:190px}.map{height:95px}.tips{grid-template-columns:1fr}.card h1{font-size:29px}.hint{font-size:9px}}
+</style>
+</head>
 <body>
 <div class="wrap">
-<header class="hud"><div class="brand" id="brand">RÜZGÂR LİMANI</div><div class="stats">
+<header class="hud">
+<div class="brand" id="brand">RÜZGÂR LİMANI</div>
+<div class="stats">
 <div class="stat"><span id="goldL">Altın</span><b id="gold">120</b></div>
 <div class="stat"><span id="cargoL">Kargo</span><b id="cargo">0/6</b></div>
 <div class="stat"><span id="hpL">Gövde</span><b id="hp">100%</b></div>
 <div class="stat"><span id="portsL">Liman</span><b id="ports">1/4</b></div>
-<div class="stat"><span id="goalL">Hedef</span><b id="goal">400</b></div>
-</div><div class="actions"><button class="lang" id="lang">EN</button><button class="icon" id="restart">↻</button></div></header>
-<div class="game"><canvas id="c"></canvas><div class="overlay">
-<div class="left"><div class="panel"><div class="label" id="windL">Rüzgâr</div><div class="value" id="windTxt">18 kn</div><div class="bar"><i id="windBar"></i></div></div><div class="panel"><div class="label" id="routeL">Rota</div><div class="value" id="route">A → B</div></div></div>
-<div class="right"><div class="panel"><div class="label" id="missionL">Görev</div><div class="value" id="mission">İlk ticaretini yap</div><div class="bar gold"><i id="missionBar"></i></div></div><canvas class="map" id="mini" width="360" height="220"></canvas></div>
-<div class="hint" id="hint">WASD / ok: hareket · Q/E: yelken ayarı · 1: al · 2: sat · SPACE: hızlı ticaret</div>
-<div class="dock" id="dock"><h3 id="dockTitle">Liman A</h3><p id="dockDesc">Pazar fiyatlarını değerlendir.</p><div class="dockgrid"><button class="buy" id="buy">1 Kargo</button><button class="sell" id="sell">Sat</button><button class="repair" id="repair">Onar</button></div><div class="note" id="dockNote">Ucuz al, pahalı sat. Hasarlı tekne limanda onarılabilir.</div></div>
-<div class="modal" id="modal"><div class="card"><div class="eyebrow">YÖRÜKHAN ORIGINAL</div><h1 id="title">Rüzgâr Limanı</h1><p id="desc">Dört limanı keşfet, ticaret fırsatlarını yakala ve fırtınalar arasında güvenli bir rota kur.</p><div class="tips"><div class="tip"><b id="t1h">Yelken</b><span id="t1">Q/E ile yelkeni rüzgâra göre ayarla.</span></div><div class="tip"><b id="t2h">Ticaret</b><span id="t2">Her limanın alış ve satış fiyatı farklı.</span></div><div class="tip"><b id="t3h">Keşif</b><span id="t3">Denizdeki sandıkları toplayarak ekstra altın kazanabilirsin.</span></div><div class="tip"><b id="t4h">Fırtına</b><span id="t4">Koyu fırtına hücreleri gövdeye hasar verir.</span></div></div><button class="primary" id="start">Oyuna Başla</button></div></div>
-</div></div>
+<div class="stat"><span id="goalL">Hedef</span><b id="goal">450</b></div>
+</div>
+<div class="actions"><button class="lang" id="lang">EN</button><button class="icon" id="restart">↻</button></div>
+</header>
+<div class="game">
+<canvas id="c"></canvas>
+<div class="overlay">
+<div class="left">
+<div class="panel"><div class="label" id="windL">Rüzgâr</div><div class="value" id="windTxt">18 kn</div><div class="bar"><i id="windBar"></i></div></div>
+<div class="panel"><div class="label" id="routeL">Rota</div><div class="value" id="route">A → B</div></div>
+<div class="panel"><div class="label" id="weatherL">Hava</div><div class="value" id="weather">Sakin</div></div>
+</div>
+<div class="right">
+<div class="panel"><div class="label" id="missionL">Görev</div><div class="value" id="mission">İlk ticaretini yap</div><div class="bar gold"><i id="missionBar"></i></div></div>
+<canvas class="map" id="mini" width="360" height="190"></canvas>
+</div>
+<div class="hint" id="hint">WASD / ok: dümen · Q/E: yelken ayarı · 1 al · 2 sat · SPACE hızlı ticaret</div>
+<div class="dock" id="dock">
+<div class="dockhead"><div><h3 id="dockTitle">Liman A</h3><p id="dockDesc">Pazar fiyatlarını değerlendir.</p></div><div class="label" id="dockCargo">0/6</div></div>
+<div class="market">
+<button class="buy" id="buy0">Baharat al</button><button class="sell" id="sell">Kargo sat</button><button class="repair" id="repair">Onar</button>
+</div>
+<div class="tradeinfo"><span id="prices">Alış 2 · Satış 4</span><span id="dockNote">SPACE ile hızlı ticaret</span></div>
+</div>
+<div class="modal" id="modal">
+<div class="card">
+<div class="eyebrow">YÖRÜKHAN ORIGINAL</div>
+<h1 id="title">Rüzgâr Limanı</h1>
+<p id="desc">Dört limanı keşfet, farklı malları düşük fiyata alıp daha değerli pazarlarda sat, fırtınalara yakalanmadan 450 altına ulaş.</p>
+<div class="tips">
+<div class="tip"><b id="t1h">Yelken ayarı</b><span id="t1">Q/E ile yelkeni rüzgâra göre trimle; doğru açı hız kazandırır.</span></div>
+<div class="tip"><b id="t2h">Pazar</b><span id="t2">Her limanın üç mal için farklı fiyatları var.</span></div>
+<div class="tip"><b id="t3h">Keşif</b><span id="t3">Denizdeki sandıkları topla; yeni limanları bulduğunda bonus kazan.</span></div>
+<div class="tip"><b id="t4h">Fırtına</b><span id="t4">Koyu hava hücreleri gövdeye hasar verir; limanda onarım yapabilirsin.</span></div>
+</div>
+<button class="primary" id="start">Oyuna Başla</button>
+<div class="small" id="how">Kazanmak için 4 limanı keşfet, en az 3 ticaret yap ve 450 altına ulaş.</div>
+</div>
+</div>
+</div>
+</div>
 <footer class="footer">Yörükhan Games · Rüzgâr Limanı</footer>
 </div>
 <script>
 var cv=document.getElementById('c'),ctx=cv.getContext('2d'),mini=document.getElementById('mini'),mctx=mini.getContext('2d');
 var W=900,H=560,dpr=1,lang='tr',running=false,last=0,gold=120,cargo=0,maxCargo=6,hp=100,trades=0,keys={},dock=null,visited=new Set(['A']),toast='',toastT=0;
-var world={w:2600,h:1500},ship={x:160,y:360,a:-.2,v:0,sail:.2},wind={a:-.7,spd:1.9},cam={x:0,y:0},islands=[],ports=[],storms=[],crates=[],wake=[];
+var world={w:3200,h:1800},ship={x:180,y:430,a:-.2,v:0,sail:.2},wind={a:-.8,spd:1.8},cam={x:0,y:0},islands=[],ports=[],storms=[],crates=[],wake=[],time=0;
+var goods=[{id:'baharat',tr:'Baharat',en:'Spice',base:2},{id:'kereste',tr:'Kereste',en:'Timber',base:3},{id:'ipek',tr:'İpek',en:'Silk',base:5}];
 var I18N={
-tr:{brand:'RÜZGÂR LİMANI',gold:'Altın',cargo:'Kargo',hp:'Gövde',ports:'Liman',goal:'Hedef',wind:'Rüzgâr',route:'Rota',mission:'Görev',hint:'WASD / ok: hareket · Q/E: yelken ayarı · 1: al · 2: sat · SPACE: hızlı ticaret',title:'Rüzgâr Limanı',desc:'Dört limanı keşfet, ticaret fırsatlarını yakala ve fırtınalar arasında güvenli bir rota kur.',t1h:'Yelken',t1:'Q/E ile yelkeni rüzgâra göre ayarla.',t2h:'Ticaret',t2:'Her limanın alış ve satış fiyatı farklı.',t3h:'Keşif',t3:'Denizdeki sandıkları toplayarak ekstra altın kazanabilirsin.',t4h:'Fırtına',t4:'Koyu fırtına hücreleri gövdeye hasar verir.',start:'Oyuna Başla',buy:'1 Kargo',sell:'Sat',repair:'Onar',dock:'Pazar fiyatlarını değerlendir.',note:'Ucuz al, pahalı sat. Hasarlı tekne limanda onarılabilir.',mission1:'İlk ticaretini yap',mission2:'İki liman daha keşfet',mission3:'400 altına ulaş',calm:'Sakin deniz',windy:'Sert rüzgâr',storm:'Fırtına hattı',win:'Liman ağı tamamlandı!',lose:'Tekne battı.',again:'Yeniden oyna',bought:'Kargo alındı.',sold:'Kargo satıldı.',repaired:'Tekne onarıldı.',crate:'Deniz sandığı: +20 altın',hit:'Sığlığa çarptın!'},
-en:{brand:'WIND HARBOR',gold:'Gold',cargo:'Cargo',hp:'Hull',ports:'Ports',goal:'Goal',wind:'Wind',route:'Route',mission:'Mission',hint:'WASD / arrows: move · Q/E: trim sail · 1: buy · 2: sell · SPACE: quick trade',title:'Wind Harbor',desc:'Discover four ports, exploit market prices and build a safe route through the storms.',t1h:'Sail',t1:'Use Q/E to trim the sail to the wind.',t2h:'Trade',t2:'Each port has different buy and sell prices.',t3h:'Explore',t3:'Collect floating crates for bonus gold.',t4h:'Storm',t4:'Dark storm cells damage your hull.',start:'Start Game',buy:'1 Cargo',sell:'Sell',repair:'Repair',dock:'Read the market and manage your cargo.',note:'Buy low, sell high. Repair your hull in port.',mission1:'Make your first trade',mission2:'Discover two more ports',mission3:'Reach 400 gold',calm:'Calm sea',windy:'Strong wind',storm:'Storm front',win:'Harbor network complete!',lose:'The ship sank.',again:'Play again',bought:'Cargo loaded.',sold:'Cargo sold.',repaired:'Hull repaired.',crate:'Sea crate: +20 gold',hit:'You hit shallow water!'}
+tr:{brand:'RÜZGÂR LİMANI',gold:'Altın',cargo:'Kargo',hp:'Gövde',ports:'Liman',goal:'Hedef',wind:'Rüzgâr',route:'Rota',weather:'Hava',mission:'Görev',hint:'WASD / ok: dümen · Q/E: yelken ayarı · 1 al · 2 sat · SPACE hızlı ticaret',title:'Rüzgâr Limanı',desc:'Dört limanı keşfet, farklı malları düşük fiyata alıp daha değerli pazarlarda sat, fırtınalara yakalanmadan 450 altına ulaş.',t1h:'Yelken ayarı',t1:'Q/E ile yelkeni rüzgâra göre trimle; doğru açı hız kazandırır.',t2h:'Pazar',t2:'Her limanın üç mal için farklı fiyatları var.',t3h:'Keşif',t3:'Denizdeki sandıkları topla; yeni limanları bulduğunda bonus kazan.',t4h:'Fırtına',t4:'Koyu hava hücreleri gövdeye hasar verir; limanda onarım yapabilirsin.',start:'Oyuna Başla',how:'Kazanmak için 4 limanı keşfet, en az 3 ticaret yap ve 450 altına ulaş.',buy:'al',sell:'Kargo sat',repair:'Onar',dock:'Pazar fiyatlarını değerlendir.',quick:'SPACE ile hızlı ticaret',calm:'Sakin',windy:'Sert rüzgâr',storm:'Fırtına hattı',buyok:'Kargo alındı',sellok:'Kargo satıldı',repairOk:'Tekne onarıldı',full:'Kargo ambarı dolu',nomoney:'Yeterli altın yok',nocargo:'Satılacak kargo yok',win:'Liman ağı tamamlandı!',lose:'Tekne battı.',again:'Yeniden oyna',crate:'+20 altın',discovered:'Yeni liman keşfi +10',hit:'Sığlığa çarptın!',goalText:'450 altın ve 4 liman',cargoName:'Kargo',prices:'Alış',sale:'Satış'}, 
+en:{brand:'WIND HARBOR',gold:'Gold',cargo:'Cargo',hp:'Hull',ports:'Ports',goal:'Goal',wind:'Wind',route:'Route',weather:'Weather',mission:'Mission',hint:'WASD / arrows: steer · Q/E: trim sail · 1 buy · 2 sell · SPACE quick trade',title:'Wind Harbor',desc:'Discover four ports, buy goods cheaply, sell them at better markets and reach 450 gold while surviving the storms.',t1h:'Sail trim',t1:'Use Q/E to trim the sail toward the wind for better speed.',t2h:'Market',t2:'Every port has different prices for three goods.',t3h:'Explore',t3:'Collect floating crates and discover ports for bonus gold.',t4h:'Storm',t4:'Dark storm cells damage your hull; repair in port.',start:'Start Game',how:'Win by discovering all 4 ports, making at least 3 trades and reaching 450 gold.',buy:'buy',sell:'Sell cargo',repair:'Repair',dock:'Read the market and choose your trade.',quick:'SPACE for quick trade',calm:'Calm',windy:'Strong wind',storm:'Storm front',buyok:'Cargo loaded',sellok:'Cargo sold',repairOk:'Hull repaired',full:'Cargo hold full',nomoney:'Not enough gold',nocargo:'Nothing to sell',win:'Harbor network complete!',lose:'The ship sank.',again:'Play again',crate:'+20 gold',discovered:'New port discovered +10',hit:'You hit shallow water!',goalText:'450 gold and 4 ports',cargoName:'Cargo',prices:'Buy',sale:'Sell'}
 };
 var TT=I18N.tr;
 function fit(){dpr=Math.min(2,devicePixelRatio||1);var r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',fit);fit();
-function reset(){gold=120;cargo=0;hp=100;trades=0;dock=null;visited=new Set(['A']);toast='';toastT=0;ship={x:160,y:360,a:-.2,v:0,sail:.2};wind={a:-.7,spd:1.9};cam={x:0,y:0};wake=[];gen();sync(true)}
-function gen(){
-islands=[];storms=[];crates=[];
-ports=[{id:'A',x:160,y:360,buy:2,sell:4},{id:'B',x:1030,y:180,buy:1,sell:7},{id:'C',x:1930,y:820,buy:3,sell:8},{id:'D',x:760,y:1120,buy:2,sell:6}];
-for(var i=0;i<34;i++){var x=70+Math.random()*2460,y=70+Math.random()*1360,ok=true;for(var j=0;j<ports.length;j++)if(Math.hypot(x-ports[j].x,y-ports[j].y)<150){ok=false;break}if(ok)islands.push({x:x,y:y,r:28+Math.random()*72,p:Math.random()*9})}
-for(i=0;i<7;i++)storms.push({x:300+i*350+Math.random()*160,y:140+Math.random()*1050,r:72+Math.random()*58,a:Math.random()*6.2,s:.25+Math.random()*.45});
-for(i=0;i<10;i++)crates.push({x:130+Math.random()*2300,y:100+Math.random()*1250,r:9,got:false,p:Math.random()*9})
+function reset(){gold=120;cargo=0;hp=100;trades=0;dock=null;visited=new Set(['A']);toast='';toastT=0;time=0;ship={x:180,y:430,a:-.2,v:0,sail:.2};wind={a:-.8,spd:1.8};cam={x:0,y:0};gen();sync(true)}
+function gen(){islands=[];storms=[];crates=[];
+ports=[{id:'A',x:180,y:430,m:[{b:2,s:5},{b:4,s:5},{b:7,s:6}]},{id:'B',x:1180,y:250,m:[{b:1,s:6},{b:6,s:8},{b:4,s:9}]},{id:'C',x:2260,y:1040,m:[{b:3,s:7},{b:2,s:8},{b:5,s:10}]},{id:'D',x:730,y:1330,m:[{b:2,s:6},{b:3,s:7},{b:2,s:11}]}];
+for(var i=0;i<42;i++){var x=80+Math.random()*3040,y=80+Math.random()*1640,ok=true;for(var j=0;j<ports.length;j++)if(Math.hypot(x-ports[j].x,y-ports[j].y)<170)ok=false;if(ok)islands.push({x:x,y:y,r:30+Math.random()*80,p:Math.random()*8})}
+for(i=0;i<8;i++)storms.push({x:430+i*360+Math.random()*180,y:180+Math.random()*1300,r:75+Math.random()*65,a:Math.random()*6.2,s:.18+Math.random()*.35,drift:Math.random()>.5?1:-1});
+for(i=0;i<12;i++)crates.push({x:130+Math.random()*2920,y:100+Math.random()*1600,got:false,p:Math.random()*9});
 }
-function txt(s,x,y,size,alpha,weight){ctx.save();ctx.globalAlpha=alpha==null?1:alpha;ctx.fillStyle='#eff9ff';ctx.font=(weight||700)+' '+(size||14)+'px Inter,system-ui,sans-serif';ctx.fillText(s,x,y);ctx.restore()}
-function circle(x,y,r,f,st){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(f){ctx.fillStyle=f;ctx.fill()}if(st){ctx.strokeStyle=st;ctx.stroke()}}
-function nearestPort(){var b=null,d0=1e9;for(var i=0;i<ports.length;i++){var d=Math.hypot(ports[i].x-ship.x,ports[i].y-ship.y);if(d<92&&d<d0){b=ports[i];d0=d}}return b}
-function weather(){var d=1e9;for(var i=0;i<storms.length;i++)d=Math.min(d,Math.hypot(storms[i].x-ship.x,storms[i].y-ship.y)-storms[i].r);return d<0?TT.storm:d<140?TT.windy:TT.calm}
-function msg(s){toast=s;toastT=1.05}
-function drawMap(){mctx.clearRect(0,0,360,220);mctx.fillStyle='#082838';mctx.fillRect(0,0,360,220);var sx=360/world.w,sy=220/world.h;mctx.fillStyle='#124b58';for(var i=0;i<islands.length;i++){mctx.beginPath();mctx.arc(islands[i].x*sx,islands[i].y*sy,Math.max(1.5,islands[i].r*sx),0,Math.PI*2);mctx.fill()}for(i=0;i<ports.length;i++){mctx.fillStyle=visited.has(ports[i].id)?'#f6c453':'#537c88';mctx.beginPath();mctx.arc(ports[i].x*sx,ports[i].y*sy,4,0,Math.PI*2);mctx.fill()}mctx.fillStyle='#fff';mctx.beginPath();mctx.arc(ship.x*sx,ship.y*sy,4,0,Math.PI*2);mctx.fill();mctx.strokeStyle='rgba(255,255,255,.18)';mctx.strokeRect(4,4,352,212)}
+function txt(s,x,y,size,alpha,weight,color){ctx.save();ctx.globalAlpha=alpha==null?1:alpha;ctx.fillStyle=color||'#eff9ff';ctx.font=(weight||700)+' '+(size||14)+'px Inter,system-ui,sans-serif';ctx.fillText(s,x,y);ctx.restore()}
+function circle(x,y,r,f,s){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(f){ctx.fillStyle=f;ctx.fill()}if(s){ctx.strokeStyle=s;ctx.stroke()}}
+function nearestPort(){var b=null,d0=1e9;for(var i=0;i<ports.length;i++){var d=Math.hypot(ports[i].x-ship.x,ports[i].y-ship.y);if(d<100&&d<d0){b=ports[i];d0=d}}return b}
+function weather(){var near=1e9;for(var i=0;i<storms.length;i++)near=Math.min(near,Math.hypot(storms[i].x-ship.x,storms[i].y-ship.y)-storms[i].r);return near<0?TT.storm:near<150?TT.windy:TT.calm}
+function marketText(p){return goods.map(function(g,k){return g[lang]+' '+TT.prices+' '+p.m[k].b+' · '+TT.sale+' '+p.m[k].s}).join('   ')}
+function msg(s){toast=s;toastT=1.1}
+function drawMap(){mctx.clearRect(0,0,360,190);mctx.fillStyle='#052332';mctx.fillRect(0,0,360,190);var sx=360/world.w,sy=190/world.h;mctx.fillStyle='#124d59';for(var i=0;i<islands.length;i++){mctx.beginPath();mctx.arc(islands[i].x*sx,islands[i].y*sy,Math.max(2,islands[i].r*sx),0,Math.PI*2);mctx.fill()}for(i=0;i<storms.length;i++){mctx.fillStyle='rgba(120,125,165,.16)';mctx.beginPath();mctx.arc(storms[i].x*sx,storms[i].y*sy,Math.max(5,storms[i].r*sx),0,Math.PI*2);mctx.fill()}for(i=0;i<ports.length;i++){mctx.fillStyle=visited.has(ports[i].id)?'#f4c35b':'#557582';mctx.beginPath();mctx.arc(ports[i].x*sx,ports[i].y*sy,4,0,Math.PI*2);mctx.fill()}mctx.fillStyle='#fff';mctx.beginPath();mctx.arc(ship.x*sx,ship.y*sy,4,0,Math.PI*2);mctx.fill()}
 function draw(){
-ctx.clearRect(0,0,W,H);var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b4d62');g.addColorStop(.55,'#087081');g.addColorStop(1,'#045064');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-for(var y=-20;y<H+40;y+=30){ctx.strokeStyle='rgba(220,248,255,.055)';ctx.beginPath();ctx.moveTo(0,y+Math.sin((y+cam.x)*.012)*4);ctx.lineTo(W,y);ctx.stroke()}
-ctx.save();ctx.translate(-cam.x*.12,-cam.y*.12);for(var i=0;i<ports.length;i++){var p=ports[i],px=p.x-cam.x*.88,py=p.y-cam.y*.88;circle(px,py,31,'rgba(5,20,29,.35)');circle(px,py,22,visited.has(p.id)?'#f6c453':'#607d86');txt(p.id,px-5,py+5,13,1,900)}ctx.restore();
+ctx.clearRect(0,0,W,H);
+var sky=ctx.createLinearGradient(0,0,0,H);var night=.5+.5*Math.sin(time*.035);sky.addColorStop(0,'rgb('+Math.floor(9+6*night)+','+Math.floor(54-25*night)+','+Math.floor(72-35*night)+')');sky.addColorStop(.55,'#086779');sky.addColorStop(1,'#034556');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+for(var y=-30;y<H+50;y+=28){ctx.strokeStyle='rgba(225,250,255,.055)';ctx.beginPath();ctx.moveTo(0,y+Math.sin((y+cam.x)*.009)*3);ctx.lineTo(W,y);ctx.stroke()}
+ctx.save();ctx.translate(-cam.x*.12,-cam.y*.12);
+for(var i=0;i<ports.length;i++){var p=ports[i],px=p.x-cam.x*.88,py=p.y-cam.y*.88;circle(px,py,35,'rgba(3,16,23,.35)');circle(px,py,24,visited.has(p.id)?'#f4c35b':'#5b7d85');txt(p.id,px-5,py+5,13,1,900,'#15220f')}
+ctx.restore();
 ctx.save();ctx.translate(-cam.x,-cam.y);
-for(i=0;i<storms.length;i++){var s=storms[i];ctx.fillStyle='rgba(42,49,78,.23)';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();for(var k=0;k<5;k++){ctx.strokeStyle='rgba(220,230,255,.13)';ctx.beginPath();ctx.arc(s.x,s.y,s.r-12-k*10,s.a+k*.5,s.a+2+k*.5);ctx.stroke()}}
-for(i=0;i<islands.length;i++){var q=islands[i];ctx.fillStyle='#155046';ctx.beginPath();ctx.arc(q.x,q.y,q.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#26715a';ctx.beginPath();ctx.arc(q.x-q.r*.18,q.y-q.r*.18,q.r*.5,0,Math.PI*2);ctx.fill()}
-for(i=0;i<crates.length;i++){var c=crates[i];if(c.got)continue;var bob=Math.sin(performance.now()*.004+c.p)*2;circle(c.x,c.y+bob,9,'#e6b44a','#fff3b0');ctx.fillStyle='#694a1b';ctx.fillRect(c.x-4,c.y-2+bob,8,4)}
-for(i=0;i<wake.length;i++){var w=wake[i];ctx.globalAlpha=w.a;ctx.fillStyle='#dcfbff';ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,Math.PI*2);ctx.fill();w.a-=.012;w.r+=.025}ctx.globalAlpha=1;
-ctx.save();ctx.translate(ship.x,ship.y);ctx.rotate(ship.a);ctx.fillStyle='#e1bc76';ctx.beginPath();ctx.moveTo(27,0);ctx.lineTo(-18,-12);ctx.lineTo(-12,0);ctx.lineTo(-18,12);ctx.closePath();ctx.fill();ctx.strokeStyle='#3c291b';ctx.lineWidth=3;ctx.stroke();ctx.strokeStyle='#d9bd83';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-2,0);ctx.lineTo(-2,-32);ctx.stroke();ctx.fillStyle='#f7efdc';ctx.beginPath();ctx.moveTo(-1,-28);ctx.lineTo(-1,3);ctx.lineTo(22,-14);ctx.closePath();ctx.fill();ctx.restore();ctx.restore();
-var v=ctx.createRadialGradient(W/2,H/2,120,W/2,H/2,Math.max(W,H)*.72);v.addColorStop(0,'transparent');v.addColorStop(1,'rgba(0,10,16,.38)');ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
-if(toastT>0){ctx.fillStyle='rgba(4,14,20,.88)';ctx.fillRect(W/2-130,20,260,34);txt(toast,W/2-ctx.measureText(toast).width/2,42,13,Math.min(1,toastT),900)}
-drawMap()
+for(i=0;i<storms.length;i++){var s=storms[i];ctx.fillStyle='rgba(45,51,83,.2)';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();for(var k=0;k<6;k++){ctx.strokeStyle='rgba(225,232,255,.12)';ctx.beginPath();ctx.arc(s.x,s.y,s.r-13-k*10,s.a+k*.55,s.a+2+k*.55);ctx.stroke()}}
+for(i=0;i<islands.length;i++){var isl=islands[i];ctx.fillStyle='#12493e';ctx.beginPath();ctx.arc(isl.x,isl.y,isl.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#2b745b';ctx.beginPath();ctx.arc(isl.x-isl.r*.18,isl.y-isl.r*.2,isl.r*.53,0,Math.PI*2);ctx.fill();for(k=0;k<4;k++){var px2=isl.x-isl.r*.25+k*isl.r*.16,py2=isl.y-isl.r*.25-Math.sin(k+isl.p)*isl.r*.08;ctx.strokeStyle='#3c8f66';ctx.beginPath();ctx.moveTo(px2,py2+8);ctx.lineTo(px2+Math.sin(k)*7,py2-8);ctx.stroke()}}
+for(i=0;i<crates.length;i++){var cr=crates[i];if(cr.got)continue;var bob=Math.sin(time*.07+cr.p)*2;circle(cr.x,cr.y+bob,9,'#e5b449','#fff1ad');ctx.fillStyle='#72511b';ctx.fillRect(cr.x-4,cr.y-2+bob,8,4)}
+for(i=0;i<wake.length;i++){var w=wake[i];ctx.globalAlpha=w.a;ctx.fillStyle='#d8fbff';circle(w.x,w.y,w.r,ctx.fillStyle);w.a-=.012;w.r+=.03}ctx.globalAlpha=1;
+ctx.save();ctx.translate(ship.x,ship.y);ctx.rotate(ship.a);ctx.shadowColor='rgba(0,0,0,.45)';ctx.shadowBlur=10;ctx.fillStyle='#e0bb73';ctx.beginPath();ctx.moveTo(29,0);ctx.lineTo(-19,-12);ctx.lineTo(-13,0);ctx.lineTo(-19,12);ctx.closePath();ctx.fill();ctx.strokeStyle='#3a281b';ctx.lineWidth=3;ctx.stroke();ctx.shadowBlur=0;ctx.strokeStyle='#d6bc85';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-2,0);ctx.lineTo(-2,-34);ctx.stroke();ctx.fillStyle='#f6f0dc';ctx.beginPath();ctx.moveTo(-1,-31);ctx.lineTo(-1,3);ctx.lineTo(25,-14);ctx.closePath();ctx.fill();ctx.restore();
+ctx.restore();
+var vign=ctx.createRadialGradient(W/2,H/2,120,W/2,H/2,Math.max(W,H)*.75);vign.addColorStop(0,'transparent');vign.addColorStop(1,'rgba(0,8,13,.42)');ctx.fillStyle=vign;ctx.fillRect(0,0,W,H);
+if(toastT>0){toastT-=.016;ctx.fillStyle='rgba(3,13,19,.9)';ctx.fillRect(W/2-145,18,290,35);txt(toast,W/2-ctx.measureText(toast).width/2,41,13,Math.min(1,toastT),900)}
+drawMap();
 }
 function move(dt){
-var turn=0,acc=0;if(keys.a||keys.arrowleft)turn--;if(keys.d||keys.arrowright)turn++;if(keys.w||keys.arrowup)acc++;if(keys.s||keys.arrowdown)acc-=.55;if(keys.q)ship.sail=Math.max(-1,ship.sail-dt*.8);if(keys.e)ship.sail=Math.min(1,ship.sail+dt*.8);
-ship.a+=turn*1.75*dt;wind.a+=Math.sin(performance.now()*.00025)*.0006;wind.spd=1.55+.45*Math.sin(performance.now()*.00016)+.28*Math.sin(performance.now()*.00041);
-var rel=Math.cos(ship.a-wind.a),trim=1-Math.min(1,Math.abs(ship.sail-rel)*.52),power=.28+(.72*Math.max(0,rel))*trim+acc*.12;
-ship.v+=((power*wind.spd*1.8)-ship.v*.55)*dt;ship.v=Math.max(0,Math.min(7.5,ship.v));
-var nx=ship.x+Math.cos(ship.a)*ship.v*28*dt,ny=ship.y+Math.sin(ship.a)*ship.v*28*dt,hit=false;
-for(var i=0;i<islands.length;i++)if(Math.hypot(nx-islands[i].x,ny-islands[i].y)<islands[i].r+10){hit=true;break}
-if(!hit){ship.x=nx;ship.y=ny}else if(ship.v>1.4){hp-=8*dt;ship.v*=.2;msg(TT.hit)}
-ship.x=Math.max(25,Math.min(world.w-25,ship.x));ship.y=Math.max(25,Math.min(world.h-25,ship.y));cam.x=Math.max(0,Math.min(world.w-W,ship.x-W*.45));cam.y=Math.max(0,Math.min(world.h-H,ship.y-H*.5));
-for(i=0;i<storms.length;i++){var s=storms[i],d=Math.hypot(s.x-ship.x,s.y-ship.y);s.a+=dt*s.s;if(d<s.r*.7){hp-=dt*(4+10*(1-d/s.r));ship.v*=.994}}
-for(i=0;i<crates.length;i++){var c=crates[i];if(!c.got&&Math.hypot(c.x-ship.x,c.y-ship.y)<24){c.got=true;gold+=20;msg(TT.crate)}}
-wake.push({x:ship.x-Math.cos(ship.a)*16,y:ship.y-Math.sin(ship.a)*16,r:2+ship.v*.16,a:.3});if(wake.length>80)wake.shift();
-dock=nearestPort();if(dock&&ship.v<1.1){if(!visited.has(dock.id)){visited.add(dock.id);gold+=10;msg((lang==='tr'?'Yeni liman: ':'New port: ')+dock.id)}}else if(!dock)dock=null;
-if(hp<=0){running=false;finish(false);return}if(gold>=400&&visited.size>=4){running=false;finish(true);return}sync(false)
+var turn=0,throttle=0;if(keys.a||keys.arrowleft)turn--;if(keys.d||keys.arrowright)turn++;if(keys.w||keys.arrowup)throttle++;if(keys.s||keys.arrowdown)throttle-=.55;if(keys.q)ship.sail=Math.max(-1,ship.sail-dt*.85);if(keys.e)ship.sail=Math.min(1,ship.sail+dt*.85);
+ship.a+=turn*1.8*dt;wind.a+=Math.sin(time*.0017)*.00055;wind.spd=1.55+.38*Math.sin(time*.0011)+.22*Math.sin(time*.0027);
+var rel=Math.cos(ship.a-wind.a),trim=1-Math.min(1,Math.abs(ship.sail-rel)*.55),drive=Math.max(0,rel)*trim,desired=(.65+drive*1.8+throttle*.28)*wind.spd;ship.v+=(desired-ship.v*.62)*dt;ship.v=Math.max(0,Math.min(8.5,ship.v));
+var nx=ship.x+Math.cos(ship.a)*ship.v*29*dt,ny=ship.y+Math.sin(ship.a)*ship.v*29*dt,hit=false;
+for(var i=0;i<islands.length;i++)if(Math.hypot(nx-islands[i].x,ny-islands[i].y)<islands[i].r+11){hit=true;break}
+if(hit){if(ship.v>1.5){hp-=9*dt;ship.v*=.18;msg(TT.hit)}}else{ship.x=nx;ship.y=ny}
+ship.x=Math.max(24,Math.min(world.w-24,ship.x));ship.y=Math.max(24,Math.min(world.h-24,ship.y));cam.x=Math.max(0,Math.min(world.w-W,ship.x-W*.44));cam.y=Math.max(0,Math.min(world.h-H,ship.y-H*.5));
+for(i=0;i<storms.length;i++){var s=storms[i];s.a+=dt*s.s;s.x+=Math.cos(s.a)*s.drift*7*dt;s.y+=Math.sin(s.a*.7)*s.drift*4*dt;if(s.x<120||s.x>world.w-120)s.drift*=-1;if(s.y<120||s.y>world.h-120)s.a+=3;var d=Math.hypot(s.x-ship.x,s.y-ship.y);if(d<s.r*.72){hp-=dt*(4+10*(1-d/s.r));ship.v*=.993}}
+for(i=0;i<crates.length;i++){var cr=crates[i];if(!cr.got&&Math.hypot(cr.x-ship.x,cr.y-ship.y)<26){cr.got=true;gold+=20;msg(TT.crate)}}
+wake.push({x:ship.x-Math.cos(ship.a)*17,y:ship.y-Math.sin(ship.a)*17,r:2+ship.v*.15,a:.26});if(wake.length>90)wake.shift();
+dock=nearestPort();if(dock&&ship.v<1.15){if(!visited.has(dock.id)){visited.add(dock.id);gold+=10;msg(TT.discovered)}}else if(!dock){dock=null}
+if(hp<=0){running=false;finish(false);return}if(gold>=450&&visited.size>=4&&trades>=3){running=false;finish(true);return}sync(false)
 }
-function buy(){if(!dock)return;if(cargo>=maxCargo||gold<dock.buy){msg(lang==='tr'?'Kargo için yeterli yer/altın yok.':'No room or gold.');return}gold-=dock.buy;cargo++;trades++;msg(TT.bought);sync(false)}
-function sell(){if(!dock||cargo<=0){msg(lang==='tr'?'Satacak kargo yok.':'No cargo to sell.');return}gold+=dock.sell;cargo--;trades++;msg(TT.sold);sync(false)}
-function repair(){if(!dock){return}var cost=Math.max(5,Math.ceil((100-hp)*.25));if(hp>=99){msg(lang==='tr'?'Gövde zaten sağlam.':'Hull is already healthy.');return}if(gold<cost){msg(lang==='tr'?'Onarım için yeterli altın yok.':'Not enough gold to repair.');return}gold-=cost;hp=100;msg(TT.repaired);sync(false)}
-function quickTrade(){if(!dock)return;if(cargo>0)sell();else buy()}
-function finish(win){document.getElementById('modal').style.display='grid';document.getElementById('title').textContent=win?TT.win:TT.lose;document.getElementById('desc').textContent=(win?(lang==='tr'?'Dört limanı keşfettin, ticaret yaptın ve 400 altına ulaştın. ':'You discovered all four ports and reached 400 gold. '):(lang==='tr'?'Gövde dayanıklılığı bitti. ':'Your hull reached zero. '))+(lang==='tr'?'Skor: ':'Score: ')+Math.floor(gold);document.getElementById('start').textContent=TT.again}
-function sync(full){TT=I18N[lang];document.getElementById('brand').textContent=TT.brand;document.getElementById('goldL').textContent=TT.gold;document.getElementById('cargoL').textContent=TT.cargo;document.getElementById('hpL').textContent=TT.hp;document.getElementById('portsL').textContent=TT.ports;document.getElementById('goalL').textContent=TT.goal;document.getElementById('windL').textContent=TT.wind;document.getElementById('routeL').textContent=TT.route;document.getElementById('missionL').textContent=TT.mission;document.getElementById('hint').textContent=TT.hint;document.getElementById('gold').textContent=Math.floor(gold);document.getElementById('cargo').textContent=cargo+'/'+maxCargo;document.getElementById('hp').textContent=Math.max(0,Math.floor(hp))+'%';document.getElementById('ports').textContent=visited.size+'/4';document.getElementById('goal').textContent='400';document.getElementById('windTxt').textContent=Math.round(wind.spd*10)+' kn';document.getElementById('windBar').style.width=Math.min(100,wind.spd/2.7*100)+'%';var weatherText=weather();document.getElementById('mission').textContent=visited.size<3?TT.mission2:TT.mission3;document.getElementById('missionBar').style.width=Math.min(100,(visited.size/4)*55+(gold/400)*45)+'%';var cur=dock?dock.id:Array.from(visited).at(-1),tar=ports.find(function(p){return p.id!==cur});document.getElementById('route').textContent=cur+' → '+(tar?tar.id:'A');document.getElementById('dock').classList.toggle('show',!!dock);if(dock){document.getElementById('dockTitle').textContent=(lang==='tr'?'Liman ':'Port ')+dock.id;document.getElementById('dockDesc').textContent=TT.dock;document.getElementById('buy').textContent=TT.buy+' · '+dock.buy+'g';document.getElementById('sell').textContent=TT.sell+' · '+dock.sell+'g';document.getElementById('repair').textContent=TT.repair+' · '+Math.max(5,Math.ceil((100-hp)*.25))+'g';document.getElementById('dockNote').textContent=TT.note}document.getElementById('lang').textContent=lang==='tr'?'EN':'TR';if(full){document.getElementById('title').textContent=TT.title;document.getElementById('desc').textContent=TT.desc;document.getElementById('t1h').textContent=TT.t1h;document.getElementById('t1').textContent=TT.t1;document.getElementById('t2h').textContent=TT.t2h;document.getElementById('t2').textContent=TT.t2;document.getElementById('t3h').textContent=TT.t3h;document.getElementById('t3').textContent=TT.t3;document.getElementById('t4h').textContent=TT.t4h;document.getElementById('t4').textContent=TT.t4;document.getElementById('start').textContent=running?TT.again:TT.start}}
-function loop(t){var dt=Math.min(.033,(t-last)/1000||.016);last=t;if(running)move(dt);draw();requestAnimationFrame(loop)}
+function buy(){if(!dock)return;if(cargo>=maxCargo){msg(TT.full);return}var k=0,p=dock.m[k];if(gold<p.b){msg(TT.nomoney);return}gold-=p.b;cargo++;trades++;msg(TT.buyok);sync(false)}
+function sell(){if(!dock||cargo<=0){msg(TT.nocargo);return}var k=Math.max(0,Math.min(2,Math.floor((trades+visited.size)%3))),p=dock.m[k];gold+=p.s;cargo--;trades++;msg(TT.sellok);sync(false)}
+function repair(){if(!dock)return;if(hp>=99){msg(lang==='tr'?'Gövde zaten sağlam.':'Hull is already healthy.');return}var cost=Math.max(5,Math.ceil((100-hp)*.23));if(gold<cost){msg(TT.nomoney);return}gold-=cost;hp=100;msg(TT.repairOk);sync(false)}
+function quick(){if(!dock)return;if(cargo>0)sell();else buy()}
+function finish(win){document.getElementById('modal').style.display='grid';document.getElementById('title').textContent=win?TT.win:TT.lose;document.getElementById('desc').textContent=win?(lang==='tr'?'Dört limanı keşfettin, 3 ticaret yaptın ve 450 altına ulaştın. ':'You discovered all four ports, made 3 trades and reached 450 gold. '):(lang==='tr'?'Gövde dayanıklılığı sıfırlandı. ':'Your hull reached zero. ')+(lang==='tr'?'Skor: ':'Score: ')+Math.floor(gold);document.getElementById('start').textContent=TT.again}
+function sync(full){
+TT=I18N[lang];document.getElementById('brand').textContent=TT.brand;document.getElementById('goldL').textContent=TT.gold;document.getElementById('cargoL').textContent=TT.cargo;document.getElementById('hpL').textContent=TT.hp;document.getElementById('portsL').textContent=TT.ports;document.getElementById('goalL').textContent=TT.goal;document.getElementById('windL').textContent=TT.wind;document.getElementById('routeL').textContent=TT.route;document.getElementById('weatherL').textContent=TT.weather;document.getElementById('missionL').textContent=TT.mission;document.getElementById('hint').textContent=TT.hint;document.getElementById('gold').textContent=Math.floor(gold);document.getElementById('cargo').textContent=cargo+'/'+maxCargo;document.getElementById('hp').textContent=Math.max(0,Math.floor(hp))+'%';document.getElementById('ports').textContent=visited.size+'/4';document.getElementById('goal').textContent='450';document.getElementById('windTxt').textContent=Math.round(wind.spd*10)+' kn';document.getElementById('windBar').style.width=Math.min(100,wind.spd/2.7*100)+'%';document.getElementById('weather').textContent=weather();
+var p=dock,cur=p?p.id:Array.from(visited).at(-1),targets=ports.filter(function(x){return !visited.has(x.id)}),tar=targets[0]||ports.find(function(x){return x.id!==cur});document.getElementById('route').textContent=cur+' → '+(tar?tar.id:'A');document.getElementById('mission').textContent=visited.size<4?TT.ports+' '+(4-visited.size)+' '+(lang==='tr'?'kaldı':'left'):trades<3?TT.mission+' · 3 '+(lang==='tr'?'ticaret':'trades'):TT.goal+' · 450';document.getElementById('missionBar').style.width=Math.min(100,(visited.size/4*45)+(Math.min(3,trades)/3*25)+(Math.min(450,gold)/450*30))+'%';document.getElementById('dock').classList.toggle('show',!!dock);if(dock){document.getElementById('dockTitle').textContent=(lang==='tr'?'Liman ':'Port ')+dock.id;document.getElementById('dockDesc').textContent=TT.dock;document.getElementById('dockCargo').textContent=cargo+'/'+maxCargo;document.getElementById('buy0').textContent=(lang==='tr'?'Baharat al':'Buy Spice')+' · '+dock.m[0].b;document.getElementById('sell').textContent=TT.sell;document.getElementById('repair').textContent=TT.repair;document.getElementById('prices').textContent=goods[0][lang]+' '+TT.prices+' '+dock.m[0].b+' · '+TT.sale+' '+dock.m[0].s;document.getElementById('dockNote').textContent=TT.quick}
+if(full){document.getElementById('title').textContent=TT.title;document.getElementById('desc').textContent=TT.desc;document.getElementById('t1h').textContent=TT.t1h;document.getElementById('t1').textContent=TT.t1;document.getElementById('t2h').textContent=TT.t2h;document.getElementById('t2').textContent=TT.t2;document.getElementById('t3h').textContent=TT.t3h;document.getElementById('t3').textContent=TT.t3;document.getElementById('t4h').textContent=TT.t4h;document.getElementById('t4').textContent=TT.t4;document.getElementById('start').textContent=running?TT.again:TT.start;document.getElementById('how').textContent=TT.how;document.getElementById('lang').textContent=lang==='tr'?'EN':'TR'}
+}
+function loop(t){var dt=Math.min(.033,(t-last)/1000||.016);last=t;time=t;if(running)move(dt);draw();requestAnimationFrame(loop)}
 document.getElementById('start').onclick=function(){reset();running=true;document.getElementById('modal').style.display='none';last=performance.now()};
 document.getElementById('restart').onclick=function(){reset();running=true;document.getElementById('modal').style.display='none';last=performance.now()};
-document.getElementById('buy').onclick=buy;document.getElementById('sell').onclick=sell;document.getElementById('repair').onclick=repair;
 document.getElementById('lang').onclick=function(){lang=lang==='tr'?'en':'tr';sync(true);document.getElementById('modal').style.display='grid';running=false};
-addEventListener('keydown',function(e){var k=e.key.toLowerCase();keys[k]=true;if(k==='1')buy();if(k==='2')sell();if(e.code==='Space'){e.preventDefault();quickTrade()}});
-addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
+document.getElementById('buy0').onclick=buy;document.getElementById('sell').onclick=sell;document.getElementById('repair').onclick=repair;
+addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;if(e.code==='Space'){e.preventDefault();quick()}else if(e.key==='1')buy();else if(e.key==='2')sell()});addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
 reset();sync(true);requestAnimationFrame(loop);
-</script></body></html>
+</script>
+</body>
+</html>

@@ -518,3 +518,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .toast { bottom: calc(80px + env(safe-area-inset-bottom)); }
 }
 @media (hover: none) { .play-hover { display: none; } }
+
+/* Dil seçimi (Türkçe / English) */
+html[lang="en"] [data-lang="tr"], html:not([lang="en"]) [data-lang="en"] { display: none !important; }
+.lang-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; background: transparent; color: var(--muted); font: inherit; font-weight: 700; font-size: 13.5px; cursor: pointer; white-space: nowrap; }
+.lang-btn:hover { color: var(--text); border-color: rgba(255,255,255,.3); }
+.lang-btn svg { width: 16px; height: 16px; }
+.lang-btn .short { display: none; }
+@media (max-width: 760px) { .lang-btn { padding: 0 10px; } .lang-btn .long { display: none; } .lang-btn .short { display: inline; } }
+.footer-links .lang-link { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+.topbar .lang-btn { margin-left: auto; flex: none; }
+.topbar .lang-btn + .top-auth { margin-left: 0; }

@@ -61,7 +61,7 @@ function attach(img) {
     play(v);
   } else if (host.classList.contains('thumb')) {
     const card = host.closest('a, .gcard') || host;
-    if (host.closest('.gcard') && !host.querySelector('.clip-badge')) host.insertAdjacentHTML('beforeend', '<span class="clip-badge">KLİP</span>');
+    if (host.closest('.gcard') && !host.querySelector('.clip-badge')) host.insertAdjacentHTML('beforeend', '<span class="clip-badge">' + (window.YG_LANG === 'en' ? 'CLIP' : 'KLİP') + '</span>');
     if (canHover) { card.addEventListener('mouseenter', () => play(v)); card.addEventListener('mouseleave', () => stop(v)); }
     else if (io) { host._clip = v; io.observe(host); }
   }

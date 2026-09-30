@@ -1,6 +1,6 @@
 // Oyun oynatıcı: yüklenen oyunları güvenli bir kutu (sandbox) içinde çalıştırır.
 // Kullanıcı oyunları sitenin geri kalanına (giriş bilgileri vb.) erişemez.
-import { sb } from './common.js';
+import { sb, t } from './common.js';
 
 // Oyunun içine eklenen küçük yardımcı: kutu içinde localStorage çalışmadığı için
 // oyunun kayıtlarını (skor, seviye) sahte bir depoda tutar ve siteye iletir.
@@ -56,15 +56,15 @@ function SHIM(init) {
   }
 }
 
-// Oyun dili (tr/en): oyuncunun seçimi, yoksa tarayıcı dili. Sitenin kendi oyunları bunu okur.
+// Oyun dili (tr/en): sitenin dil seçimiyle aynı (i18n.js). Sitenin kendi oyunları bunu okur.
 const LANG_KEY = 'yg_lang';
 export function getGameLang() {
+  if (window.YG_LANG === 'tr' || window.YG_LANG === 'en') return window.YG_LANG;
   let l = null;
   try { l = localStorage.getItem(LANG_KEY); } catch {}
   if (l === 'tr' || l === 'en') return l;
   return /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
 }
-export function setGameLang(l) { try { localStorage.setItem(LANG_KEY, l); } catch {} }
 
 export function buildSrcdoc(html, saveData) {
   const init = JSON.stringify(saveData || {}).replace(/</g, '\\u003c');
@@ -100,11 +100,11 @@ export async function startGame(container, game, opts = {}) {
   container.querySelectorAll('iframe, .player-cover, .player-loading').forEach(n => n.remove());
   const loading = document.createElement('div');
   loading.className = 'player-loading';
-  loading.innerHTML = '<div><div class="spinner"></div>Oyun yükleniyor…</div>';
+  loading.innerHTML = `<div><div class="spinner"></div>${t('Oyun yükleniyor…', 'Loading game…')}</div>`;
   container.appendChild(loading);
 
   const frame = document.createElement('iframe');
-  frame.title = game.title || 'Oyun';
+  frame.title = game.title || t('Oyun', 'Game');
   frame.setAttribute('allow', 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; microphone; clipboard-write');
   frame.setAttribute('allowfullscreen', '');
   frame.setAttribute('referrerpolicy', 'no-referrer');
@@ -118,7 +118,7 @@ export async function startGame(container, game, opts = {}) {
       let html = opts.html;
       if (html == null) {
         const res = await fetch(gameFileUrl(game.file_path), { cache: 'force-cache' });
-        if (!res.ok) throw new Error('Dosya bulunamadı (' + res.status + ')');
+        if (!res.ok) throw new Error(t('Dosya bulunamadı (', 'File not found (') + res.status + ')');
         html = await res.text();
       }
       const saveKey = opts.preview ? null : game.id;
@@ -133,7 +133,7 @@ export async function startGame(container, game, opts = {}) {
       }
     }
   } catch (err) {
-    loading.innerHTML = `<div class="center"><div style="font-size:38px">😕</div>Oyun açılamadı.<br><span class="dim">${String(err.message || err)}</span></div>`;
+    loading.innerHTML = `<div class="center"><div style="font-size:38px">😕</div>${t('Oyun açılamadı.', 'The game could not be opened.')}<br><span class="dim">${String(err.message || err)}</span></div>`;
     return null;
   }
 
@@ -165,7 +165,7 @@ function enterPseudo(c) {
   if (!c.querySelector('.fs-exit')) {
     const b = document.createElement('button');
     b.className = 'fs-exit';
-    b.setAttribute('aria-label', 'Tam ekrandan çık');
+    b.setAttribute('aria-label', t('Tam ekrandan çık', 'Exit fullscreen'));
     b.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>';
     b.onclick = () => exitPseudo(c);
     c.appendChild(b);

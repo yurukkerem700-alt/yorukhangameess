@@ -1,4 +1,4 @@
-import { sb, CONFIG, $, esc, getMe, openModal, resizeImage } from './common.js';
+import { sb, CONFIG, $, esc, getMe, openModal, resizeImage, t } from './common.js';
 import { startGame } from './player.js';
 
 const form = $('#up-form');
@@ -24,10 +24,10 @@ function setupDrop(dropEl, input, onFile) {
 setupDrop($('#game-drop'), $('#game-file'), async f => {
   showErr('');
   $('#game-warn').classList.add('hidden');
-  if (!/\.html?$/i.test(f.name)) return showErr('Oyun dosyası .html olmalı.');
-  if (f.size > CONFIG.MAX_GAME_MB * 1024 * 1024) return showErr(`Dosya çok büyük (${(f.size / 1048576).toFixed(1)} MB). En fazla ${CONFIG.MAX_GAME_MB} MB.`);
+  if (!/\.html?$/i.test(f.name)) return showErr(t('Oyun dosyası .html olmalı.', 'The game file must be .html.'));
+  if (f.size > CONFIG.MAX_GAME_MB * 1024 * 1024) return showErr(t(`Dosya çok büyük (${(f.size / 1048576).toFixed(1)} MB). En fazla ${CONFIG.MAX_GAME_MB} MB.`, `The file is too large (${(f.size / 1048576).toFixed(1)} MB). Max ${CONFIG.MAX_GAME_MB} MB.`));
   const text = await f.text();
-  if (!/<(html|body|script|canvas|div)[\s>]/i.test(text)) return showErr('Bu dosya bir HTML oyunu gibi görünmüyor.');
+  if (!/<(html|body|script|canvas|div)[\s>]/i.test(text)) return showErr(t('Bu dosya bir HTML oyunu gibi görünmüyor.', "This file doesn't look like an HTML game."));
   gameFile = f; gameHtml = text;
   $('#game-name').textContent = `✓ ${f.name} (${(f.size / 1024).toFixed(0)} KB)`;
   $('#test-btn').classList.remove('hidden');
@@ -43,7 +43,7 @@ setupDrop($('#game-drop'), $('#game-file'), async f => {
   }
   if (refs.size) {
     const list = [...refs].slice(0, 6).map(esc).join(', ');
-    $('#game-warn').innerHTML = `⚠️ Oyunun başka dosyalara bağlı görünüyor: <b>${list}</b>${refs.size > 6 ? '…' : ''}. Bu dosyalar yüklenmeyeceği için oyunda eksik görünebilirler. <b>Yüklemeden önce dene</b> düğmesiyle kontrol et.`;
+    $('#game-warn').innerHTML = t(`⚠️ Oyunun başka dosyalara bağlı görünüyor: <b>${list}</b>${refs.size > 6 ? '…' : ''}. Bu dosyalar yüklenmeyeceği için oyunda eksik görünebilirler. <b>Yüklemeden önce dene</b> düğmesiyle kontrol et.`, `⚠️ Your game seems to depend on other files: <b>${list}</b>${refs.size > 6 ? '…' : ''}. These files won't be uploaded, so they may be missing in the game. Check with the <b>Try before uploading</b> button.`);
     $('#game-warn').classList.remove('hidden');
   }
 });
@@ -51,22 +51,22 @@ setupDrop($('#game-drop'), $('#game-file'), async f => {
 // Kapak resmi: 800px genişliğe küçült, webp/jpeg yap
 setupDrop($('#thumb-drop'), $('#thumb-file'), async f => {
   showErr('');
-  if (!/^image\//.test(f.type)) return showErr('Kapak bir resim dosyası olmalı.');
-  if (f.size > 15 * 1024 * 1024) return showErr('Kapak resmi çok büyük.');
+  if (!/^image\//.test(f.type)) return showErr(t('Kapak bir resim dosyası olmalı.', 'The cover must be an image file.'));
+  if (f.size > 15 * 1024 * 1024) return showErr(t('Kapak resmi çok büyük.', 'The cover image is too large.'));
   try {
     thumbBlob = await resizeImage(f, 800, 500);
     const prev = $('#thumb-prev');
     prev.src = URL.createObjectURL(thumbBlob);
     prev.classList.remove('hidden');
-  } catch { showErr('Resim okunamadı, başka bir resim dene.'); }
+  } catch { showErr(t('Resim okunamadı, başka bir resim dene.', 'Could not read the image, try another one.')); }
 });
 
 $('#test-btn').onclick = () => {
-  const m = openModal(`<h3>Önizleme: ${esc($('#title').value || gameFile.name)}</h3>
+  const m = openModal(`<h3>${t('Önizleme', 'Preview')}: ${esc($('#title').value || gameFile.name)}</h3>
     <div class="player" id="prev-player"></div>
-    <p class="dim" style="font-size:13px">Oyun burada düzgün çalışıyorsa sitede de çalışacak.</p>
-    <div class="modal-actions"><button class="btn" data-close>Kapat</button></div>`, { wide: true });
-  startGame($('#prev-player', m.el), { title: 'Önizleme', source_type: 'file' }, { html: gameHtml, preview: true });
+    <p class="dim" style="font-size:13px">${t('Oyun burada düzgün çalışıyorsa sitede de çalışacak.', 'If the game works properly here, it will work on the site too.')}</p>
+    <div class="modal-actions"><button class="btn" data-close>${t('Kapat', 'Close')}</button></div>`, { wide: true });
+  startGame($('#prev-player', m.el), { title: t('Önizleme', 'Preview'), source_type: 'file' }, { html: gameHtml, preview: true });
 };
 
 function progress(pct, text) {
@@ -80,9 +80,9 @@ form.addEventListener('submit', async e => {
   showErr('');
   const me = await getMe();
   const title = $('#title').value.trim();
-  if (title.length < 2) return showErr('Oyunun adını yaz.');
-  if (!gameFile) return showErr('Oyun dosyasını seç.');
-  if (!$('#rules').checked) return showErr('Devam etmek için koşulları kabul etmelisin.');
+  if (title.length < 2) return showErr(t('Oyunun adını yaz.', 'Enter the game title.'));
+  if (!gameFile) return showErr(t('Oyun dosyasını seç.', 'Choose the game file.'));
+  if (!$('#rules').checked) return showErr(t('Devam etmek için koşulları kabul etmelisin.', 'You must accept the terms to continue.'));
 
   const btn = $('#submit-btn');
   btn.disabled = true;
@@ -91,7 +91,7 @@ form.addEventListener('submit', async e => {
   let gamePath = null, thumbPath = null;
 
   try {
-    progress(15, 'Oyun dosyası yükleniyor…');
+    progress(15, t('Oyun dosyası yükleniyor…', 'Uploading game file…'));
     gamePath = `${uid}/${key}.html`;
     const gameBlob = new Blob([gameHtml], { type: 'text/html' });
     const up1 = await sb.storage.from('yg-games').upload(gamePath, gameBlob, { contentType: 'text/html', upsert: false });
@@ -99,7 +99,7 @@ form.addEventListener('submit', async e => {
 
     let thumbUrl = null;
     if (thumbBlob) {
-      progress(60, 'Kapak resmi yükleniyor…');
+      progress(60, t('Kapak resmi yükleniyor…', 'Uploading cover image…'));
       const ext = thumbBlob.type === 'image/webp' ? 'webp' : 'jpg';
       thumbPath = `${uid}/${key}.${ext}`;
       const up2 = await sb.storage.from('yg-thumbs').upload(thumbPath, thumbBlob, { contentType: thumbBlob.type, upsert: false });
@@ -107,7 +107,7 @@ form.addEventListener('submit', async e => {
       thumbUrl = sb.storage.from('yg-thumbs').getPublicUrl(thumbPath).data.publicUrl;
     }
 
-    progress(85, 'Kaydediliyor…');
+    progress(85, t('Kaydediliyor…', 'Saving…'));
     const { error } = await sb.from('yg_games').insert({
       owner_id: uid,
       title,
@@ -120,7 +120,7 @@ form.addEventListener('submit', async e => {
       thumb_url: thumbUrl,
     });
     if (error) throw error;
-    progress(100, 'Tamam!');
+    progress(100, t('Tamam!', 'Done!'));
     form.classList.add('hidden');
     $('#done').classList.remove('hidden');
     scrollTo({ top: 0, behavior: 'smooth' });
@@ -133,7 +133,7 @@ form.addEventListener('submit', async e => {
     btn.disabled = false;
     $('#prog').classList.add('hidden');
     $('#prog-text').textContent = '';
-    showErr('Yükleme başarısız: ' + (err.message || err) + '. Tekrar dene.');
+    showErr(t('Yükleme başarısız: ', 'Upload failed: ') + (err.message || err) + t('. Tekrar dene.', '. Please try again.'));
   }
 });
 

@@ -2,6 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
+<script src="/i18n.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oyun Yükle | YÖRÜKHAN GAMES</title>
 <meta name="description" content="Kendi yaptığın HTML5 oyununu YÖRÜKHAN GAMES'e yükle, binlerce oyuncu oynasın. Ücretsiz.">
@@ -77,7 +78,7 @@
   <div id="done" class="panel hidden center">
     <div style="font-size:48px">🎉</div>
     <h2 style="margin:6px 0">Oyunun gönderildi!</h2>
-    <p class="muted">İncelemeden sonra yayına alınacak. Durumunu <a href="/panelim.html" style="color:var(--accent-2);text-decoration:underline">Oyunlarım</a> sayfasından takip edebilirsin.</p>
+    <p class="muted" data-en="It will go live after review. You can follow its status on the &lt;a href=&quot;/panelim.html&quot; style=&quot;color:var(--accent-2);text-decoration:underline&quot;&gt;My Games&lt;/a&gt; page.">İncelemeden sonra yayına alınacak. Durumunu <a href="/panelim.html" style="color:var(--accent-2);text-decoration:underline">Oyunlarım</a> sayfasından takip edebilirsin.</p>
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">
       <a class="btn btn-primary" href="/panelim.html">Oyunlarım</a>
       <a class="btn" href="/yukle.html">Başka oyun yükle</a>
@@ -85,7 +86,7 @@
   </div>
 
   <form id="up-form" class="panel hidden" novalidate>
-    <div class="alert alert-info">
+    <div class="alert alert-info" data-en="&lt;strong&gt;What kind of file?&lt;/strong&gt; Your game must be &lt;b&gt;a single .html file&lt;/b&gt; (max 25 MB). Images and sounds must be embedded in the file or linked with &lt;code&gt;https://&lt;/code&gt;. Canvas, Phaser, PixiJS, Three.js… all work.">
       <strong>Nasıl bir dosya?</strong> Oyunun <b>tek bir .html dosyası</b> olmalı (en fazla 25 MB). Resimler ve sesler dosyanın içine gömülü ya da <code>https://</code> bağlantılı olmalı. Canvas, Phaser, PixiJS, Three.js… hepsi olur.
     </div>
     <div id="form-err" class="alert alert-error hidden"></div>
@@ -139,7 +140,7 @@
 
     <div class="field">
       <label class="check"><input type="checkbox" id="rules">
-        <span>Bu oyunu <b>ben yaptım</b> ya da yayınlama hakkım var. İçinde yasa dışı, müstehcen, nefret içeren veya zararlı kod yok. <a href="/kosullar.html" target="_blank" style="color:var(--accent-2);text-decoration:underline">Kullanım koşullarını</a> kabul ediyorum.</span>
+        <span data-en="I &lt;b&gt;made this game&lt;/b&gt; or have the right to publish it. It contains no illegal, obscene, hateful or harmful code. I accept the &lt;a href=&quot;/kosullar.html&quot; target=&quot;_blank&quot; style=&quot;color:var(--accent-2);text-decoration:underline&quot;&gt;Terms of Use&lt;/a&gt;.">Bu oyunu <b>ben yaptım</b> ya da yayınlama hakkım var. İçinde yasa dışı, müstehcen, nefret içeren veya zararlı kod yok. <a href="/kosullar.html" target="_blank" style="color:var(--accent-2);text-decoration:underline">Kullanım koşullarını</a> kabul ediyorum.</span>
       </label>
     </div>
 

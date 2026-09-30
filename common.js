@@ -1,7 +1,21 @@
 // Ortak parçalar: veritabanı bağlantısı, oturum, menüler, kartlar, reklamlar
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { CONFIG } from './config.js';
+import { GAMES_EN } from './games-en.js';
 import './clips.js';
+
+// ---------- Dil (i18n.js sayfanın başında dili belirler) ----------
+export const LANG = window.YG_LANG === 'en' ? 'en' : 'tr';
+export const t = (tr, en) => LANG === 'en' ? en : tr;
+export const LOCALE = LANG === 'en' ? 'en-US' : 'tr-TR';
+if (LANG === 'en') CONFIG.CATEGORIES.forEach(c => { c.name = c.en || c.name; });
+// Yörükhan oyunlarının İngilizce adı/açıklaması (veritabanı satırını yerinde günceller)
+export function localizeGame(g) {
+  const e = LANG === 'en' && g && GAMES_EN[g.id];
+  if (e) Object.assign(g, e);
+  return g;
+}
+export const localizeGames = list => { (list || []).forEach(localizeGame); return list; };
 
 export { CONFIG };
 export const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
@@ -14,18 +28,18 @@ export function esc(s) {
 }
 export function fmtNum(n) {
   n = Number(n) || 0;
-  if (n >= 1e6) return (n / 1e6).toFixed(1).replace('.0', '').replace('.', ',') + ' mn';
-  if (n >= 1e4) return Math.round(n / 1e3) + ' bin';
-  return n.toLocaleString('tr-TR');
+  if (n >= 1e6) return LANG === 'en' ? (n / 1e6).toFixed(1).replace('.0', '') + 'M' : (n / 1e6).toFixed(1).replace('.0', '').replace('.', ',') + ' mn';
+  if (n >= 1e4) return Math.round(n / 1e3) + t(' bin', 'K');
+  return n.toLocaleString(LOCALE);
 }
 export function timeAgo(iso) {
   const s = Math.max(1, (Date.now() - new Date(iso).getTime()) / 1000);
-  for (const [sec, name] of [[31536000, 'yıl'], [2592000, 'ay'], [604800, 'hafta'], [86400, 'gün'], [3600, 'saat'], [60, 'dakika']])
-    if (s >= sec) return `${Math.floor(s / sec)} ${name} önce`;
-  return 'az önce';
+  for (const [sec, name, en] of [[31536000, 'yıl', 'year'], [2592000, 'ay', 'month'], [604800, 'hafta', 'week'], [86400, 'gün', 'day'], [3600, 'saat', 'hour'], [60, 'dakika', 'minute']])
+    if (s >= sec) { const n = Math.floor(s / sec); return t(`${n} ${name} önce`, `${n} ${en}${n > 1 ? 's' : ''} ago`); }
+  return t('az önce', 'just now');
 }
-export const fmtDate = iso => new Date(iso).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
-export const catById = id => CONFIG.CATEGORIES.find(c => c.id === id) || { id, name: id || 'Diğer', icon: '🎮', color: ['#444', '#222'] };
+export const fmtDate = iso => new Date(iso).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' });
+export const catById = id => CONFIG.CATEGORIES.find(c => c.id === id) || { id, name: id || t('Diğer', 'Other'), icon: '🎮', color: ['#444', '#222'] };
 export const isNew = g => { const t = g.approved_at || g.created_at; return t && Date.now() - new Date(t).getTime() < 10 * 864e5; };
 export const gameUrl = g => `/oyun.html?id=${g.id}`;
 export const devName = g => g.yg_profiles?.username || 'Yörükhan';
@@ -47,7 +61,7 @@ export function gameCard(g) {
   const cat = catById(g.category);
   return `<a class="gcard" href="${gameUrl(g)}">
     <div class="thumb">${imgHTML(g)}
-      ${isNew(g) && !g.is_official ? '<span class="tag tag-new">Yeni</span>' : ''}
+      ${isNew(g) && !g.is_official ? `<span class="tag tag-new">${t('Yeni', 'New')}</span>` : ''}
       <div class="play-hover"><span>${PLAY_SVG}</span></div>
     </div>
     <div class="info"><div class="t">${esc(g.title)}</div>
@@ -95,21 +109,21 @@ async function renderAuth() {
   const me = await getMe();
   const tabMe = $('#tab-me');
   if (!me.user) {
-    if (box) box.innerHTML = `<a class="btn btn-primary btn-sm up-btn" href="/yukle.html">Oyun Yükle</a><a class="btn btn-white btn-sm" href="/giris.html">Giriş Yap</a>`;
+    if (box) box.innerHTML = `<a class="btn btn-primary btn-sm up-btn" href="/yukle.html">${t('Oyun Yükle', 'Upload Game')}</a><a class="btn btn-white btn-sm" href="/giris.html">${t('Giriş Yap', 'Sign In')}</a>`;
     if (tabMe) tabMe.href = '/giris.html';
     return;
   }
   const name = me.profile?.username || me.user.email.split('@')[0];
-  if (tabMe) $('#tab-me-l').textContent = 'Profil';
+  if (tabMe) $('#tab-me-l').textContent = t('Profil', 'Profile');
   if (!box) return;
-  box.innerHTML = `<a class="btn btn-primary btn-sm up-btn" href="/yukle.html">+ Oyun Yükle</a>
+  box.innerHTML = `<a class="btn btn-primary btn-sm up-btn" href="/yukle.html">${t('+ Oyun Yükle', '+ Upload Game')}</a>
     <div class="user-menu">
-      <button class="user-chip" id="user-chip" aria-label="Hesap menüsü"><span class="avatar">${esc(name[0])}</span><span class="uname">${esc(name)}</span></button>
+      <button class="user-chip" id="user-chip" aria-label="${t('Hesap menüsü', 'Account menu')}"><span class="avatar">${esc(name[0])}</span><span class="uname">${esc(name)}</span></button>
       <div class="dropdown" id="user-dd">
-        <a href="/profil.html?u=${encodeURIComponent(name)}">👤 Profilim</a>
-        <a href="/panelim.html">🎮 Oyunlarım</a>
-        ${me.isAdmin ? '<a href="/admin.html">⚙️ Yönetim Paneli</a>' : ''}
-        <button id="logout-btn">↩ Çıkış yap</button>
+        <a href="/profil.html?u=${encodeURIComponent(name)}">👤 ${t('Profilim', 'My profile')}</a>
+        <a href="/panelim.html">🎮 ${t('Oyunlarım', 'My Games')}</a>
+        ${me.isAdmin ? `<a href="/admin.html">⚙️ ${t('Yönetim Paneli', 'Admin Panel')}</a>` : ''}
+        <button id="logout-btn">↩ ${t('Çıkış yap', 'Sign out')}</button>
       </div>
     </div>`;
   $('#user-chip').onclick = e => { e.stopPropagation(); $('#user-dd').classList.toggle('open'); };
@@ -139,6 +153,28 @@ function initNav() {
   });
   const yr = $('#year'); if (yr) yr.textContent = new Date().getFullYear();
   renderSideCats();
+  renderLangSwitch();
+}
+
+// Dil seçici: üst çubukta ve alt bilgide. Tıklayınca sayfa seçilen dille yeniden açılır.
+const GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg>';
+function renderLangSwitch() {
+  const other = LANG === 'en' ? 'tr' : 'en', label = LANG === 'en' ? 'Türkçe' : 'English';
+  const go = () => window.setLang ? window.setLang(other) : (localStorage.setItem('yg_lang', other), location.reload());
+  const auth = $('#nav-auth');
+  if (auth) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'lang-btn'; b.title = label; b.setAttribute('aria-label', label);
+    b.innerHTML = `${GLOBE}<span class="long">${label}</span><span class="short">${other.toUpperCase()}</span>`;
+    b.onclick = go;
+    auth.parentNode.insertBefore(b, auth);
+  }
+  const links = $('.footer-links');
+  if (links) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'lang-link'; b.textContent = '🌐 ' + label; b.onclick = go;
+    links.appendChild(b);
+  }
 }
 
 // ---------- Bildirim / modal ----------
@@ -182,7 +218,7 @@ export function mountAds(root = document) {
       try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { /* reklam engelleyici */ }
     } else {
       el.classList.add('placeholder');
-      el.innerHTML = '<span>Reklam</span>';
+      el.innerHTML = `<span>${t('Reklam', 'Ad')}</span>`;
     }
   });
 }

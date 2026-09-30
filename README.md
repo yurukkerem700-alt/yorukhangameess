@@ -20,9 +20,16 @@ Sitede kayıt ol, sonra Claude'a e-postanı söyle ("beni admin yap"). Menüde *
 
 ## Dil desteği (Türkçe / English)
 
-Sitenin kendi oyunları Türkçe ve İngilizce oynanabilir. Oyun sayfasındaki **English / Türkçe** düğmesi dili değiştirir;
-seçim hatırlanır, seçim yoksa tarayıcının dili kullanılır. Oyun dosyası tek başına açılırsa sol alttaki 🌐 düğmesi ya da
-`?lang=en` / `?lang=tr` kullanılabilir. Yeni metin eklerken HTML'de `data-en="..."`, kodda `T('Türkçe', 'English')` kullan.
+Sitenin tamamı ve sitenin kendi oyunları Türkçe ve İngilizce kullanılabilir. Üst çubuktaki 🌐 düğmesi (ve alt bilgideki
+bağlantı) dili değiştirir; seçim hatırlanır. Seçim yoksa tarayıcının dili kullanılır: Türkçe değilse site İngilizce açılır.
+Adrese `?lang=en` / `?lang=tr` eklemek de dili seçer.
+
+- `i18n.js`: dili belirler ve sayfalardaki sabit yazıları sözlükle çevirir. Yeni sabit yazı eklersen sözlüğe de ekle.
+- Kodda üretilen yazılar `t('Türkçe', 'English')` ile yazılır (`common.js`'ten gelir).
+- Birden fazla parçalı (bağlantılı/kalın) paragraflarda HTML'e `data-en="..."` eklenir.
+- Hakkında, Gizlilik ve Koşullar sayfalarında iki blok var: `data-lang="tr"` ve `data-lang="en"`.
+- `games-en.js`: Yörükhan oyunlarının İngilizce adı, açıklaması ve kontrolleri (oyun id'sine göre).
+- Oyunların içinde: HTML'de `data-en="..."`, kodda `T('Türkçe', 'English')`.
 
 ## Ayarlar
 
@@ -38,5 +45,6 @@ seçim hatırlanır, seçim yoksa tarayıcının dili kullanılır. Oyun dosyas�
 | `oyun-*.html` + `oyun-*.jpg` | Sitenin kendi 7 oyunu ve kapakları |
 | `logo.svg`, `logo-mark.svg` | Logo (yatay) ve amblem (koçboynuzu Y) |
 | `favicon.svg`, `favicon.ico`, `icon-*.png`, `og.png` | Sekme ikonu, uygulama ikonları, paylaşım görseli |
+| `i18n.js`, `games-en.js` | Dil desteği (Türkçe / English) |
 | `style.css` | Tasarım |
 | `*.js` | Sitenin çalışan kodları |

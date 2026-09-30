@@ -26,18 +26,18 @@ export const CONFIG = {
     feed: '',     // ana sayfada oyunların arasındaki reklam
   },
 
-  // Oyun kategorileri
+  // Oyun kategorileri (name: Türkçe, en: English)
   CATEGORIES: [
-    { id: 'aksiyon',  name: 'Aksiyon',  icon: '⚔️', color: ['#c2410c', '#7c2d12'] },
-    { id: 'arcade',   name: 'Arcade',   icon: '🕹️', color: ['#7c3aed', '#3b0764'] },
-    { id: 'bulmaca',  name: 'Bulmaca',  icon: '🧩', color: ['#0891b2', '#164e63'] },
-    { id: 'nisanci',  name: 'Nişancı',  icon: '🎯', color: ['#dc2626', '#7f1d1d'] },
-    { id: 'macera',   name: 'Macera',   icon: '🗺️', color: ['#16a34a', '#14532d'] },
-    { id: 'yaris',    name: 'Yarış',    icon: '🏁', color: ['#ea580c', '#431407'] },
-    { id: 'strateji', name: 'Strateji', icon: '♟️', color: ['#4f46e5', '#1e1b4b'] },
-    { id: 'spor',     name: 'Spor',     icon: '⚽', color: ['#059669', '#022c22'] },
-    { id: 'egitici',  name: 'Eğitici',  icon: '📚', color: ['#ca8a04', '#422006'] },
-    { id: 'diger',    name: 'Diğer',    icon: '✨', color: ['#db2777', '#500724'] },
+    { id: 'aksiyon',  name: 'Aksiyon',  en: 'Action',  icon: '⚔️', color: ['#c2410c', '#7c2d12'] },
+    { id: 'arcade',   name: 'Arcade',   en: 'Arcade',   icon: '🕹️', color: ['#7c3aed', '#3b0764'] },
+    { id: 'bulmaca',  name: 'Bulmaca',  en: 'Puzzle',  icon: '🧩', color: ['#0891b2', '#164e63'] },
+    { id: 'nisanci',  name: 'Nişancı',  en: 'Shooter',  icon: '🎯', color: ['#dc2626', '#7f1d1d'] },
+    { id: 'macera',   name: 'Macera',   en: 'Adventure',   icon: '🗺️', color: ['#16a34a', '#14532d'] },
+    { id: 'yaris',    name: 'Yarış',    en: 'Racing',    icon: '🏁', color: ['#ea580c', '#431407'] },
+    { id: 'strateji', name: 'Strateji', en: 'Strategy', icon: '♟️', color: ['#4f46e5', '#1e1b4b'] },
+    { id: 'spor',     name: 'Spor',     en: 'Sports',     icon: '⚽', color: ['#059669', '#022c22'] },
+    { id: 'egitici',  name: 'Eğitici',  en: 'Educational',  icon: '📚', color: ['#ca8a04', '#422006'] },
+    { id: 'diger',    name: 'Diğer',    en: 'Other',    icon: '✨', color: ['#db2777', '#500724'] },
   ],
 
   MAX_GAME_MB: 25,

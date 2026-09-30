@@ -1,4 +1,4 @@
-import { sb, CONFIG, $, $$, esc, fmtNum, catById, gameCard, skeletonCards, GAME_SELECT, mountAds, gameUrl, imgHTML, fallbackThumb, setCategoryCounts, PLAY_ICON, devName } from './common.js';
+import { sb, CONFIG, $, $$, esc, fmtNum, catById, gameCard, skeletonCards, GAME_SELECT, mountAds, gameUrl, imgHTML, fallbackThumb, setCategoryCounts, PLAY_ICON, devName, t, LANG, localizeGames } from './common.js';
 
 const P = new URLSearchParams(location.search);
 const Q = (P.get('q') || '').trim(), CAT = P.get('kategori') || '', LIST = P.get('liste') || '';
@@ -10,14 +10,14 @@ const by = {
   popular: (a, b) => b.plays - a.plays || b.likes - a.likes,
   new: (a, b) => new Date(b.approved_at || b.created_at) - new Date(a.approved_at || a.created_at),
   liked: (a, b) => b.likes - a.likes || b.plays - a.plays,
-  az: (a, b) => a.title.localeCompare(b.title, 'tr'),
+  az: (a, b) => a.title.localeCompare(b.title, LANG),
 };
 const sorted = (arr, k) => [...arr].sort(by[k]);
 
 async function loadGames() {
   const { data, error } = await sb.from('yg_games').select(GAME_SELECT).eq('status', 'approved').limit(1000);
   if (error) throw error;
-  return data || [];
+  return localizeGames(data || []);
 }
 
 // ============ KEŞFET ============
@@ -34,13 +34,13 @@ function renderHero(list) {
   const stage = $('#hero-stage'), side = $('#hero-list'), dots = $('#hero-dots'), hero = $('#hero');
   if (!list.length) {
     stage.innerHTML = `<div class="slide active"><div style="position:absolute;inset:0;background:radial-gradient(700px 400px at 80% 30%,rgba(255,138,31,.45),transparent 60%),linear-gradient(135deg,#231a2e,#121118)"></div>
-      <div class="fade"></div><div class="slide-body"><div class="slide-kicker">Hoş geldin</div><div class="slide-title">İlk oyunu sen yükle!</div>
-      <p class="slide-desc">YÖRÜKHAN GAMES'e oyununu yükle, binlerce oyuncuya ulaş.</p><div class="slide-actions"><a class="btn btn-white btn-lg" href="/yukle.html">Oyun Yükle</a></div></div></div>`;
+      <div class="fade"></div><div class="slide-body"><div class="slide-kicker">${t('Hoş geldin', 'Welcome')}</div><div class="slide-title">${t('İlk oyunu sen yükle!', 'Upload the first game!')}</div>
+      <p class="slide-desc">${t('YÖRÜKHAN GAMES\'e oyununu yükle, binlerce oyuncuya ulaş.', 'Upload your game to YÖRÜKHAN GAMES and reach thousands of players.')}</p><div class="slide-actions"><a class="btn btn-white btn-lg" href="/yukle.html">${t('Oyun Yükle', 'Upload Game')}</a></div></div></div>`;
     side.remove(); return;
   }
   stage.innerHTML = list.map((g, i) => {
     const img = g.banner_url || g.thumb_url;
-    const kicker = g.featured ? '🔥 Öne çıkan' : g.is_official ? '◆ Yörükhan Orijinal' : '★ Popüler';
+    const kicker = g.featured ? t('🔥 Öne çıkan', '🔥 Featured') : g.is_official ? t('◆ Yörükhan Orijinal', '◆ Yörükhan Original') : t('★ Popüler', '★ Popular');
     return `<div class="slide ${i ? '' : 'active'}">
       ${img ? `<img src="${esc(img)}" alt="" ${i ? 'loading="lazy"' : 'fetchpriority="high"'}>` : `<div style="position:absolute;inset:0">${fallbackThumb(g.title)}</div>`}
       <div class="fade"></div>
@@ -49,8 +49,8 @@ function renderHero(list) {
         <div class="slide-title">${esc(g.title)}</div>
         <p class="slide-desc">${esc(g.description || '')}</p>
         <div class="slide-actions">
-          <a class="btn btn-white btn-lg" href="${gameUrl(g)}&oyna=1">${PLAY_ICON} Hemen Oyna</a>
-          <a class="btn btn-ghost btn-lg" href="${gameUrl(g)}">Detaylar</a>
+          <a class="btn btn-white btn-lg" href="${gameUrl(g)}&oyna=1">${PLAY_ICON} ${t('Hemen Oyna', 'Play Now')}</a>
+          <a class="btn btn-ghost btn-lg" href="${gameUrl(g)}">${t('Detaylar', 'Details')}</a>
         </div>
       </div>
     </div>`;
@@ -58,7 +58,7 @@ function renderHero(list) {
   side.innerHTML = list.map((g, i) => `<button class="hero-item ${i ? '' : 'active'}" data-i="${i}"><span class="bar"></span>${(g.banner_url || g.thumb_url) ? `<img src="${esc(g.banner_url || g.thumb_url)}" alt="">` : fallbackThumb(g.title)}<span>${esc(g.title)}</span></button>`).join('');
   // yedek küçük resimlerin stili düzgün birleşsin
   side.querySelectorAll('.thumb-fb').forEach(el => { el.style.cssText += ';width:52px;height:68px;border-radius:8px;font-size:20px;flex:none'; });
-  dots.innerHTML = list.map((_, i) => `<button class="${i ? '' : 'active'}" data-i="${i}" aria-label="${i + 1}. oyun"></button>`).join('');
+  dots.innerHTML = list.map((_, i) => `<button class="${i ? '' : 'active'}" data-i="${i}" aria-label="${t(`${i + 1}. oyun`, `Game ${i + 1}`)}"></button>`).join('');
 
   const DUR = 7000;
   hero.style.setProperty('--dur', DUR + 'ms');
@@ -89,7 +89,7 @@ function railSection(title, link, games, id) {
   if (!games.length) return '';
   return `<section class="section" id="${id}">
     <div class="sec-head"><h2>${link ? `<a href="${link}">${title}${CHEV}</a>` : title}</h2><span class="spacer"></span>
-      <div class="arrows"><button class="arrow" data-dir="-1" aria-label="Geri">${CHEV_L}</button><button class="arrow" data-dir="1" aria-label="İleri">${CHEV}</button></div></div>
+      <div class="arrows"><button class="arrow" data-dir="-1" aria-label="${t('Geri', 'Back')}">${CHEV_L}</button><button class="arrow" data-dir="1" aria-label="${t('İleri', 'Next')}">${CHEV}</button></div></div>
     <div class="rail">${games.map(gameCard).join('')}</div>
   </section>`;
 }
@@ -97,40 +97,40 @@ function railSection(title, link, games, id) {
 function originalsSection(games) {
   if (!games.length) return '';
   return `<section class="section originals">
-    <div class="sec-head"><h2><a href="/?liste=orijinal">Yörükhan Orijinal${CHEV}</a><span class="badge">ÜCRETSİZ</span></h2></div>
+    <div class="sec-head"><h2><a href="/?liste=orijinal">${t('Yörükhan Orijinal', 'Yörükhan Originals')}${CHEV}</a><span class="badge">${t('ÜCRETSİZ', 'FREE')}</span></h2></div>
     <div class="orig-grid">${games.slice(0, 3).map(g => `<a class="orig-card" href="${gameUrl(g)}">
-      <div class="thumb">${imgHTML(g)}<div class="ribbon">▶ Şimdi oyna</div></div>
-      <div><div class="t">${esc(g.title)}</div><div class="m">${catById(g.category).icon} ${catById(g.category).name} · ▶ ${fmtNum(g.plays)} oynanma</div></div>
+      <div class="thumb">${imgHTML(g)}<div class="ribbon">▶ ${t('Şimdi oyna', 'Play now')}</div></div>
+      <div><div class="t">${esc(g.title)}</div><div class="m">${catById(g.category).icon} ${catById(g.category).name} · ▶ ${fmtNum(g.plays)} ${t('oynanma', 'plays')}</div></div>
     </a>`).join('')}</div>
   </section>`;
 }
 
 function topsSection(games) {
-  const col = (title, link, list, meta) => `<div class="top-col"><h3>${title}<a href="${link}">Tümü</a></h3>
+  const col = (title, link, list, meta) => `<div class="top-col"><h3>${title}<a href="${link}">${t('Tümü', 'All')}</a></h3>
     ${list.slice(0, 5).map((g, i) => `<a class="top-item" href="${gameUrl(g)}"><span class="rank">${i + 1}</span><div class="thumb">${imgHTML(g)}</div>
       <div><div class="t">${esc(g.title)}</div><div class="m">${meta(g)}</div></div></a>`).join('')}</div>`;
   return `<section class="section"><div class="tops">
-    ${col('En Çok Oynanan', '/?liste=populer', sorted(games, 'popular'), g => `▶ ${fmtNum(g.plays)} oynanma`)}
-    ${col('En Beğenilen', '/?liste=tum&sirala=liked', sorted(games, 'liked'), g => `❤ ${fmtNum(g.likes)} beğeni`)}
-    ${col('Yeni Çıkanlar', '/?liste=yeni', sorted(games, 'new'), g => `${catById(g.category).name} · ${esc(devName(g))}`)}
+    ${col(t('En Çok Oynanan', 'Most Played'), '/?liste=populer', sorted(games, 'popular'), g => `▶ ${fmtNum(g.plays)} ${t('oynanma', 'plays')}`)}
+    ${col(t('En Beğenilen', 'Most Liked'), '/?liste=tum&sirala=liked', sorted(games, 'liked'), g => `❤ ${fmtNum(g.likes)} ${t('beğeni', 'likes')}`)}
+    ${col(t('Yeni Çıkanlar', 'New Releases'), '/?liste=yeni', sorted(games, 'new'), g => `${catById(g.category).name} · ${esc(devName(g))}`)}
   </div></section>`;
 }
 
 function catsSection(counts) {
-  return `<section class="section"><div class="sec-head"><h2>Kategoriler</h2></div><div class="cats">
+  return `<section class="section"><div class="sec-head"><h2>${t('Kategoriler', 'Categories')}</h2></div><div class="cats">
     ${CONFIG.CATEGORIES.map(c => `<a class="cat-tile" href="/?kategori=${c.id}" style="background:linear-gradient(135deg,${c.color[0]},${c.color[1]})">
-      <span class="e">${c.icon}</span><b>${esc(c.name)}</b><span>${counts[c.id] || 0} oyun</span></a>`).join('')}
+      <span class="e">${c.icon}</span><b>${esc(c.name)}</b><span>${counts[c.id] || 0} ${t('oyun', (counts[c.id] || 0) === 1 ? 'game' : 'games')}</span></a>`).join('')}
   </div></section>`;
 }
 
 const CTA = `<section class="section cta-band">
-  <div><h2>Oyun mu yaptın? Burada yayınla.</h2>
-    <p>HTML5 oyununu yükle, binlerce oyuncuya ulaş. Ücretsiz, hızlı ve oyunun her zaman senin.</p>
-    <a class="btn btn-primary btn-lg" href="/yukle.html">Oyununu Yükle</a></div>
+  <div><h2>${t('Oyun mu yaptın? Burada yayınla.', 'Made a game? Publish it here.')}</h2>
+    <p>${t('HTML5 oyununu yükle, binlerce oyuncuya ulaş. Ücretsiz, hızlı ve oyunun her zaman senin.', 'Upload your HTML5 game and reach thousands of players. Free, fast, and your game is always yours.')}</p>
+    <a class="btn btn-primary btn-lg" href="/yukle.html">${t('Oyununu Yükle', 'Upload Your Game')}</a></div>
   <div class="steps">
-    <div class="step"><i>1</i><div><b>Ücretsiz hesap aç</b><span>30 saniye sürer</span></div></div>
-    <div class="step"><i>2</i><div><b>.html dosyanı yükle</b><span>Kapak resmi ve açıklama ekle</span></div></div>
-    <div class="step"><i>3</i><div><b>Yayına gir</b><span>İncelemeden sonra herkes oynasın</span></div></div>
+    <div class="step"><i>1</i><div><b>${t('Ücretsiz hesap aç', 'Create a free account')}</b><span>${t('30 saniye sürer', 'Takes 30 seconds')}</span></div></div>
+    <div class="step"><i>2</i><div><b>${t('.html dosyanı yükle', 'Upload your .html file')}</b><span>${t('Kapak resmi ve açıklama ekle', 'Add a cover image and description')}</span></div></div>
+    <div class="step"><i>3</i><div><b>${t('Yayına gir', 'Go live')}</b><span>${t('İncelemeden sonra herkes oynasın', 'Everyone can play after review')}</span></div></div>
   </div>
 </section>`;
 
@@ -139,15 +139,15 @@ function renderDiscover(games, counts) {
   const pop = sorted(games, 'popular'), fresh = sorted(games, 'new');
   let html = '';
   if (!games.length) {
-    html = `<section class="section empty"><div class="big">🎮</div><h3>Henüz oyun yok</h3><p>İlk oyunu sen yükle, vitrinde ilk sen ol!</p></section>` + catsSection(counts) + CTA;
+    html = `<section class="section empty"><div class="big">🎮</div><h3>${t('Henüz oyun yok', 'No games yet')}</h3><p>${t('İlk oyunu sen yükle, vitrinde ilk sen ol!', 'Upload the first game and be the first in the showcase!')}</p></section>` + catsSection(counts) + CTA;
   } else {
-    html += railSection('Popüler Oyunlar', '/?liste=populer', pop.slice(0, 15), 'r-pop');
+    html += railSection(t('Popüler Oyunlar', 'Popular Games'), '/?liste=populer', pop.slice(0, 15), 'r-pop');
     html += originalsSection(sorted(games.filter(g => g.is_official), 'popular'));
-    html += railSection('Yeni Eklenenler', '/?liste=yeni', fresh.slice(0, 15), 'r-new');
+    html += railSection(t('Yeni Eklenenler', 'Recently Added'), '/?liste=yeni', fresh.slice(0, 15), 'r-new');
     html += `<div class="ad ad-wide" data-slot="feed"></div>`;
     if (games.length >= 4) html += topsSection(games);
     const bigCats = CONFIG.CATEGORIES.filter(c => (counts[c.id] || 0) >= 3).sort((a, b) => counts[b.id] - counts[a.id]).slice(0, 3);
-    bigCats.forEach(c => { html += railSection(`${c.icon} ${c.name} Oyunları`, `/?kategori=${c.id}`, sorted(games.filter(g => g.category === c.id), 'popular'), 'r-' + c.id); });
+    bigCats.forEach(c => { html += railSection(t(`${c.icon} ${c.name} Oyunları`, `${c.icon} ${c.name} Games`), `/?kategori=${c.id}`, sorted(games.filter(g => g.category === c.id), 'popular'), 'r-' + c.id); });
     html += catsSection(counts);
     html += CTA;
   }
@@ -169,16 +169,18 @@ function initRails() {
 // ============ GÖZ AT ============
 function renderBrowse(games) {
   $('#discover').hidden = true; $('#browse').hidden = false;
-  const titles = { tum: 'Tüm Oyunlar', populer: 'Popüler Oyunlar', yeni: 'Yeni Çıkanlar', orijinal: 'Yörükhan Orijinal' };
-  let title = titles[LIST] || 'Tüm Oyunlar';
-  if (CAT) title = `${catById(CAT).icon} ${catById(CAT).name} Oyunları`;
-  if (Q) title = `“${Q}” için sonuçlar`;
+  const titles = LANG === 'en'
+    ? { tum: 'All Games', populer: 'Popular Games', yeni: 'New Releases', orijinal: 'Yörükhan Originals' }
+    : { tum: 'Tüm Oyunlar', populer: 'Popüler Oyunlar', yeni: 'Yeni Çıkanlar', orijinal: 'Yörükhan Orijinal' };
+  let title = titles[LIST] || titles.tum;
+  if (CAT) title = t(`${catById(CAT).icon} ${catById(CAT).name} Oyunları`, `${catById(CAT).icon} ${catById(CAT).name} Games`);
+  if (Q) title = t(`“${Q}” için sonuçlar`, `Results for “${Q}”`);
   $('#browse-title').textContent = title;
   document.title = title + ' | YÖRÜKHAN GAMES';
 
   const sortSel = $('#sort');
   sortSel.value = P.get('sirala') || (LIST === 'yeni' ? 'new' : 'popular');
-  $('#chips').innerHTML = [{ id: '', name: 'Tümü', icon: '🎮' }, ...CONFIG.CATEGORIES].map(c => {
+  $('#chips').innerHTML = [{ id: '', name: t('Tümü', 'All'), icon: '🎮' }, ...CONFIG.CATEGORIES].map(c => {
     const p = new URLSearchParams(); if (Q) p.set('q', Q); if (LIST && !c.id) p.set('liste', LIST); if (c.id) p.set('kategori', c.id); if (!c.id && !Q && !LIST) p.set('liste', 'tum');
     return `<a class="chip ${c.id === CAT ? 'active' : ''}" href="/?${p}">${c.icon} ${esc(c.name)}</a>`;
   }).join('');
@@ -192,7 +194,7 @@ function renderBrowse(games) {
   const draw = () => {
     const l = sorted(list, sortSel.value);
     if (!l.length) {
-      $('#browse-grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="big">🔍</div><h3>Burada henüz oyun yok</h3><p>Başka bir kategori ya da arama dene.</p><a class="btn btn-white" href="/?liste=tum" style="margin-top:12px">Tüm oyunlar</a></div>`;
+      $('#browse-grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="big">🔍</div><h3>${t('Burada henüz oyun yok', 'No games here yet')}</h3><p>${t('Başka bir kategori ya da arama dene.', 'Try another category or search.')}</p><a class="btn btn-white" href="/?liste=tum" style="margin-top:12px">${t('Tüm oyunlar', 'All games')}</a></div>`;
       return;
     }
     let html = '';
@@ -213,7 +215,7 @@ function renderBrowse(games) {
   try { games = await loadGames(); }
   catch (e) {
     const box = BROWSE ? $('#browse-grid') : $('#sections');
-    box.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="big">⚠️</div><h3>Oyunlar yüklenemedi</h3><p>${esc(e.message)}</p></div>`;
+    box.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="big">⚠️</div><h3>${t('Oyunlar yüklenemedi', 'Could not load games')}</h3><p>${esc(e.message)}</p></div>`;
     return;
   }
   const counts = {};

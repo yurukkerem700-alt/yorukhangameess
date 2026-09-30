@@ -95,7 +95,7 @@ export async function startGame(container, game, opts = {}) {
 
   const frame = document.createElement('iframe');
   frame.title = game.title || 'Oyun';
-  frame.setAttribute('allow', 'autoplay; fullscreen; gamepad; accelerometer; gyroscope');
+  frame.setAttribute('allow', 'autoplay; fullscreen; gamepad; accelerometer; gyroscope; microphone; clipboard-write');
   frame.setAttribute('allowfullscreen', '');
   frame.setAttribute('referrerpolicy', 'no-referrer');
 

@@ -1,3 +1,5 @@
+<p align="center"><img src=".github/cover.png" alt="YÖRÜKHAN GAMES" width="100%"></p>
+
 # YÖRÜKHAN GAMES
 
 Oyun sitesi. **Klasör yok:** tüm dosyalar tek yerde, GitHub'a yüklemesi kolay.
@@ -34,3 +36,7 @@ Sitede kayıt ol, sonra Claude'a e-postanı söyle ("beni admin yap"). Menüde *
 | `favicon.svg`, `favicon.ico`, `icon-*.png`, `og.png` | Sekme ikonu, uygulama ikonları, paylaşım görseli |
 | `style.css` | Tasarım |
 | `*.js` | Sitenin çalışan kodları |
+
+---
+
+© 2026 YÖRÜKHAN STÜDYO — Tüm hakları saklıdır. Bu projenin kodu, tasarımı, oyun fikri ve görselleri izinsiz kopyalanamaz, çoğaltılamaz veya ticari amaçla kullanılamaz.

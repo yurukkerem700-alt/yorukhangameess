@@ -3,298 +3,291 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Akvaryum Seferi — 3D</title>
+<title>Akvaryum Seferi — 3D Denizaltı</title>
 <style>
-:root{--ink:#f4fbff;--muted:#9fbac8;--line:rgba(255,255,255,.12);--panel:rgba(2,13,21,.62);--cyan:#73dcff;--gold:#ffd36a}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02131e;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
-body{display:grid;place-items:center}.wrap{position:relative;width:100vw;height:100vh;overflow:hidden;background:#031a28}.game{position:absolute;inset:0}.game canvas{display:block;width:100%;height:100%;touch-action:none}
-.hud{position:absolute;inset:0 0 auto 0;z-index:5;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;pointer-events:none}
-.leftHud,.rightHud{display:flex;gap:8px;flex-wrap:wrap;pointer-events:auto}.brand{padding:8px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(3,14,22,.7);backdrop-filter:blur(10px);font-weight:950;letter-spacing:.7px}.stat{min-width:92px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(3,14,22,.62);backdrop-filter:blur(10px);font-size:9px;color:var(--muted)}.stat b{display:block;margin-top:2px;color:#fff;font-size:14px}.btn{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:rgba(4,20,30,.76);color:#fff;font:inherit;font-weight:900;cursor:pointer}.btn.primary{background:var(--cyan);color:#03121a}.btn.gold{background:var(--gold);color:#281d05}
-.panel{position:absolute;z-index:4;padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:var(--panel);backdrop-filter:blur(10px);box-shadow:0 18px 50px rgba(0,0,0,.22);pointer-events:none}.panel.left{left:14px;bottom:14px;width:min(340px,calc(100vw - 28px))}.panel.right{right:14px;top:76px;width:min(255px,calc(100vw - 28px))}.k{font-size:9px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted)}.v{margin-top:3px;font-size:13px;font-weight:950}.small{font-size:10px;line-height:1.45;color:#c9dfe8}.meter{height:7px;margin-top:7px;background:#123040;border-radius:9px;overflow:hidden}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#56c9ff,#dffaff)}
-.catalog{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:7px}.chip{padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);font-size:9px;color:#708b98}.chip.found{color:#fff;background:rgba(113,220,169,.12);border-color:rgba(113,220,169,.24)}
-.hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;max-width:calc(100vw - 28px);padding:8px 11px;border-radius:11px;background:rgba(3,12,18,.68);border:1px solid var(--line);backdrop-filter:blur(9px);font-size:10px;color:#d9edf4;pointer-events:none;text-align:center}.toast{position:absolute;top:82px;left:50%;transform:translateX(-50%);z-index:6;padding:9px 13px;border-radius:999px;background:rgba(4,14,21,.9);border:1px solid var(--line);font-size:11px;font-weight:900;opacity:0;transition:opacity .2s;pointer-events:none}.toast.on{opacity:1}
-.modal{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:20px;background:rgba(0,7,13,.52);backdrop-filter:blur(6px)}.card{width:min(760px,100%);padding:28px;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:linear-gradient(180deg,rgba(7,37,52,.92),rgba(3,18,28,.95));box-shadow:0 36px 100px rgba(0,0,0,.55)}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--cyan);font-weight:950}.card h1{margin:8px 0;font-size:clamp(30px,5vw,48px);line-height:1.03}.card p{margin:0 0 17px;color:#bad2dc;line-height:1.6}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:0 0 18px}.tip{padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);font-size:10px;color:#c8dde4}.tip b{display:block;color:#fff;margin-bottom:3px;font-size:11px}.foot{margin-top:10px;font-size:10px;color:#7f99a6}
-.err{position:absolute;inset:0;display:grid;place-items:center;padding:20px;background:#03131d;color:#fff;z-index:30}.err div{max-width:700px;padding:22px;border:1px solid #ffffff16;border-radius:18px;background:#081f2b}.err b{color:#73dcff}
-@media(max-width:900px){.right{top:auto;bottom:76px}.hint{bottom:8px}.brand{font-size:11px}.stat{min-width:74px}.stat b{font-size:12px}}
+:root{--ink:#f6fcff;--muted:#9fc0cc;--line:rgba(255,255,255,.12);--panel:rgba(2,12,20,.62);--cyan:#76e1ff;--gold:#ffd56c}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#031725;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+body{display:grid;place-items:center}.wrap,.game{position:relative;width:100vw;height:100vh;overflow:hidden}.game canvas{display:block;width:100%;height:100%;touch-action:none}
+.hud{position:absolute;inset:0 0 auto 0;z-index:10;display:flex;justify-content:space-between;gap:12px;padding:12px;pointer-events:none}.side{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-start;pointer-events:auto}.brand,.stat,.btn,.panel,.hint{border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(10px);box-shadow:0 15px 45px rgba(0,0,0,.22)}
+.brand{padding:9px 12px;border-radius:11px;font-weight:950;letter-spacing:.7px}.stat{padding:7px 10px;border-radius:10px;min-width:82px;font-size:9px;color:var(--muted)}.stat b{display:block;margin-top:2px;color:#fff;font-size:14px}
+.btn{border-radius:10px;padding:9px 12px;color:#fff;font:inherit;font-weight:900;cursor:pointer}.btn.gold{background:var(--gold);color:#2a1c05}.btn.primary{background:var(--cyan);color:#03131a}
+.panel{position:absolute;z-index:8;padding:10px 12px;border-radius:13px;pointer-events:none}.left{left:12px}.right{right:12px}.bottom{bottom:12px;width:min(355px,calc(100vw - 24px))}.top{top:77px;width:min(260px,calc(100vw - 24px))}.k{font-size:9px;letter-spacing:1.4px;color:var(--muted)}.v{font-size:13px;font-weight:950;margin-top:3px}.small{margin-top:6px;color:#cfe4ec;font-size:10px;line-height:1.45}.meter{height:7px;background:#123140;border-radius:8px;overflow:hidden;margin-top:7px}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#51c8ff,#d8fbff)}
+.catalog{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}.chip{padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);font-size:9px;color:#708e9a}.chip.found{color:#fff;background:rgba(112,221,175,.12);border-color:rgba(112,221,175,.28)}
+.hint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:8;max-width:calc(100vw - 24px);padding:8px 11px;border-radius:11px;font-size:10px;color:#dceff5;text-align:center;pointer-events:none}.toast{position:absolute;top:78px;left:50%;transform:translateX(-50%);z-index:12;opacity:0;padding:9px 13px;border-radius:999px;background:rgba(3,13,19,.9);border:1px solid var(--line);font-size:11px;font-weight:900;transition:opacity .18s;pointer-events:none}.toast.on{opacity:1}
+.modal{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:rgba(0,7,12,.48);backdrop-filter:blur(6px)}.card{width:min(780px,100%);padding:28px;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:linear-gradient(180deg,rgba(7,37,53,.94),rgba(3,18,29,.96));box-shadow:0 35px 100px rgba(0,0,0,.55)}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--cyan);font-weight:950}.card h1{margin:8px 0;font-size:clamp(30px,5vw,48px);line-height:1.02}.card p{margin:0 0 16px;color:#bdd5de;line-height:1.6}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}.tip{padding:11px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);font-size:10px;color:#c8dde5}.tip b{display:block;color:#fff;margin-bottom:3px;font-size:11px}.foot{margin-top:9px;color:#7f9ba7;font-size:10px}
+.error{position:absolute;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:#03131d}.error .box{max-width:700px;padding:22px;border:1px solid #ffffff16;border-radius:18px;background:#08212e}.error b{color:var(--cyan)}
+@media(max-width:900px){.stat{min-width:68px}.stat b{font-size:12px}.top{bottom:74px;top:auto}.grid{grid-template-columns:1fr}.brand{font-size:11px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="game" id="game"></div>
+<div class="game" id="game"></div>
+<div class="hud">
+  <div class="side">
+    <div class="brand">AKVARYUM SEFERİ</div>
+    <div class="stat"><span id="batteryL">BATARYA</span><b id="battery">100%</b></div>
+    <div class="stat"><span id="liveL">CANLI</span><b id="live">0/8</b></div>
+    <div class="stat"><span id="depthL">DERİNLİK</span><b id="depth">0 m</b></div>
+  </div>
+  <div class="side">
+    <button class="btn gold" id="lang">EN</button>
+    <button class="btn" id="reset">YENİDEN</button>
+  </div>
+</div>
+<div class="panel left bottom">
+  <div class="k" id="missionK">GÖREV</div><div class="v" id="mission">Akvaryumu keşfet ve 8 türü bul</div>
+  <div class="meter"><i id="progress"></i></div>
+  <div class="small" id="zone">Büyük Okyanus Akvaryumu · Şeffaf Cam Tank</div>
+</div>
+<div class="panel right top">
+  <div class="k" id="catalogK">TÜR KATALOĞU</div><div class="catalog" id="catalog"></div>
+</div>
+<div class="hint" id="hint">WASD: sür ve dön · Q/E: yüksel/alçal · SHIFT: hızlan · fareyi sürükle: kamerayı çevir · SPACE: sonar · F: yem</div>
+<div class="toast" id="toast"></div>
 
-  <div class="hud">
-    <div class="leftHud">
-      <div class="brand">AKVARYUM SEFERİ</div>
-      <div class="stat"><span id="batteryL">BATARYA</span><b id="battery">100%</b></div>
-      <div class="stat"><span id="speciesL">CANLI</span><b id="species">0/8</b></div>
-      <div class="stat"><span id="depthL">DERİNLİK</span><b id="depth">0 m</b></div>
+<div class="modal" id="modal">
+  <div class="card">
+    <div class="eyebrow">YÖRÜKHAN ORIGINAL · 3D AQUARIUM</div>
+    <h1 id="title">Akvaryum Seferi</h1>
+    <p id="desc">Devasa, şeffaf cam duvarlı bir akvaryumun içine keşif denizaltınla gir. Balıkların arasından dolaş, yosun ve mercanların yanından geç, vatozları ve kaplumbağaları izle ve tankın tamamını kendi rotanla keşfet.</p>
+    <div class="grid">
+      <div class="tip"><b id="a1h">Gerçek 3B gezinti</b><span id="a1">Denizaltın fiziksel bir 3B araç gibi hareket eder; kamera aracın arkasından takip eder.</span></div>
+      <div class="tip"><b id="a2h">Berrak akvaryum</b><span id="a2">Şeffaf cam paneller ve düşük sis sayesinde tankın içini rahatça görebilirsin.</span></div>
+      <div class="tip"><b id="a3h">Canlı dünya</b><span id="a3">Balık sürüleri, denizanası, vatoz, kaplumbağa, yosun, mercan, kaya ve kabarcıklar hareket eder.</span></div>
+      <div class="tip"><b id="a4h">Etkileşim</b><span id="a4">Yaklaşınca türler kataloğa kaydolur. SPACE sonar, F yem bırakma özelliğini çalıştırır.</span></div>
     </div>
-    <div class="rightHud">
-      <button class="btn gold" id="lang">EN</button>
-      <button class="btn" id="reset">YENİDEN</button>
-    </div>
+    <button class="btn primary" id="start">SEFERE BAŞLA</button>
+    <div class="foot" id="how">Masaüstü klavye + fare için tasarlanmıştır.</div>
   </div>
-
-  <div class="panel left">
-    <div class="k" id="missionK">GÖREV</div>
-    <div class="v" id="mission">8 deniz canlısını keşfet</div>
-    <div class="meter"><i id="progress"></i></div>
-    <div class="small" id="zone" style="margin-top:7px">Büyük Okyanus Akvaryumu · Açık Cam Tank</div>
-  </div>
-
-  <div class="panel right">
-    <div class="k" id="catalogK">TÜR KATALOĞU</div>
-    <div class="catalog" id="catalog"></div>
-  </div>
-
-  <div class="hint" id="hint">WASD: sür · Q/E: yüksel/alçal · SHIFT: hızlan · fareyi sürükle: kameraya bak · SPACE: sonar · F: yem bırak</div>
-  <div class="toast" id="toast"></div>
-
-  <div class="modal" id="modal">
-    <div class="card">
-      <div class="eyebrow">YÖRÜKHAN ORIGINAL · 3D AQUARIUM</div>
-      <h1 id="title">Akvaryum Seferi</h1>
-      <p id="desc">Devasa ve şeffaf bir cam tankın içinde küçük keşif denizaltınla serbestçe dolaş. Balık sürülerinin arasından geç, yosunların ve mercanların yanına yaklaş ve akvaryumu yaşayan bir sualtı dünyası gibi keşfet.</p>
-      <div class="grid">
-        <div class="tip"><b id="a1h">Gerçek 3B görüş</b><span id="a1">Denizaltını dışarıdan görürsün; kamera hareket sırasında arkasından doğal biçimde takip eder.</span></div>
-        <div class="tip"><b id="a2h">Akvaryumun içi görünür</b><span id="a2">Şeffaf cam duvarlar, açık su görüşü ve üstten süzülen ışıklarla tankın tamamı okunur.</span></div>
-        <div class="tip"><b id="a3h">Canlı dünya</b><span id="a3">Balık sürüleri, kaplumbağa, vatoz, denizanası, yosun ve mercanlar sürekli hareket eder.</span></div>
-        <div class="tip"><b id="a4h">Serbest keşif</b><span id="a4">Yakınlaştığın türler kataloğa kaydolur. Sonar ve yem ile canlıları kendine çekebilirsin.</span></div>
-      </div>
-      <button class="btn primary" id="start">SEFERE BAŞLA</button>
-      <div class="foot" id="how">Masaüstü: klavye + fare. Oyun tek oyunculudur.</div>
-    </div>
-  </div>
+</div>
 </div>
 
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+const gameEl=document.getElementById('game');
+const texts={
+tr:{battery:'BATARYA',live:'CANLI',depth:'DERİNLİK',mission:'Akvaryumu keşfet ve 8 türü bul',zone:'Büyük Okyanus Akvaryumu · Şeffaf Cam Tank',catalog:'TÜR KATALOĞU',hint:'WASD: sür ve dön · Q/E: yüksel/alçal · SHIFT: hızlan · fareyi sürükle: kamerayı çevir · SPACE: sonar · F: yem',title:'Akvaryum Seferi',desc:'Devasa, şeffaf cam duvarlı bir akvaryumun içine keşif denizaltınla gir. Balıkların arasından dolaş, yosun ve mercanların yanından geç, vatozları ve kaplumbağaları izle ve tankın tamamını kendi rotanla keşfet.',a1h:'Gerçek 3B gezinti',a1:'Denizaltın fiziksel bir 3B araç gibi hareket eder; kamera aracın arkasından takip eder.',a2h:'Berrak akvaryum',a2:'Şeffaf cam paneller ve düşük sis sayesinde tankın içini rahatça görebilirsin.',a3h:'Canlı dünya',a3:'Balık sürüleri, denizanası, vatoz, kaplumbağa, yosun, mercan, kaya ve kabarcıklar hareket eder.',a4h:'Etkileşim',a4:'Yaklaşınca türler kataloğa kaydolur. SPACE sonar, F yem bırakma özelliğini çalıştırır.',start:'SEFERE BAŞLA',how:'Masaüstü klavye + fare için tasarlanmıştır.',ready:'HAZIR',used:'KULLANILIYOR',found:'Keşfedildi',win:'Tüm türleri keşfettin.',boost:'Hızlandırma',light:'Denizaltı ışığı',feed:'Yem bırakıldı',sonar:'Sonar darbesi',deep:'Derin Bölge',shallow:'Sığ Resif',coral:'Mercan Bahçesi',jelly:'Jelatin Bölgesi'},
+en:{battery:'BATTERY',live:'LIFE',depth:'DEPTH',mission:'Explore the aquarium and find 8 species',zone:'Grand Ocean Aquarium · Clear Glass Tank',catalog:'SPECIES CATALOG',hint:'WASD: drive & turn · Q/E: up/down · SHIFT: boost · drag mouse: camera · SPACE: sonar · F: feed',title:'Aquarium Expedition',desc:'Enter a huge aquarium through transparent glass walls in your exploration submarine. Cruise through schools of fish, pass seaweed and coral, watch rays and turtles, and explore the entire tank on your own route.',a1h:'True 3D movement',a1:'Your submarine behaves like a real 3D vehicle while the camera follows behind it.',a2h:'Clear aquarium',a2:'Transparent glass and light fog keep the whole tank readable and easy to see.',a3h:'Living world',a3:'Fish schools, jellyfish, rays, turtles, seaweed, coral, rocks and bubbles are constantly moving.',a4h:'Interaction',a4:'Get close to a species to log it. SPACE sends sonar and F drops food.',start:'START EXPEDITION',how:'Designed for desktop keyboard + mouse.',ready:'READY',used:'ACTIVE',found:'Discovered',win:'You discovered every species.',boost:'Boost',light:'Submarine light',feed:'Food dropped',sonar:'Sonar pulse',deep:'Deep Zone',shallow:'Shallow Reef',coral:'Coral Garden',jelly:'Jelly Zone'}
+};
+let T=texts.tr;
 
-const root = document.getElementById('game');
-const modal = document.getElementById('modal');
-const startBtn = document.getElementById('start');
-const resetBtn = document.getElementById('reset');
-const langBtn = document.getElementById('lang');
-const toast = document.getElementById('toast');
+function uiLang(){
+  const map=[['batteryL','battery'],['liveL','live'],['depthL','depth'],['missionK','mission'],['zone','zone'],['catalogK','catalog'],['hint','hint'],['title','title'],['desc','desc'],['a1h','a1h'],['a1','a1'],['a2h','a2h'],['a2','a2'],['a3h','a3h'],['a3','a3'],['a4h','a4h'],['a4','a4'],['start','start'],['how','how']];
+  for(const [id,key] of map)document.getElementById(id).textContent=T[key];
+  document.getElementById('lang').textContent=tr?'EN':'TR';
+  renderCatalog();
+}
+let tr=true;
 
-let tr = true;
-let running = false;
-let clock = new THREE.Clock();
-let battery = 100;
-let score = 0;
-let sonarTimer = 0;
-let feedTimer = 0;
-let discovered = new Set();
-let foodPellets = [];
-let aquarium = { x: 118, y: 42, z: 68 };
+let THREE;
+try{THREE=await import('https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js');}
+catch(e){gameEl.parentElement.insertAdjacentHTML('beforeend','<div class="error"><div class="box"><b>3B motor yüklenemedi.</b><p>Three.js ağına erişilemedi. Sayfayı yenileyip tekrar deneyin.</p></div></div>');throw e;}
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a789c);
-scene.fog = new THREE.FogExp2(0x0c7896, 0.011);
-
-const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false, powerPreference:'high-performance' });
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0b7898);
+scene.fog=new THREE.FogExp2(0x0b7898,.0075);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.14;
-root.appendChild(renderer.domElement);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.12;
+gameEl.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.1, 260);
-camera.position.set(0,5,12);
+const camera=new THREE.PerspectiveCamera(64,innerWidth/innerHeight,.1,260);
+const hemi=new THREE.HemisphereLight(0xd3fbff,0x071d24,2.2);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffffff,3.2);sun.position.set(-25,40,-18);scene.add(sun);
+const fill=new THREE.DirectionalLight(0x75dfff,1.8);fill.position.set(28,10,24);scene.add(fill);
 
-const hemi = new THREE.HemisphereLight(0xcef8ff, 0x08202a, 2.0);
-scene.add(hemi);
+const tank={x:120,y:44,z:70};
+const floorY=-tank.y/2+1.3;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rand=(a,b)=>a+Math.random()*(b-a);
 
-const sun = new THREE.DirectionalLight(0xffffff, 3.0);
-sun.position.set(-26,42,-18);
-scene.add(sun);
-
-const rim = new THREE.DirectionalLight(0x77dcff, 1.7);
-rim.position.set(36,12,24);
-scene.add(rim);
-
-function mat(color, rough=.55, metal=0){
-  return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});
+function standard(color,rough=.65,metal=0){return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});}
+function rockMesh(s=1){
+  const g=new THREE.IcosahedronGeometry(1.4,2),p=g.attributes.position;
+  for(let i=0;i<p.count;i++){const v=new THREE.Vector3().fromBufferAttribute(p,i);const n=.78+Math.sin(v.x*4.4+v.z*2.2)*.13+Math.cos(v.y*5.1)*.12+Math.random()*.12;v.multiplyScalar(n);p.setXYZ(i,v.x,v.y,v.z);}
+  g.computeVertexNormals();const m=new THREE.Mesh(g,standard(0x53676c,1));m.scale.set(1.6*s,1*s,1.25*s);return m;
 }
-
-function irregularRock(scale=1){
-  const g = new THREE.IcosahedronGeometry(1.7,2);
-  const pos = g.attributes.position;
-  for(let i=0;i<pos.count;i++){
-    const v = new THREE.Vector3().fromBufferAttribute(pos,i);
-    const n = 0.75 + 0.45*(0.5+0.5*Math.sin(v.x*4.7+v.z*2.2))*0.5 + 0.18*Math.cos(v.y*5.1);
-    v.multiplyScalar(n);
-    pos.setXYZ(i,v.x,v.y,v.z);
-  }
-  g.computeVertexNormals();
-  const m = new THREE.Mesh(g,mat(0x4f6970,.98));
-  m.scale.set(scale*1.5,scale,scale*1.2);
-  return m;
-}
-
-function makePlant(x,y,z,s=1, tint=0x287f5f){
-  const group = new THREE.Group();
-  const material = new THREE.MeshStandardMaterial({color:tint,roughness:.9,side:THREE.DoubleSide});
-  for(let i=0;i<6;i++){
-    const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0,0,0),
-      new THREE.Vector3((i-2.5)*.28,1.3,(i%2-.5)*.18),
-      new THREE.Vector3((i-2)*.33,2.8,(i%3-1)*.24),
-      new THREE.Vector3((i-3)*.44,4.1,(i%2-.5)*.35)
-    ]);
-    const tube = new THREE.Mesh(new THREE.TubeGeometry(curve,14,.09+((i%3)*.02),5,false),material);
-    tube.rotation.y = (i-3)*.12;
-    group.add(tube);
-  }
-  group.position.set(x,y,z);
-  group.scale.setScalar(s);
-  return group;
-}
-
-function makeCoral(x,y,z,s=1, color=0xd27564){
-  const g = new THREE.Group();
-  const m = mat(color,.88);
+function plantMesh(s=1,color=0x257e5f){
+  const g=new THREE.Group(),m=standard(color,.92);
   for(let i=0;i<7;i++){
-    const h = 1.3 + (i%4)*.48;
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(.11,.2,h,9),m);
-    stem.position.set((i-3)*.34,h/2,(i%2-.5)*.32);
-    stem.rotation.z = (i-3)*.11;
-    stem.rotation.x = (i%3-1)*.09;
-    g.add(stem);
+    const c=new THREE.CatmullRomCurve3([new THREE.Vector3(0,0,0),new THREE.Vector3((i-3)*.22,1.5,(i%2-.5)*.2),new THREE.Vector3((i-2.5)*.32,3.1,(i%3-1)*.28),new THREE.Vector3((i-3)*.5,4.4,(i%2-.5)*.36)]);
+    const stem=new THREE.Mesh(new THREE.TubeGeometry(c,16,.075,5,false),m);g.add(stem);
   }
-  const crown = new THREE.Mesh(new THREE.SphereGeometry(0.7,14,8),new THREE.MeshStandardMaterial({color:color,roughness:.72}));
-  crown.position.y = 2.55;
-  crown.scale.set(1.6,.65,1.25);
-  g.add(crown);
-  g.position.set(x,y,z);
-  g.scale.setScalar(s);
-  return g;
+  g.scale.setScalar(s);return g;
 }
-
-function fishMesh(type, scale=1){
-  const g = new THREE.Group();
-  const bodyMat = new THREE.MeshStandardMaterial({color:type.color,roughness:.5,metalness:.02});
-  const dark = new THREE.MeshStandardMaterial({color:type.dark,roughness:.65});
-  const body = new THREE.Mesh(new THREE.SphereGeometry(1,16,10),bodyMat);
-  body.scale.set(type.body[0],type.body[1],type.body[2]);
-  g.add(body);
-
-  const tail = new THREE.Mesh(new THREE.ConeGeometry(.6,1.3,3),bodyMat);
-  tail.rotation.z = Math.PI/2;
-  tail.position.x = -type.body[0]*.85;
-  tail.scale.y = .78;
-  g.add(tail);
-
-  const fin = new THREE.Mesh(new THREE.ConeGeometry(.35,.9,3),dark);
-  fin.rotation.z = Math.PI/2;
-  fin.position.set(0,.15,-.55);
-  fin.scale.set(.7,.7,.5);
-  g.add(fin);
-
-  const eye = new THREE.Mesh(new THREE.SphereGeometry(.1,8,8),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.25}));
-  const pupil = new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),new THREE.MeshStandardMaterial({color:0x071018}));
-  eye.position.set(type.body[0]*.72,.2,type.body[2]*.72); pupil.position.set(type.body[0]*.78,.2,type.body[2]*.76);
-  g.add(eye,pupil);
-
-  if(type.kind==='ray'){
-    const wing1 = new THREE.Mesh(new THREE.CapsuleGeometry(.42,1.5,4,10),bodyMat);
-    wing1.rotation.z = Math.PI/2; wing1.rotation.y = .15; wing1.position.set(.1,.05,.95); wing1.scale.set(.85,.55,.45);
-    const wing2 = wing1.clone(); wing2.position.z=-.95; wing2.rotation.y=-.15; g.add(wing1,wing2);
-  }
-  if(type.kind==='turtle'){
-    const shell = new THREE.Mesh(new THREE.SphereGeometry(1,14,8),new THREE.MeshStandardMaterial({color:0x547e55,roughness:.95}));
-    shell.scale.set(1.12,.48,.9); shell.position.set(-.04,.2,0); g.add(shell);
-    for(const z of [-.72,.72]){
-      const fl = new THREE.Mesh(new THREE.CapsuleGeometry(.14,.65,4,8),new THREE.MeshStandardMaterial({color:0x6c966b,roughness:.9}));
-      fl.rotation.z=.5; fl.position.set(.05,.02,z); g.add(fl);
-    }
-  }
-  if(type.kind==='jelly'){
-    body.scale.set(.92,.55,.92);
-    for(let i=0;i<5;i++){
-      const c = new THREE.CatmullRomCurve3([
-        new THREE.Vector3((i-2)*.2,-.4,0),
-        new THREE.Vector3((i-2)*.16,-1.0,(i%2-.5)*.1),
-        new THREE.Vector3((i-2)*.22,-1.7,(i%3-1)*.12)
-      ]);
-      g.add(new THREE.Mesh(new THREE.TubeGeometry(c,12,.05,5,false),new THREE.MeshStandardMaterial({color:type.color,transparent:true,opacity:.78})));
-    }
-  }
-  g.scale.setScalar(scale);
-  return g;
+function coralMesh(s=.8,color=0xd37c77){
+  const g=new THREE.Group(),m=standard(color,.9);
+  for(let i=0;i<8;i++){const h=1.2+(i%4)*.45,st=new THREE.Mesh(new THREE.CylinderGeometry(.10,.20,h,8),m);st.position.set((i-3.5)*.28,h/2,(i%2-.5)*.3);st.rotation.z=(i-3.5)*.1;g.add(st);}
+  return g.scale.setScalar(s),g;
 }
+for(let i=0;i<50;i++){const r=rockMesh(rand(.45,1.5));r.position.set(rand(-58,58),floorY+.35,rand(-32,32));r.rotation.set(rand(0,6),rand(0,6),rand(0,6));scene.add(r);}
+for(let i=0;i<30;i++){const p=plantMesh(rand(.7,1.5),i%3?0x257e5f:0x2e8d70);p.position.set(rand(-57,57),floorY+.04,rand(-31,31));scene.add(p);}
+for(let i=0;i<15;i++){const c=coralMesh(rand(.6,1.1),[0xd78072,0xca8eae,0x74a2c8][i%3]);c.position.set(rand(-56,56),floorY+.03,rand(-31,31));scene.add(c);}
 
-const TYPES = [
-  {id:'clown',tr:'Palyaço balığı',en:'Clownfish',color:0xff713c,dark:0x132029,body:[.8,.48,.46],kind:'fish'},
-  {id:'tang',tr:'Mavi tang',en:'Blue tang',color:0x367bc4,dark:0xf4d54e,body:[1.0,.65,.48],kind:'fish'},
-  {id:'angel',tr:'Melek balığı',en:'Angelfish',color:0xffcf58,dark:0x5a4630,body:[.86,.98,.38],kind:'fish'},
-  {id:'puffer',tr:'Balon balığı',en:'Pufferfish',color:0xaacb7d,dark:0x42573b,body:[.64,.64,.64],kind:'fish'},
-  {id:'seahorse',tr:'Denizatı',en:'Seahorse',color:0xde93c9,dark:0x7d4a71,body:[.38,.82,.3],kind:'fish'},
-  {id:'ray',tr:'Vatoz',en:'Stingray',color:0x788995,dark:0x4d5b64,body:[.9,.25,.95],kind:'ray'},
-  {id:'jelly',tr:'Denizanası',en:'Jellyfish',color:0x8be5ff,dark:0x6abbd1,body:[.82,.42,.82],kind:'jelly'},
-  {id:'turtle',tr:'Deniz kaplumbagasi',en:'Sea turtle',color:0x5d9a69,dark:0x27432e,body:[.95,.42,.78],kind:'turtle'}
+const sand=new THREE.Mesh(new THREE.PlaneGeometry(tank.x-2,tank.z-2,1,1),standard(0xd6c999,1));
+sand.rotation.x=-Math.PI/2;sand.position.y=floorY+.05;scene.add(sand);
+
+const glassMat=new THREE.MeshStandardMaterial({color:0xcff8ff,transparent:true,opacity:.075,roughness:.05,metalness:0,side:THREE.DoubleSide,depthWrite:false});
+function glass(pos,rot,w,h){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),glassMat);m.position.copy(pos);m.rotation.copy(rot);m.renderOrder=5;scene.add(m);}
+glass(new THREE.Vector3(0,0,-tank.z/2),new THREE.Euler(0,0,0),tank.x,tank.y);
+glass(new THREE.Vector3(0,0,tank.z/2),new THREE.Euler(0,Math.PI,0),tank.x,tank.y);
+glass(new THREE.Vector3(-tank.x/2,0,0),new THREE.Euler(0,Math.PI/2,0),tank.z,tank.y);
+glass(new THREE.Vector3(tank.x/2,0,0),new THREE.Euler(0,-Math.PI/2,0),tank.z,tank.y);
+const frameMat=standard(0x8ca6ab,.32,.72);
+function bar(x,y,z,sx,sy,sz){const b=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),frameMat);b.position.set(x,y,z);scene.add(b);}
+for(const x of [-tank.x/2,tank.x/2])for(const z of [-tank.z/2,tank.z/2])bar(x,0,z,.34,tank.y,.34);
+for(const x of [-tank.x/2,tank.x/2])for(const y of [-tank.y/2,tank.y/2])bar(x,y,0,.34,.34,tank.z);
+for(const z of [-tank.z/2,tank.z/2])for(const y of [-tank.y/2,tank.y/2])bar(0,y,z,tank.x,.34,.34);
+
+const surface=new THREE.Mesh(new THREE.PlaneGeometry(tank.x,tank.z),new THREE.MeshStandardMaterial({color:0xa9f3ff,transparent:true,opacity:.05,roughness:.1,side:THREE.DoubleSide,depthWrite:false}));
+surface.rotation.x=-Math.PI/2;surface.position.y=tank.y/2-.8;surface.renderOrder=2;scene.add(surface);
+
+const particles=[];
+const pg=new THREE.BufferGeometry(),pp=new Float32Array(450*3);
+for(let i=0;i<450;i++){pp[i*3]=rand(-58,58);pp[i*3+1]=rand(-20,20);pp[i*3+2]=rand(-34,34);}
+pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
+const points=new THREE.Points(pg,new THREE.PointsMaterial({color:0xd7fbff,size:.09,transparent:true,opacity:.34,depthWrite:false}));
+scene.add(points);
+
+const TYPES=[
+{id:'clown',tr:'Palyaço balığı',en:'Clownfish',color:0xff713d,dark:0x12202a,scale:.65},
+{id:'tang',tr:'Mavi tang',en:'Blue tang',color:0x357ac2,dark:0xf0d658,scale:.82},
+{id:'angel',tr:'Melek balığı',en:'Angelfish',color:0xffcf5a,dark:0x51422a,scale:.9},
+{id:'puffer',tr:'Balon balığı',en:'Pufferfish',color:0xa9c97a,dark:0x405239,scale:.62},
+{id:'seahorse',tr:'Denizatı',en:'Seahorse',color:0xdb95c9,dark:0x6e4567,scale:.55},
+{id:'ray',tr:'Vatoz',en:'Stingray',color:0x7e8e98,dark:0x4e5c63,scale:1.05,kind:'ray'},
+{id:'jelly',tr:'Denizanası',en:'Jellyfish',color:0x88e4ff,dark:0x5eaabe,scale:.75,kind:'jelly'},
+{id:'turtle',tr:'Deniz kaplumbağası',en:'Sea turtle',color:0x5e9869,dark:0x2b4530,scale:1.08,kind:'turtle'}
 ];
-
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(aquarium.x,aquarium.z,2,2),
-  new THREE.MeshStandardMaterial({color:0xc6b990,roughness:1})
-);
-floor.rotation.x=-Math.PI/2; floor.position.y=-aquarium.y/2+1.2; scene.add(floor);
-
-const sand = new THREE.Mesh(
-  new THREE.PlaneGeometry(aquarium.x-2,aquarium.z-2,24,16),
-  new THREE.MeshStandardMaterial({color:0xd7c99c,roughness:1})
-);
-sand.rotation.x=-Math.PI/2; sand.position.y=floor.position.y+.02; scene.add(sand);
-
-for(let i=0;i<52;i++){
-  const r=irregularRock(.45+Math.random()*1.45);
-  r.position.set(-aquarium.x/2+2+Math.random()*(aquarium.x-4),floor.position.y+.3+Math.random()*.4,-aquarium.z/2+2+Math.random()*(aquarium.z-4));
-  r.rotation.set(Math.random(),Math.random(),Math.random());
-  scene.add(r);
+function fishModel(t){
+  const g=new THREE.Group();
+  const bm=new THREE.MeshStandardMaterial({color:t.color,roughness:.46});
+  const dm=new THREE.MeshStandardMaterial({color:t.dark,roughness:.7});
+  if(t.kind==='ray'){
+    const b=new THREE.Mesh(new THREE.SphereGeometry(1,18,10),bm);b.scale.set(1.55,.24,1.1);g.add(b);
+    for(const z of [-.95,.95]){const w=new THREE.Mesh(new THREE.CapsuleGeometry(.16,.9,5,8),bm);w.position.z=z;w.rotation.z=z>0?.45:-.45;g.add(w);}
+  }else if(t.kind==='jelly'){
+    const b=new THREE.Mesh(new THREE.SphereGeometry(1,18,12),new THREE.MeshStandardMaterial({color:t.color,transparent:true,opacity:.7,roughness:.25}));b.scale.set(1.05,.62,1.05);g.add(b);
+    for(let i=0;i<6;i++){const c=new THREE.CatmullRomCurve3([new THREE.Vector3((i-2.5)*.18,-.45,0),new THREE.Vector3((i-2.5)*.12,-1.1,(i%2-.5)*.15),new THREE.Vector3((i-2.5)*.2,-1.8,(i%3-1)*.15)]);g.add(new THREE.Mesh(new THREE.TubeGeometry(c,14,.045,5,false),new THREE.MeshStandardMaterial({color:t.color,transparent:true,opacity:.8})));}}
+  else{
+    const b=new THREE.Mesh(new THREE.SphereGeometry(1,18,12),bm);b.scale.set(1.05,.58,.48);g.add(b);
+    const tail=new THREE.Mesh(new THREE.ConeGeometry(.55,1.25,4),bm);tail.rotation.z=Math.PI/2;tail.position.x=-.98;g.add(tail);
+    const fin=new THREE.Mesh(new THREE.ConeGeometry(.3,.75,3),dm);fin.rotation.z=Math.PI/2;fin.position.set(-.05,.36,0);g.add(fin);
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(.10,8,8),new THREE.MeshStandardMaterial({color:0xffffff}));const pupil=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),new THREE.MeshStandardMaterial({color:0x071018}));eye.position.set(.8,.16,.34);pupil.position.set(.85,.16,.38);g.add(eye,pupil);
+    if(t.kind==='turtle'){const shell=new THREE.Mesh(new THREE.SphereGeometry(1,16,10),dm);shell.scale.set(1.3,.48,.98);shell.position.x=-.12;g.add(shell);for(const z of [-.75,.75]){const fl=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.65,4,8),bm);fl.position.set(.05,.02,z);fl.rotation.z=z>0?.5:-.5;g.add(fl);}}
+  }
+  g.scale.setScalar(t.scale);return g;
 }
-for(let i=0;i<28;i++){
-  const x=-aquarium.x/2+4+Math.random()*(aquarium.x-8);
-  const z=-aquarium.z/2+4+Math.random()*(aquarium.z-8);
-  scene.add(makePlant(x,floor.position.y+.05,z,.75+Math.random()*1.4, i%3===0?0x2c8a6e:0x1f7c59));
+const fish=[];
+const schools=[];
+for(let i=0;i<64;i++){
+  const t=TYPES[i%TYPES.length],o=fishModel(t),start=new THREE.Vector3(rand(-52,52),rand(-14,14),rand(-29,29));
+  o.position.copy(start);o.rotation.y=rand(0,Math.PI*2);scene.add(o);
+  fish.push({obj:o,type:t,baseY:start.y,phase:Math.random()*6.28,speed:rand(.55,1.45),school:i%4});
 }
-for(let i=0;i<13;i++){
-  const x=-aquarium.x/2+5+Math.random()*(aquarium.x-10);
-  const z=-aquarium.z/2+5+Math.random()*(aquarium.z-10);
-  scene.add(makeCoral(x,floor.position.y+.05,z,.55+Math.random()*.9,[0xde7d67,0xd890bf,0x7eabcf][i%3]));
+for(let s=0;s<4;s++){const g=[];for(let i=0;i<12;i++)g.push(fish[s*12+i]);schools.push(g);}
+for(let s=0;s<schools.length;s++){const list=schools[s];for(let i=0;i<list.length;i++){list[i].school=s;list[i].orbit=i/list.length*Math.PI*2;}}
+
+function submarine(){
+  const g=new THREE.Group();
+  const hull=new THREE.Mesh(new THREE.CapsuleGeometry(1.35,3.3,10,22),new THREE.MeshStandardMaterial({color:0xb7c3c7,roughness:.3,metalness:.55}));hull.rotation.z=Math.PI/2;g.add(hull);
+  const nose=new THREE.Mesh(new THREE.SphereGeometry(1.35,20,14),new THREE.MeshStandardMaterial({color:0xa9b6bb,roughness:.28,metalness:.6}));nose.position.x=2.05;nose.scale.set(.82,1,1);g.add(nose);
+  const canopy=new THREE.Mesh(new THREE.SphereGeometry(.92,18,12),new THREE.MeshStandardMaterial({color:0x083e50,roughness:.12,metalness:.2,transparent:true,opacity:.86}));canopy.position.set(.2,.7,0);canopy.scale.set(1.15,.72,1.0);g.add(canopy);
+  const tower=new THREE.Mesh(new THREE.BoxGeometry(.6,.7,1.0),new THREE.MeshStandardMaterial({color:0x65777d,roughness:.4,metalness:.45}));tower.position.set(-.35,1.05,0);g.add(tower);
+  for(const z of [-1.55,1.55]){const fin=new THREE.Mesh(new THREE.BoxGeometry(1.35,.12,.75),new THREE.MeshStandardMaterial({color:0x718188,roughness:.4,metalness:.45}));fin.position.set(-1.2,-.62,z*.65);fin.rotation.x=.2;g.add(fin);}
+  const prop=new THREE.Mesh(new THREE.TorusGeometry(.48,.07,8,18),new THREE.MeshStandardMaterial({color:0x738086,roughness:.35,metalness:.7}));prop.position.x=-2.15;prop.rotation.y=Math.PI/2;g.add(prop);
+  const light=new THREE.SpotLight(0xdffaff,28,28,Math.PI/8,.7,1.1);light.position.set(2.45,-.15,0);light.target.position.set(12,-.8,0);g.add(light,light.target);
+  return {g,light};
+}
+const subData=submarine();const sub=subData.g;sub.position.set(-20,-2,8);scene.add(sub);
+const shadow=new THREE.Mesh(new THREE.CircleGeometry(1.5,32),new THREE.MeshBasicMaterial({color:0x052331,transparent:true,opacity:.12,depthWrite:false}));shadow.rotation.x=-Math.PI/2;scene.add(shadow);
+
+const keys={};let dragging=false,lastX=0,lastY=0,camYaw=.15,camPitch=.10;
+renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId);});
+renderer.domElement.addEventListener('pointerup',()=>dragging=false);
+renderer.domElement.addEventListener('pointermove',e=>{if(!dragging||!running)return;camYaw-=(e.clientX-lastX)*.006;camPitch=clamp(camPitch-(e.clientY-lastY)*.004,-.35,.42);lastX=e.clientX;lastY=e.clientY;});
+window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if([' ','arrowup','arrowdown'].includes(e.key.toLowerCase()))e.preventDefault();if(e.key.toLowerCase()===' ')pulseSonar();if(e.key.toLowerCase()==='f')dropFood();if(e.key.toLowerCase()==='e')subData.light.visible=!subData.light.visible;});
+window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+renderer.domElement.addEventListener('wheel',e=>{camera.userData.zoom=clamp((camera.userData.zoom??11)+e.deltaY*.01,7,17);},{passive:true});
+
+let running=false,battery=100,sonarCooldown=0,sonarPulse=0,boosting=false,feedTimer=0,score=0,last=performance.now();
+const discovered=new Set();
+camera.userData.zoom=11;
+function renderCatalog(){const el=document.getElementById('catalog');el.innerHTML=TYPES.map(t=>'<div class="chip '+(discovered.has(t.id)?'found':'')+'">'+(discovered.has(t.id)?'OK · ':'')+(tr?t.tr:t.en)+'</div>').join('');document.getElementById('live').textContent=discovered.size+'/8';document.getElementById('progress').style.width=(discovered.size/8*100)+'%';}
+renderCatalog();
+
+function toastMsg(msg){toast.textContent=msg;toast.classList.add('on');clearTimeout(toastMsg.t);toastMsg.t=setTimeout(()=>toast.classList.remove('on'),1200);}
+function pulseSonar(){if(!running||sonarCooldown>0)return;sonarCooldown=3;sonarPulse=0.1;for(const f of fish){const d=f.obj.position.distanceTo(sub.position);if(d<18){discovered.add(f.type.id);score+=10;}}renderCatalog();toastMsg(T.sonar);}
+const foods=[];
+function dropFood(){if(!running||feedTimer>0)return;feedTimer=.7;foods.push(new THREE.Vector3(sub.position.x+Math.sin(sub.rotation.y)*4,sub.position.y,sub.position.z+Math.cos(sub.rotation.y)*4));toastMsg(T.feed);}
+function discoverCheck(){for(const f of fish){if(discovered.has(f.type.id))continue;const d=f.obj.position.distanceTo(sub.position);if(d<4.6){discovered.add(f.type.id);score+=25;renderCatalog();toastMsg((tr?f.type.tr:f.type.en)+' · '+T.found);}}if(discovered.size===8)document.getElementById('mission').textContent=T.win;}
+function areaName(){const y=sub.position.y;if(y<-11)return T.deep;if(Math.abs(sub.position.x)>28)return T.coral;if(y>8)return T.jelly;return T.shallow;}
+
+function update(dt){
+  if(!running)return;
+  boosting=!!keys.shift&&battery>0;
+  const turn=(keys.d?1:0)-(keys.a?1:0),drive=(keys.w?1:0)-(keys.s?1:0),vertical=(keys.e?1:0)-(keys.q?1:0);
+  sub.rotation.y-=turn*1.35*dt;
+  const speed=(boosting?10:5.6)*(drive?1:0);
+  if(drive){sub.position.x+=Math.sin(sub.rotation.y)*speed*dt;sub.position.z+=Math.cos(sub.rotation.y)*speed*dt;}
+  sub.position.y+=vertical*(boosting?5.6:3.2)*dt;
+  sub.position.x=clamp(sub.position.x,-56,56);sub.position.z=clamp(sub.position.z,-31,31);sub.position.y=clamp(sub.position.y,-19,17);
+  if(boosting&&drive)battery=clamp(battery-7*dt,0,100);else battery=clamp(battery+.9*dt,0,100);
+  sub.position.y+=Math.sin(performance.now()*.0018)*.006;
+  shadow.position.set(sub.position.x,floorY+.08,sub.position.z);shadow.scale.setScalar(1+.1*Math.sin(performance.now()*.002));
+  if(sonarCooldown>0)sonarCooldown-=dt;
+  if(sonarPulse>0){sonarPulse+=dt;if(sonarPulse>1.1)sonarPulse=0;}
+  for(const f of fish){
+    const group=schools[f.school],center=group.reduce((a,x)=>a.add(x.obj.position),new THREE.Vector3()).multiplyScalar(1/group.length);
+    const target=new THREE.Vector3(center.x+Math.cos(performance.now()*.00025+f.phase)*5, f.baseY+Math.sin(performance.now()*.0011+f.phase)*1.8, center.z+Math.sin(performance.now()*.00031+f.phase)*5);
+    if(feedTimer>0&&foods.length)target.copy(foods[foods.length-1]);
+    const dir=target.sub(f.obj.position);const len=dir.length();if(len>.1)dir.normalize(),f.obj.position.addScaledVector(dir,f.speed*dt);
+    f.obj.position.y+=Math.sin(performance.now()*.002+f.phase)*.003;
+    f.obj.rotation.y=Math.atan2(dir.x,dir.z);
+    f.obj.rotation.z=Math.sin(performance.now()*.0025+f.phase)*.06;
+    if(f.type.kind==='jelly')f.obj.position.y+=Math.sin(performance.now()*.0013+f.phase)*.008;
+  }
+  if(feedTimer>0){feedTimer-=dt;if(feedTimer<=0)foods.shift();}
+  if(foods.length>6)foods.shift();
+  for(const p of foods){const pellet=new THREE.Mesh(new THREE.SphereGeometry(.07,6,6),new THREE.MeshBasicMaterial({color:0xf2d17d}));pellet.position.copy(p);scene.add(pellet);}
+  discoverCheck();
+  const desiredArea=areaName();
+  document.getElementById('zone').textContent=desiredArea+' · '+(tr?'Açık Cam Tank':'Open Glass Tank');
+  document.getElementById('battery').textContent=Math.round(battery)+'%';
+  document.getElementById('depth').textContent=Math.round(20-sub.position.y+8)+' m';
+  const target=new THREE.Vector3(sub.position.x,sub.position.y+.4,sub.position.z);
+  const horiz=11+(camera.userData.zoom-11);
+  const offset=new THREE.Vector3(Math.sin(sub.rotation.y+camYaw)*-horiz,4+Math.sin(camPitch)*7,Math.cos(sub.rotation.y+camYaw)*-horiz);
+  const desired=target.clone().add(offset);
+  camera.position.lerp(desired,1-Math.pow(.001,dt));
+  camera.lookAt(target);
+  const pos=points.geometry.attributes.position;
+  for(let i=0;i<pos.count;i++){let y=pos.getY(i)+dt*(.25+.25*Math.sin(i));if(y>21)y=-21;pos.setY(i,y);}
+  pos.needsUpdate=true;
+  if(subData.light.visible)subData.light.target.position.copy(sub.position).add(new THREE.Vector3(Math.sin(sub.rotation.y)*12,-1,Math.cos(sub.rotation.y)*12));
+  if(sonarPulse>0&&sonarPulse<1.1){
+    if(!window._ring){window._ring=new THREE.Mesh(new THREE.RingGeometry(.4,0.52,64),new THREE.MeshBasicMaterial({color:0xaef5ff,transparent:true,opacity:.7,side:THREE.DoubleSide,depthWrite:false}));window._ring.rotation.x=-Math.PI/2;scene.add(window._ring);}
+    window._ring.position.copy(sub.position);window._ring.scale.setScalar(sonarPulse*18);window._ring.material.opacity=.65*(1-sonarPulse/1.1);window._ring.rotation.x=camPitch;
+  }else if(window._ring)window._ring.material.opacity=0;
 }
 
-const waterTop = new THREE.Mesh(
-  new THREE.PlaneGeometry(aquarium.x,aquarium.z,1,1),
-  new THREE.MeshStandardMaterial({color:0x9befff,transparent:true,opacity:.06,roughness:.05,metalness:0,side:THREE.DoubleSide,depthWrite:false})
-);
-waterTop.rotation.x=-Math.PI/2; waterTop.position.y=aquarium.y/2-.8; waterTop.renderOrder=1; scene.add(waterTop);
-
-function glassPanel(pos,rot,w,h){
-  const m=new THREE.MeshPhysicalMaterial({color:0xdaf8ff,transparent:true,opacity:.10,roughness:.04,metalness:0,transmission:.18,thickness:.12,side:THREE.DoubleSide,depthWrite:false});
-  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m);
-  mesh.position.copy(pos); mesh.rotation.copy(rot); mesh.renderOrder=5; scene.add(mesh);
+function loop(){
+  const now=performance.now(),dt=Math.min((now-last)/1000,.04);last=now;
+  update(dt);
+  renderer.render(scene,camera);
+  requestAnimationFrame(loop);
 }
-glassPanel(new THREE.Vector3(0,0,-aquarium.z/2),new THREE.Euler(0,0,0),aquarium.x,aquarium.y);
-glassPanel(new THREE.Vector3(0,0,aquarium.z/2),new THREE.Euler(0,Math.PI,0),aquarium.x,aquarium.y);
-glassPanel(new THREE.Vector3(-aquarium.x/2,0,0),new THREE.Euler(0,Math.PI/2,0),aquarium.z,aquarium.y);
-glassPanel(new THREE.Vector3(aquarium.x/2,0,0),new THREE.Euler(0,-Math.PI/2,0),aquarium.z,aquarium.y);
+requestAnimationFrame(loop);
 
-const frameMat=new THREE.MeshStandardMaterial({color:0x91a7ad,roughness:.3,metalness:.75});
-function frameBar(x,y,z,sx,sy,sz){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),frameMat);m.position.set(x,y,z);scene.add(m)}
-for(const x of [-aquarium.x/2,aquarium.x/2]) for(const z of [-aquarium.z/2,aquarium.z/2]) frameBar(x,0,z,.34,aquarium.y,.34);
-for(const x of [-aquarium.x/2,aquarium.x/2]) for(const y of [-aquarium.y/2,aquarium.y/2]) frameBar(x,y,0,.34,.34,aquarium.z);
-for(const z of [-aquarium.z/2,aquarium.z/2]) for(const y of [-aquarium.y/2,aquarium.y/2]) frameBar(0,y,z,aquarium.x,.34,.34);
+document.getElementById('start').onclick=()=>{running=true;modal.style.display='none';clockStart=performance.now();toastMsg(tr?'Sefer başladı':'Expedition started');};
+document.getElementById('reset').onclick=()=>location.reload();
+document.getElementById('lang').onclick=()=>{tr=!tr;T=tr?texts.tr:texts.en;uiLang();renderCatalog();};
+let clockStart=performance.now();
+uiLang();
 
-const caustic=new THREE.Group();
-const lineMat=new THREE.LineBasicMaterial({color:0xcaffff,transparent:true,opacity:.08});
-for(let i=0;i<95;i++){
-  const pts=[];
-  const x=-aquarium.x/2+Math.random()*aquarium.x, z=-aquarium.z/2+Math.random()*aquarium.z;
-  const len=2.3+Math.random()*4;
-  for(let j=0;j<5;j++) pts.push(new THREE.Vector3(x+(j-2)*len*.23,y= aquariум.y/2-1.0,z+Math.sin(i+j)*.7));
-}
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
 </script>
 </body>
 </html>

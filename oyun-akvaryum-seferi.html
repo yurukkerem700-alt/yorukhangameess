@@ -19,7 +19,7 @@
 .btn:disabled{opacity:.5;cursor:default}
 .panel{position:fixed;z-index:9;padding:10px 12px;border-radius:13px}
 .k{font-size:9px;letter-spacing:1.5px;color:var(--muted);font-weight:800}
-#catalogP{right:10px;top:62px;width:228px}
+#catalogP{right:10px;top:62px;width:228px;max-height:calc(100vh - 150px);overflow:auto}#catalogP::-webkit-scrollbar{width:4px}.catHead{display:flex;justify-content:space-between;align-items:center}.catX{display:none;border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:50%;width:26px;height:26px;font-size:13px;cursor:pointer}.touch .catX{display:block}#catalogP::-webkit-scrollbar-thumb{background:#ffffff30;border-radius:4px}
 .catalog{display:grid;grid-template-columns:1fr;gap:4px;margin-top:7px}
 .chip{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);font-size:11px;color:#6f8d99}
 .chip i{width:10px;height:10px;border-radius:50%;flex:none;background:#2a4450}.chip small{margin-left:auto;font-size:9px;color:#8fb3bf;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -114,7 +114,8 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
 .touch #radarP{left:calc(8px + env(safe-area-inset-left));top:calc(56px + env(safe-area-inset-top));bottom:auto;padding:3px}
 .touch #radar{width:96px;height:96px}
 .touch #catalogP,.touch #roomP{display:none!important;top:calc(96px + env(safe-area-inset-top))}
-.touch #catalogP.open{display:block!important;right:8px;width:210px;bottom:auto}
+.touch #catalogP.open{display:block!important;right:8px;left:auto;width:min(300px,calc(100vw - 16px));bottom:auto;top:calc(96px + env(safe-area-inset-top));max-height:calc(100vh - 120px - env(safe-area-inset-top));overflow:auto;z-index:14}
+.touch #catalogP .catalog{grid-template-columns:1fr 1fr}.touch #catalogP .chip small{display:none}.touch #catalogP .chip{font-size:10px;padding:4px 6px}
 .touch #roomP.open{display:block!important;left:116px;width:190px}
 .touch #chat{left:8px;right:8px;width:auto;bottom:auto;top:calc(160px + env(safe-area-inset-top))}
 .touch #discCard{top:calc(96px + env(safe-area-inset-top))}
@@ -137,7 +138,7 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
     <div class="stat glass"><span data-i="battery">BATARYA</span><b id="battery">100%</b><div class="meterB"><i id="batteryBar"></i></div></div>
     <div class="stat glass opt"><span data-i="depth">DERİNLİK</span><b id="depth">0 m</b></div>
     <div class="stat glass opt"><span data-i="speed">HIZ</span><b id="speed">0 kn</b></div>
-    <div class="stat glass opt"><span data-i="species">TÜRLER</span><b id="live">0/8</b></div>
+    <div class="stat glass opt"><span data-i="species">TÜRLER</span><b id="live">0/16</b></div>
     <div class="stat glass"><span data-i="hull">GÖVDE</span><b id="hull">100%</b><div class="meterB h"><i id="hullBar"></i></div></div>
     <div class="stat glass"><span data-i="torp">TORPİDO</span><b id="torp">6/6</b><div class="meterB"><i id="torpBar"></i></div></div>
   </div>
@@ -156,7 +157,7 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
 </div>
 
 <div class="panel glass" id="catalogP" style="display:none">
-  <div class="k" data-i="catalog">TÜR KATALOĞU</div>
+  <div class="k catHead"><span data-i="catalog">TÜR KATALOĞU</span><button class="catX" id="catX" aria-label="close">✕</button></div>
   <div class="catalog" id="catalog"></div>
   <div class="prog"><i id="progress"></i></div>
 </div>
@@ -198,6 +199,7 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
       <button class="btn gold" id="hostBtn" data-i="host">ODA KUR (ONLINE)</button>
       <div class="joinBox"><input class="txt" id="codeIn" maxlength="5" autocomplete="off"><button class="btn" id="joinBtn" data-i="join">KATIL</button></div>
     </div>
+    <div class="row" style="margin:0 0 10px"><button class="btn" id="installBtn" style="display:none" data-i="install">UYGULAMAYI YÜKLE</button><span class="k" id="iosHint" style="display:none;align-self:center" data-i="iosHint"></span></div>
     <div class="status" id="lobbyStatus"></div>
     <div class="grid">
       <div class="tip"><b data-i="t1h"></b><span data-i="t1"></span></div>
@@ -227,28 +229,30 @@ window.__aquaOK=true;
 /* ================= Metinler ================= */
 const $=id=>document.getElementById(id);
 const TEXT={
-tr:{title:'Akvaryum Seferi',desc:'Kocaman bir cam akvaryumun içinde denizaltınla süzül, 8 canlı türünü keşfet ve köpekbalıklarına, elektrikli yılan balıklarına, dev kalamarlara, piranhalara karşı hayatta kal. Torpido ve mayınlarla kayaları, gemileri, sütunları yık. Oda kur, kodu gönder: online modda birbirinize de zarar verirsiniz. Sunucu yok: oyuncular tarayıcıdan tarayıcıya doğrudan bağlanır.',
+tr:{title:'Akvaryum Seferi',desc:'Kocaman bir cam akvaryumun içinde denizaltınla süzül, 16 canlı türünü keşfet, 12 farklı biyomu gez, su yüzeyine çıkıp yıldızlı gökyüzünü izle ve köpekbalıklarına, elektrikli yılan balıklarına, dev kalamarlara, piranhalara karşı hayatta kal. Torpido ve mayınlarla kayaları, gemileri, sütunları yık. Oda kur, kodu gönder: online modda birbirinize de zarar verirsiniz. Sunucu yok: oyuncular tarayıcıdan tarayıcıya doğrudan bağlanır.',
 nameL:'KAPTAN ADI',colorL:'DENİZALTI RENGİ',solo:'TEK BAŞINA KEŞFET',host:'ODA KUR (ONLINE)',join:'KATIL',codePh:'KOD',
-t1h:'Sürüş',t1:'WASD sür ve dön · Q/E yüksel/alçal · SHIFT hızlan',t2h:'Kamera',t2:'Oyuna tıkla, fareyle etrafa bak · tekerlek: yakınlaştır',t3h:'Silahlar',t3:'Sol tık ateş · 1 torpido · 2 salvo · 3 mayın · 4 EMP · 5/C kalkan · 6/R tamir · 7/V şok dalgası · SPACE sonar · F yem · L ışık · M harita',t4h:'Online',t4:'8 kişiye kadar · torpidolar birbirinize zarar verir · ENTER sohbet',
+t1h:'Sürüş',t1:'WASD sür ve dön · Q/E yüksel/alçal (yüzeye çık: gökyüzü!) · SHIFT hızlan',t2h:'Kamera',t2:'Oyuna tıkla, fareyle etrafa bak · tekerlek: yakınlaştır',t3h:'Silahlar',t3:'Sol tık ateş · 1 torpido · 2 salvo · 3 mayın · 4 EMP · 5/C kalkan · 6/R tamir · 7/V şok dalgası · SPACE sonar · F yem · L ışık · M harita',t4h:'Online',t4:'8 kişiye kadar · torpidolar birbirinize zarar verir · ENTER sohbet',
 foot:'Online mod, bağlantıyı kurmak için yalnızca ücretsiz ve herkese açık PeerJS eşleştirme hizmetini kullanır; oyun verisi doğrudan oyuncular arasında akar. Oda sahibi çıkarsa oda kapanır.',
 battery:'BATARYA',torp:'TORPİDO',noTorp:'Torpido kalmadı — tüpler dolduruluyor…',hit:' vuruldu!',lock:'KİLİTLENDİ',torpBy:' torpido fırlattı',depth:'DERİNLİK',speed:'HIZ',species:'TÜRLER',catalog:'TÜR KATALOĞU',room:'ODA KODU',copy:'DAVET LİNKİNİ KOPYALA',copied:'Davet linki kopyalandı',copyManual:'Kodu arkadaşına söyle: ',zone:'BÖLGE',menu:'MENÜ',
 hint:'Tıkla: fareyle bak · Sol tık: ateş · 1-4 silah · 5/C kalkan · 6/R tamir · 7/V şok · WASD sür · Q/E yüksel/alçal · SHIFT hız · SPACE sonar · F yem · L ışık · M harita · ENTER sohbet',
 connecting:'Odaya bağlanılıyor…',hosting:'Oda açılıyor…',netFail:'Bağlantı kurulamadı. İnternetini kontrol et ya da tek başına oyna.',noRoom:'Bu kodla açık bir oda bulunamadı.',badCode:'5 haneli oda kodunu yaz.',full:'Oda dolu (8/8).',hostLeft:'Oda sahibi ayrıldı. Tek başına devam ediyorsun.',joined:'odaya katıldı',left:'ayrıldı',welcome:'Odaya hoş geldin! Birlikte keşfedin.',roomOpen:'Oda hazır! Kodu arkadaşlarına gönder: ',
-found:'YENİ TÜR KEŞFEDİLDİ',by:'Keşfeden: ',byYou:'Keşfeden: sen',allFound:'Tebrikler! Akvaryumdaki 8 türün hepsi keşfedildi!',sonar:'Sonar darbesi',sonarCd:'Sonar şarj oluyor…',food:'Yem bırakıldı — balıklar geliyor!',foodCd:'Yem hazırlanıyor…',lightOn:'Işıklar açık',lightOff:'Işıklar kapalı',chatPh:'Mesaj yaz · ENTER gönder · ESC kapat',map:'AKVARYUM HARİTASI',mapClose:'M ya da ESC ile kapat',you:'sen',start:'Sefer başladı! Oyuna tıklayıp fareyle bakabilirsin.',sonarBy:' sonar gönderdi',foodBy:' yem bıraktı',leave:'Menüye dönmek sefer bağlantısını kapatır. Emin misin?',
+found:'YENİ TÜR KEŞFEDİLDİ',by:'Keşfeden: ',byYou:'Keşfeden: sen',allFound:'Tebrikler! Akvaryumdaki 16 türün hepsi keşfedildi!',sonar:'Sonar darbesi',sonarCd:'Sonar şarj oluyor…',food:'Yem bırakıldı — balıklar geliyor!',foodCd:'Yem hazırlanıyor…',lightOn:'Işıklar açık',lightOff:'Işıklar kapalı',chatPh:'Mesaj yaz · ENTER gönder · ESC kapat',map:'AKVARYUM HARİTASI',mapClose:'M ya da ESC ile kapat',you:'sen',start:'Sefer başladı! Oyuna tıklayıp fareyle bakabilirsin.',sonarBy:' sonar gönderdi',foodBy:' yem bıraktı',leave:'Menüye dönmek sefer bağlantısını kapatır. Emin misin?',
 hull:'GÖVDE',w1:'TORPİDO',w2:'SALVO',w3:'MAYIN',w4:'EMP',w5:'KALKAN',w6:'TAMİR',w7:'ŞOK',swvOn:'ŞOK DALGASI!',swvCd:'Şok dalgası şarj oluyor…',shieldOn:'Kalkan açık!',shieldCd:'Kalkan şarj oluyor…',shieldDown:'Kalkan kırıldı!',repairStart:'Tamir başladı…',repairFull:'Gövde zaten tam',noKit:'Tamir kiti kalmadı — yenisi hazırlanıyor…',repairDone:'Tamir tamamlandı',kitGain:'+1 tamir kiti',rotHint:'Daha rahat oynamak için telefonu yatay tut',noMine:'Mayın kalmadı — yenisi hazırlanıyor…',mineDrop:'Mayın bırakıldı',empCd:'EMP şarj oluyor…',lowBat:'EMP için batarya yetersiz',stunned:'Sistemler devre dışı!',salvoNeed:'Salvo için en az 3 torpido gerek',slain:' yok edildi!',youSunk:'DENİZALTIN BATTI',respawnIn:'Yeniden doğuyor:',
 sunk:(v,k)=>v+', '+k+' tarafından batırıldı',
-zones:{trench:'Derin Çukur',temple:'Kayıp Tapınak',graveyard:'Gemi Mezarlığı',dunes:'Kum Tepeleri',coral:'Mercan Bahçesi',kelp:'Yosun Ormanı',grass:'Deniz Çayırı',wreck:'Batık Gemi Çukuru',arch:'Kaya Kemerleri',jelly:'Denizanası Koyu',open:'Açık Su'}},
-en:{title:'Aquarium Expedition',desc:'Glide through a gigantic glass aquarium in your submarine, discover 8 species and survive sharks, electric eels, giant squids and piranhas. Smash rocks, ships and pillars with torpedoes and mines. Open a room and share the code: in online mode you can hurt each other too. No server: players connect browser to browser.',
+install:'⬇ UYGULAMAYI YÜKLE (MASAÜSTÜ / ANA EKRAN)',iosHint:'iPhone/iPad: Paylaş → Ana Ekrana Ekle',surfaced:'Yüzeydesin — gece gökyüzü ve yıldızlar!',noSurfFire:'Yüzeyde torpido atılamaz — biraz dal',surface:'YÜZEY',
+zones:{ice:'Buzul Kutbu',volcano:'Yanardağ Bacaları',abyss:'Karanlık Uçurum',crystal:'Kristal Mağaraları',lagoon:'Turkuaz Lagün',sunken:'Batık Şehir',bluehole:'Mavi Okyanus',canyon:'Kızıl Kanyon',trench:'Derin Çukur',temple:'Kayıp Tapınak',graveyard:'Gemi Mezarlığı',dunes:'Kum Tepeleri',coral:'Mercan Bahçesi',kelp:'Yosun Ormanı',grass:'Deniz Çayırı',wreck:'Batık Gemi Çukuru',arch:'Kaya Kemerleri',jelly:'Denizanası Koyu',open:'Açık Su'}},
+en:{title:'Aquarium Expedition',desc:'Glide through a gigantic glass aquarium in your submarine, discover 16 species, explore 12 biomes, surface to watch the starry night sky and survive sharks, electric eels, giant squids and piranhas. Smash rocks, ships and pillars with torpedoes and mines. Open a room and share the code: in online mode you can hurt each other too. No server: players connect browser to browser.',
 nameL:'CAPTAIN NAME',colorL:'SUBMARINE COLOR',solo:'EXPLORE SOLO',host:'HOST ROOM (ONLINE)',join:'JOIN',codePh:'CODE',
-t1h:'Driving',t1:'WASD drive & turn · Q/E rise/dive · SHIFT boost',t2h:'Camera',t2:'Click the game, look with the mouse · wheel: zoom',t3h:'Weapons',t3:'Left click fire · 1 torpedo · 2 salvo · 3 mine · 4 EMP · 5/C shield · 6/R repair · 7/V shockwave · SPACE sonar · F food · L light · M map',t4h:'Online',t4:'Up to 8 players · torpedoes hurt each other · ENTER chat',
+t1h:'Driving',t1:'WASD drive & turn · Q/E rise/dive (reach the surface: night sky!) · SHIFT boost',t2h:'Camera',t2:'Click the game, look with the mouse · wheel: zoom',t3h:'Weapons',t3:'Left click fire · 1 torpedo · 2 salvo · 3 mine · 4 EMP · 5/C shield · 6/R repair · 7/V shockwave · SPACE sonar · F food · L light · M map',t4h:'Online',t4:'Up to 8 players · torpedoes hurt each other · ENTER chat',
 foot:'Online mode only uses the free public PeerJS matchmaking service to open the connection; game data flows directly between players. The room closes if the host leaves.',
 battery:'BATTERY',torp:'TORPEDO',noTorp:'Out of torpedoes — reloading tubes…',hit:' hit!',lock:'LOCKED',torpBy:' fired a torpedo',depth:'DEPTH',speed:'SPEED',species:'SPECIES',catalog:'SPECIES CATALOG',room:'ROOM CODE',copy:'COPY INVITE LINK',copied:'Invite link copied',copyManual:'Tell your friend the code: ',zone:'ZONE',menu:'MENU',
 hint:'Click: mouse look · Left click: fire · 1-4 weapon · 5/C shield · 6/R repair · 7/V shock · WASD drive · Q/E rise/dive · SHIFT boost · SPACE sonar · F food · L light · M map · ENTER chat',
 connecting:'Connecting to room…',hosting:'Opening room…',netFail:'Could not connect. Check your internet or play solo.',noRoom:'No open room with this code.',badCode:'Type the 5-character room code.',full:'Room is full (8/8).',hostLeft:'The host left. You continue solo.',joined:'joined the room',left:'left',welcome:'Welcome aboard! Explore together.',roomOpen:'Room ready! Send the code to your friends: ',
-found:'NEW SPECIES DISCOVERED',by:'Found by: ',byYou:'Found by: you',allFound:'Congratulations! All 8 species in the aquarium are discovered!',sonar:'Sonar pulse',sonarCd:'Sonar recharging…',food:'Food dropped — fish incoming!',foodCd:'Preparing food…',lightOn:'Lights on',lightOff:'Lights off',chatPh:'Type a message · ENTER send · ESC close',map:'AQUARIUM MAP',mapClose:'Close with M or ESC',you:'you',start:'Expedition started! Click the game to look around with the mouse.',sonarBy:' sent a sonar pulse',foodBy:' dropped food',leave:'Returning to the menu closes the expedition connection. Sure?',
+found:'NEW SPECIES DISCOVERED',by:'Found by: ',byYou:'Found by: you',allFound:'Congratulations! All 16 species in the aquarium are discovered!',sonar:'Sonar pulse',sonarCd:'Sonar recharging…',food:'Food dropped — fish incoming!',foodCd:'Preparing food…',lightOn:'Lights on',lightOff:'Lights off',chatPh:'Type a message · ENTER send · ESC close',map:'AQUARIUM MAP',mapClose:'Close with M or ESC',you:'you',start:'Expedition started! Click the game to look around with the mouse.',sonarBy:' sent a sonar pulse',foodBy:' dropped food',leave:'Returning to the menu closes the expedition connection. Sure?',
 hull:'HULL',w1:'TORPEDO',w2:'SALVO',w3:'MINE',w4:'EMP',w5:'SHIELD',w6:'REPAIR',w7:'SHOCK',swvOn:'SHOCKWAVE!',swvCd:'Shockwave recharging…',shieldOn:'Shield up!',shieldCd:'Shield recharging…',shieldDown:'Shield broken!',repairStart:'Repairing…',repairFull:'Hull is already full',noKit:'Out of repair kits — building a new one…',repairDone:'Repair complete',kitGain:'+1 repair kit',rotHint:'Hold your phone in landscape for a better view',noMine:'Out of mines — building a new one…',mineDrop:'Mine dropped',empCd:'EMP recharging…',lowBat:'Not enough battery for EMP',stunned:'Systems disabled!',salvoNeed:'Salvo needs at least 3 torpedoes',slain:' destroyed!',youSunk:'YOUR SUBMARINE SANK',respawnIn:'Respawning:',
 sunk:(v,k)=>v+' was sunk by '+k,
-zones:{trench:'Deep Trench',temple:'Lost Temple',graveyard:'Ship Graveyard',dunes:'Sand Dunes',coral:'Coral Garden',kelp:'Kelp Forest',grass:'Seagrass Meadow',wreck:'Shipwreck Trench',arch:'Rock Arches',jelly:'Jellyfish Cove',open:'Open Water'}}
+install:'⬇ INSTALL APP (DESKTOP / HOME SCREEN)',iosHint:'iPhone/iPad: Share → Add to Home Screen',surfaced:'Surfaced — the night sky and the stars!',noSurfFire:'Cannot fire torpedoes at the surface — dive a little',surface:'SURFACE',
+zones:{ice:'Polar Ice',volcano:'Volcanic Vents',abyss:'Dark Abyss',crystal:'Crystal Caverns',lagoon:'Turquoise Lagoon',sunken:'Sunken City',bluehole:'Blue Ocean',canyon:'Red Canyon',trench:'Deep Trench',temple:'Lost Temple',graveyard:'Ship Graveyard',dunes:'Sand Dunes',coral:'Coral Garden',kelp:'Kelp Forest',grass:'Seagrass Meadow',wreck:'Shipwreck Trench',arch:'Rock Arches',jelly:'Jellyfish Cove',open:'Open Water'}}
 };
 const SPECIES=[
 {id:'clown',col:'#ff7a2e',tr:'Palyaço Balığı',en:'Clownfish',ftr:'Yakıcı şakayıkların arasında yaşar; derisindeki özel mukus onu korur. Mercan Bahçesi\'ndeki şakayıklara bak.',fen:'Lives among stinging anemones, protected by a special mucus coat. Check the anemones in the Coral Garden.'},
@@ -258,7 +262,15 @@ const SPECIES=[
 {id:'seahorse',col:'#f19a4a',tr:'Denizatı',en:'Seahorse',ftr:'Yavrularını erkek taşır; kuyruğuyla bitkilere tutunur. Çayır ve yosunların dibine yakın bak.',fen:'The male carries the young; it anchors to plants with its tail. Look low in the meadow and kelp.'},
 {id:'ray',col:'#8a9ea6',tr:'Vatoz',en:'Stingray',ftr:'Kanat gibi yüzgeçleriyle kumun hemen üstünde süzülür.',fen:'Glides just above the sand on wing-like fins.'},
 {id:'jelly',col:'#9fe8ff',tr:'Denizanası',en:'Jellyfish',ftr:'Beyni, kalbi ve kemiği yoktur; vücudunun %95\'i sudur. Denizanası Koyu\'nda yüksekte süzülürler.',fen:'No brain, heart or bones; 95% of its body is water. They drift high up in Jellyfish Cove.'},
-{id:'turtle',col:'#6f9a4a',tr:'Deniz Kaplumbağası',en:'Sea Turtle',ftr:'Yüz yıla yakın yaşayabilir ve binlerce kilometre göç eder. Tankta geniş turlar atar.',fen:'Can live close to a century and migrate thousands of kilometres. Makes wide laps of the tank.'}
+{id:'turtle',col:'#6f9a4a',tr:'Deniz Kaplumbağası',en:'Sea Turtle',ftr:'Yüz yıla yakın yaşayabilir ve binlerce kilometre göç eder. Tankta geniş turlar atar.',fen:'Can live close to a century and migrate thousands of kilometres. Makes wide laps of the tank.'},
+{id:'manta',col:'#46607a',tr:'Manta Vatozu',en:'Manta Ray',ftr:'Kanat açıklığı 7 metreyi bulan nazik bir dev; planktonla beslenir ve Mavi Okyanus\'ta geniş daireler çizer.',fen:'A gentle giant with a wingspan up to 7 metres; it filters plankton and cruises in wide circles in the Blue Ocean.'},
+{id:'whaleshark',col:'#6f8fa8',tr:'Balina Köpekbalığı',en:'Whale Shark',ftr:'Dünyanın en büyük balığıdır ama yalnızca plankton yer. Sırtındaki benek deseni parmak izi gibi herkeste farklıdır.',fen:'The largest fish on Earth yet it only eats plankton. Its spot pattern is unique, like a fingerprint.'},
+{id:'mola',col:'#aab6bf',tr:'Ay Balığı',en:'Ocean Sunfish',ftr:'Kuyruğu olmayan, yüzen bir disk gibidir; denizanası yer ve güneşlenmek için yüzeye yakın yatar.',fen:'A swimming disc with no real tail; it eats jellyfish and lies near the surface to sunbathe.'},
+{id:'lion',col:'#d2492e',tr:'Aslan Balığı',en:'Lionfish',ftr:'Yelpaze gibi yüzgeçleri zehirli dikenler taşır. Turkuaz Lagün ve batık şehir çevresinde avlanır.',fen:'Its fan-like fins carry venomous spines. Hunts around the Turquoise Lagoon and the sunken city.'},
+{id:'angler',col:'#9dffd0',tr:'Fener Balığı',en:'Anglerfish',ftr:'Karanlık Uçurum\'da başının önündeki ışıklı oltayla avını kandırır.',fen:'In the Dark Abyss it lures prey with a glowing rod dangling in front of its head.'},
+{id:'narwhal',col:'#c9d4de',tr:'Narval',en:'Narwhal',ftr:'Başındaki spiral dişi aslında uzamış bir köpek dişidir. Buzul Kutbu\'nun sakinleridir.',fen:'Its spiral tusk is really an overgrown tooth. A resident of the Polar Ice.'},
+{id:'oarfish',col:'#e0e6ec',tr:'Kürek Balığı',en:'Oarfish',ftr:'Dünyanın en uzun kemikli balığı; gümüş kurdele gibi gövdesi ve kırmızı sırt yelesiyle derinlerde süzülür.',fen:'The longest bony fish in the world; it glides deep with a silver ribbon body and a red crest.'},
+{id:'nautilus',col:'#e08a3a',tr:'Nautilus',en:'Nautilus',ftr:'500 milyon yıldır neredeyse hiç değişmemiş "yaşayan fosil"; spiral kabuğunda gaz odacıkları vardır.',fen:'A "living fossil" nearly unchanged for 500 million years; its spiral shell holds gas chambers.'}
 ];
 const SP_IDX=Object.fromEntries(SPECIES.map((s,i)=>[s.id,i]));
 const COLORS=['#ffcf3f','#ff6b5a','#4fd1ff','#7ef0b9','#c792ff','#ff8fd0','#ffffff','#ff9f3f'];
@@ -281,7 +293,7 @@ function applyLang(){
 }
 
 /* ================= Sabitler ve yardımcılar ================= */
-const TW=560,TH=80,TD=320,HX=TW/2,HZ=TD/2,SURF=36,BASE=-32,TANK_BOTTOM=-40;
+const TW=1120,TD=640,HX=TW/2,HZ=TD/2,SURF=36,BASE=-32,TANK_BOTTOM=-40;
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const sm=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
 const angLerp=(a,b,k)=>{let d=((b-a+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI;return a+d*k;};
@@ -289,18 +301,30 @@ function mulberry32(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15
 const R=mulberry32(20260930);const rr=(a,b)=>a+R()*(b-a);
 function hash2(x,z){const h=Math.sin(x*127.1+z*311.7)*43758.5453;return h-Math.floor(h);}
 function vnoise(x,z){const xi=Math.floor(x),zi=Math.floor(z),xf=x-xi,zf=z-zi,u=xf*xf*(3-2*xf),v=zf*zf*(3-2*zf);const a=hash2(xi,zi),b=hash2(xi+1,zi),c=hash2(xi,zi+1),d=hash2(xi+1,zi+1);return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v;}
+const zbox=(x0,x1,z0,z1,f,x,z)=>sm(x0-f,x0+f,x)*(1-sm(x1-f,x1+f,x))*sm(z0-f,z0+f,z)*(1-sm(z1-f,z1+f,z));
+const gauss=(x,z,cx,cz,rx,rz)=>{const a=(x-cx)/rx,b=(z-cz)/rz;return Math.exp(-(a*a+b*b));};
 function floorH(x,z){
   let h=BASE+(vnoise(x*.03,z*.03)-.5)*6+(vnoise(x*.11+7,z*.11+3)-.5)*1.3;
   const tx=x/34,tz=(z+30)/24;h-=7*Math.exp(-(tx*tx+tz*tz));
   const ux=(x-210)/48,uz=(z+85)/38;h-=5*Math.exp(-(ux*ux+uz*uz));
   const dx2=(x+205)/50,dz2=(z-95)/40;h+=3.5*Math.exp(-(dx2*dx2+dz2*dz2));
+  // yeni biyomlar
+  h+=17*gauss(x,z,-430,-245,42,40)-7*gauss(x,z,-430,-245,11,11)+11*gauss(x,z,-340,-250,26,24)-4*gauss(x,z,-340,-250,7,7);   // yanardağ ve krater
+  h+=6.5*gauss(x,z,420,-240,95,52)+(vnoise(x*.2,z*.2)-.5)*1.5*zbox(300,545,-305,-175,14,x,z);                              // buz sahanlığı
+  h-=5.5*gauss(x,z,-430,240,60,45)+3.5*gauss(x,z,-350,260,30,25);                                                           // uçurum çukuru
+  h+=(vnoise(x*.09+3,z*.09)-.3)*5.5*zbox(300,545,175,305,14,x,z);                                                          // kristal tümsekleri
+  h+=12*zbox(-295,295,-305,-175,40,x,z)+(vnoise(x*.15,z*.15)-.5)*1.3*zbox(-295,295,-305,-175,40,x,z);                       // lagün sığlığı
+  h+=Math.max(0,Math.sin(z*.07+x*.012))*4.4*zbox(-545,-300,-170,170,22,x,z);                                                // kanyon basamakları
+  h-=3*gauss(x,z,430,0,90,80);                                                                                              // mavi okyanus çukuru
   const ex=Math.max(0,Math.abs(x)-HX+20)/20,ez=Math.max(0,Math.abs(z)-HZ+16)/16;h+=(ex*ex+ez*ez)*3.2;
   return Math.max(h,TANK_BOTTOM+2.6);
 }
 const ZONES=[
   {id:'wreck',x:[-32,32],z:[-62,-2]},{id:'coral',x:[38,128],z:[-74,-4]},{id:'kelp',x:[-128,-48],z:[-74,6]},
   {id:'grass',x:[-42,42],z:[16,76]},{id:'arch',x:[52,128],z:[14,76]},{id:'jelly',x:[-128,-50],z:[16,76]},
-  {id:'trench',x:[150,270],z:[-150,-30]},{id:'temple',x:[-270,-140],z:[-150,-50]},{id:'graveyard',x:[140,270],z:[40,150]},{id:'dunes',x:[-270,-140],z:[50,150]}
+  {id:'trench',x:[150,270],z:[-150,-30]},{id:'temple',x:[-270,-140],z:[-150,-50]},{id:'graveyard',x:[140,270],z:[40,150]},{id:'dunes',x:[-270,-140],z:[50,150]},
+  {id:'ice',x:[300,545],z:[-305,-175]},{id:'volcano',x:[-545,-300],z:[-305,-175]},{id:'abyss',x:[-545,-300],z:[175,305]},{id:'crystal',x:[300,545],z:[175,305]},
+  {id:'lagoon',x:[-295,295],z:[-305,-175]},{id:'sunken',x:[-295,295],z:[175,305]},{id:'bluehole',x:[300,545],z:[-170,170]},{id:'canyon',x:[-545,-300],z:[-170,170]}
 ];
 const inZone=(id,x,z)=>{const q=ZONES.find(o=>o.id===id);return x>=q.x[0]&&x<=q.x[1]&&z>=q.z[0]&&z<=q.z[1];};
 function zoneAt(x,z){for(const q of ZONES)if(x>=q.x[0]&&x<=q.x[1]&&z>=q.z[0]&&z<=q.z[1])return q.id;return 'open';}
@@ -318,22 +342,22 @@ renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.15;
 $('game').appendChild(renderer.domElement);
-const camera=new THREE.PerspectiveCamera(66,innerWidth/innerHeight,.1,700);
+const camera=new THREE.PerspectiveCamera(66,innerWidth/innerHeight,.15,3200);
 camera.position.set(-20,0,-10);
-scene.add(new THREE.HemisphereLight(0xcff6ff,0x10323c,2.0));
+const hemi=new THREE.HemisphereLight(0xcff6ff,0x10323c,2.0);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfaffff,2.6);sun.position.set(-30,80,-20);scene.add(sun);
 const fill=new THREE.DirectionalLight(0x6fd8ff,1.1);fill.position.set(40,-10,30);scene.add(fill);
 
 /* Shader enjeksiyonu: su kostikleri + sallanma animasyonları */
 const U={t:{value:0},cam:{value:new THREE.Vector3()}};
 const CAUS=`float causF(vec2 uv){vec2 p=mod(uv*6.28318,6.28318)-250.;vec2 i=p;float c=1.;float inten=.005;for(int n=0;n<4;n++){float t=uT*.32*(1.-(3.5/float(n+1)));i=p+vec2(cos(t-i.x)+sin(t+i.y),sin(t-i.y)+cos(t+i.x));c+=1./length(vec2(p.x/(sin(i.x+t)/inten),p.y/(cos(i.y+t)/inten)));}c/=4.;c=1.17-pow(c,1.4);return pow(abs(c),8.);}\n`;
-function patch(mat,key,{v='',caus=0}={}){
+function patch(mat,key,{v='',caus=0,fx=''}={}){
   mat.onBeforeCompile=sh=>{
     sh.uniforms.uT=U.t;
     sh.vertexShader='uniform float uT;\nvarying vec3 vWp;\n'+sh.vertexShader
       .replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nvec3 ip=instanceMatrix[3].xyz;\n#else\nvec3 ip=vec3(0.);\n#endif\nfloat ph=float(gl_InstanceID)*2.37;\n'+v)
       .replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n{vec4 wq=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nwq=instanceMatrix*wq;\n#endif\nvWp=(modelMatrix*wq).xyz;}');
-    sh.fragmentShader='uniform float uT;\nvarying vec3 vWp;\n'+(caus?CAUS:'')+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n'+(caus?'{float cz=causF(vWp.xz*.034)*smoothstep(-48.,34.,vWp.y);totalEmissiveRadiance+=diffuseColor.rgb*vec3(.55,.85,1.)*cz*'+caus.toFixed(2)+';}':''));
+    sh.fragmentShader='uniform float uT;\nvarying vec3 vWp;\n'+(caus?CAUS:'')+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n'+(caus?'{float cz=causF(vWp.xz*.034)*smoothstep(-48.,34.,vWp.y);totalEmissiveRadiance+=diffuseColor.rgb*vec3(.55,.85,1.)*cz*'+caus.toFixed(2)+';}':'')+fx);
   };
   mat.customProgramCacheKey=()=>key;
   return mat;
@@ -358,13 +382,16 @@ function regFlora(mesh,list,rad){list.forEach((o,i)=>flora.push({mesh,idx:i,x:o.
 
 /* ================= Akvaryum: zemin, cam, salon ================= */
 {
-  const g=new THREE.PlaneGeometry(TW,TD,isTouch?200:300,isTouch?113:170);g.rotateX(-Math.PI/2);
+  const ZT=[{b:[300,545,-305,-175],c:[.86,.93,.98],k:.8},{b:[-545,-300,-305,-175],c:[.09,.07,.07],k:.8},{b:[-545,-300,175,305],c:[.2,.25,.32],k:.7},{b:[300,545,175,305],c:[.38,.27,.6],k:.6},{b:[-295,295,-305,-175],c:[.98,.96,.88],k:.55},{b:[-295,295,175,305],c:[.58,.55,.5],k:.5},{b:[300,545,-170,170],c:[.7,.82,.9],k:.45},{b:[-545,-300,-170,170],c:[.8,.4,.24],k:.8}],_zc=new THREE.Color();
+  const g=new THREE.PlaneGeometry(TW,TD,isTouch?380:560,isTouch?217:320);g.rotateX(-Math.PI/2);
   const p=g.attributes.position,col=new Float32Array(p.count*3),c=new THREE.Color();
   for(let i=0;i<p.count;i++){
     const x=p.getX(i),z=p.getZ(i),h=floorH(x,z);p.setY(i,h);
     const n=vnoise(x*.2,z*.2);c.setRGB(.86+n*.08,.79+n*.08,.6+n*.06);
     if(inZone('grass',x,z))c.lerp(new THREE.Color(.52,.62,.42),.35);
     if(h<BASE-3)c.lerp(new THREE.Color(.45,.47,.44),clamp((BASE-3-h)/4,0,.6));
+    if(Math.abs(x)>262||Math.abs(z)>150)for(const q of ZT){const w=zbox(q.b[0],q.b[1],q.b[2],q.b[3],10,x,z)*q.k;if(w>.01){c.lerp(_zc.setRGB(q.c[0]*(.9+n*.2),q.c[1]*(.9+n*.2),q.c[2]*(.9+n*.2)),w);}}
+    if(h>BASE+11&&x<-380&&x>-480&&z<-190&&z>-300)c.lerp(_zc.setRGB(.08,.06,.06),clamp((h-BASE-11)/8,0,.8));
     col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;
   }
   g.setAttribute('color',new THREE.BufferAttribute(col,3));g.computeVertexNormals();
@@ -382,18 +409,75 @@ function regFlora(mesh,list,rad){list.forEach((o,i)=>flora.push({mesh,idx:i,x:o.
   const stand=new THREE.Mesh(new THREE.BoxGeometry(TW+6,14,TD+6),new THREE.MeshStandardMaterial({color:0x0f1b22,roughness:.8}));stand.position.y=TANK_BOTTOM-7;scene.add(stand);
   const sandFill=new THREE.Mesh(new THREE.BoxGeometry(TW,3,TD),new THREE.MeshStandardMaterial({color:0xb9a878,roughness:1}));sandFill.position.y=TANK_BOTTOM+.2;scene.add(sandFill);
   // salon (cam dışından görünen karanlık sergi salonu)
-  const hall=new THREE.Mesh(new THREE.BoxGeometry(TW+200,190,TD+200),new THREE.MeshStandardMaterial({color:0x0d2230,roughness:1,side:THREE.BackSide}));hall.position.y=30;scene.add(hall);
-  const lamp=new THREE.MeshBasicMaterial({color:0xcff8ff});
-  for(let x=-HX+20;x<HX;x+=40){const l=new THREE.Mesh(new THREE.BoxGeometry(14,.6,4),lamp);l.position.set(x,SURF+14,0);scene.add(l);}
+  // açık gökyüzü altındaki avlu: duvarlar ve zemin var, tavan yok
+  const hm=new THREE.MeshStandardMaterial({color:0x0a1a2c,roughness:1,side:THREE.DoubleSide});
+  {const WX=TW+800,WZ=TD+800,y0=-65,y1=SURF+60,hh=y1-y0,cy=(y0+y1)/2;
+   [[0,cy,-WZ/2,0,WX],[0,cy,WZ/2,Math.PI,WX],[-WX/2,cy,0,Math.PI/2,WZ],[WX/2,cy,0,-Math.PI/2,WZ]].forEach(([x,y,z,ry,w])=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,hh),hm);m.position.set(x,y,z);m.rotation.y=ry;scene.add(m);});
+   const fl=new THREE.Mesh(new THREE.PlaneGeometry(WX,WZ),hm);fl.rotation.x=-Math.PI/2;fl.position.y=y0;scene.add(fl);}
   const bench=new THREE.MeshStandardMaterial({color:0x3a2c22,roughness:.8});
-  for(let i=0;i<14;i++){const b=new THREE.Mesh(new THREE.BoxGeometry(18,2,4),bench);b.position.set(-260+i*40,-52,(i%2?1:-1)*(HZ+24));scene.add(b);}
+  for(let i=0;i<28;i++){const b=new THREE.Mesh(new THREE.BoxGeometry(18,2,4),bench);b.position.set(-540+i*40,-52,(i%2?1:-1)*(HZ+24));scene.add(b);}
   const cv=document.createElement('canvas');cv.width=1024;cv.height=160;const cx=cv.getContext('2d');cx.fillStyle='#061821';cx.fillRect(0,0,1024,160);cx.fillStyle='#8fe9ff';cx.font='900 64px system-ui,sans-serif';cx.textAlign='center';cx.fillText('YÖRÜKHAN OKYANUS AKVARYUMU',512,100);
   const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;
   for(const [z,ry] of [[-HZ-9,0],[HZ+9,Math.PI]]){const s=new THREE.Mesh(new THREE.PlaneGeometry(150,23),new THREE.MeshBasicMaterial({map:tex}));s.position.set(0,58,z);s.rotation.y=ry;scene.add(s);}
 }
 /* Su yüzeyi */
 const surfaceMat=stdMat({color:0x9fe9ff,emissive:0x1b8fb0,emissiveIntensity:.55,transparent:true,opacity:.62,roughness:.15,metalness:.2,side:THREE.DoubleSide,depthWrite:false},'surf',{v:'transformed.z+=sin(position.x*.07+uT*.8)*.45+cos(position.y*.09+uT*.6)*.35+sin((position.x+position.y)*.19+uT*1.4)*.15;',caus:2.2});
-{const s=new THREE.Mesh(new THREE.PlaneGeometry(TW,TD,120,70),surfaceMat);s.rotation.x=-Math.PI/2;s.position.y=SURF;s.renderOrder=3;scene.add(s);}
+{const s=new THREE.Mesh(new THREE.PlaneGeometry(TW,TD,220,126),surfaceMat);s.rotation.x=-Math.PI/2;s.position.y=SURF;s.renderOrder=3;scene.add(s);}
+
+/* ================= Gökyüzü: yıldızlar, ay, kayan yıldızlar, aurora (yalnızca su üstünden görünür) ================= */
+const skyMat=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,depthTest:false,fog:false,uniforms:{uT:U.t},
+  vertexShader:'varying vec3 vD;void main(){vD=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:`uniform float uT;varying vec3 vD;
+float h13(vec3 p){p=fract(p*.1031);p+=dot(p,p.zyx+31.32);return fract((p.x+p.y)*p.z);}
+float h11(float p){p=fract(p*.1031);p*=p+33.33;p*=p+p;return fract(p);}
+float stars(vec3 d,float sc,float thr,float sz){vec3 p=d*sc;vec3 i=floor(p),f=fract(p);float r=h13(i);if(r<thr)return 0.;vec3 c=.3+.4*vec3(h13(i+7.1),h13(i+13.3),h13(i+3.7));float dist=length(f-c);float tw=.65+.35*sin(uT*(1.2+r*3.)+r*60.);return smoothstep(sz,0.,dist)*tw*((r-thr)/(1.-thr)*.7+.3);}
+float shoot(vec3 d){float t=uT*.14;float id=floor(t);float f=fract(t);if(f>.22)return 0.;float u=f/.22;
+  vec3 s=normalize(vec3(h11(id)-.5,.55+h11(id+3.)*.4,h11(id+7.)-.5));vec3 v=normalize(vec3(h11(id+11.)-.5,-.25,h11(id+17.)-.5));
+  vec3 head=normalize(s+v*u*.5),tail=normalize(s+v*max(u-.18,0.)*.5);vec3 pa=d-tail,ba=head-tail;float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.);float dist=length(pa-ba*h);return smoothstep(.006,0.,dist)*h*(1.-u);}
+void main(){
+  vec3 d=normalize(vD);float y=d.y;
+  vec3 hor=vec3(.04,.09,.17),mid=vec3(.015,.035,.09),zen=vec3(.004,.01,.03);
+  vec3 col=mix(hor,mid,smoothstep(0.,.35,y));col=mix(col,zen,smoothstep(.3,1.,y));
+  vec3 mn=normalize(vec3(.35,.8,.45));float band=exp(-pow(dot(d,mn)*5.5,2.));
+  float dust=h13(floor(d*40.))*.5+h13(floor(d*90.))*.5;
+  col+=vec3(.35,.38,.55)*band*(.06+.12*dust);
+  float st=stars(d,60.,.9,.12)+stars(d,120.,.955,.14)+stars(d,260.,.985,.16)*.8;
+  st*=smoothstep(-.02,.12,y);
+  col+=vec3(.85,.9,1.)*st*(1.+band*.6);
+  vec3 md=normalize(vec3(.55,.5,-.67));float mdot=dot(d,md);
+  float disc=smoothstep(.9985,.9992,mdot);float glow=pow(max(mdot,0.),180.)*.6+pow(max(mdot,0.),18.)*.12;
+  float cr=.84+.16*h13(floor(d*70.));
+  col=mix(col,vec3(.95,.96,.88)*cr,disc)+vec3(.55,.65,.9)*glow;
+  col+=vec3(.9,.95,1.)*shoot(d)*1.4;
+  float au=smoothstep(.05,.3,y)*(1.-smoothstep(.45,.8,y));float w=sin(d.x*7.+uT*.2+sin(d.z*5.+uT*.15)*2.)*.5+.5;
+  col+=vec3(.12,.9,.55)*au*pow(w,3.)*.1+vec3(.5,.2,.9)*au*pow(1.-w,4.)*.05;
+  col=mix(hor*.9,col,smoothstep(-.06,.02,y));
+  gl_FragColor=vec4(col,1.);}`});
+const sky=new THREE.Mesh(new THREE.SphereGeometry(900,32,20),skyMat);sky.renderOrder=-100;sky.frustumCulled=false;sky.visible=false;scene.add(sky);
+const NIGHT_BG=new THREE.Color(0x0a1a2c),HC_UNDER=new THREE.Color(0xcff6ff),HC_NIGHT=new THREE.Color(0x7fa0e8),SUN_UNDER=new THREE.Color(0xfaffff),SUN_NIGHT=new THREE.Color(0x9fb8ff);
+const SURF_UNDER=new THREE.Color(0x9fe9ff),SURF_NIGHT=new THREE.Color(0x1f5f80);
+/* Bölgeye göre su rengi / sis / ışık (renk, yoğunluk, ışık katsayısı) */
+const ZENV={ice:[0x3aa6c8,.0048,1.1],volcano:[0x4a2a2a,.0085,.8],abyss:[0x04162a,.012,.42],crystal:[0x2b2f80,.0075,.85],lagoon:[0x1fc0c6,.0034,1.2],sunken:[0x0e5f80,.006,.95],bluehole:[0x0a5fb0,.0042,1],canyon:[0x6a3d34,.0075,.9]};
+const envCol=WATER.clone(),envTgt=new THREE.Color();let envD=.0056,envL=1,aboveWater=false,skyK=0;
+function splash(x,z,v){
+  const k=clamp(v/8,.3,1);
+  for(let i=0;i<14;i++)addPuff(x+rr(-1.5,1.5),SURF+rr(0,.8),z+rr(-1.5,1.5),0xe8f8ff,rr(-3,3)*k,rr(1,5)*k,rr(-3,3)*k,1.2,rr(3,6),.5,rr(1.2,2.2));
+  for(let i=0;i<50;i++)spawnBubble(x+rr(-1.6,1.6),SURF-rr(.4,2),z+rr(-1.6,1.6),.05+Math.random()*.18,rr(-2,2),rr(-2,2),rr(-2,2));
+  sfx.splash(clamp(.4+k*.6,.3,1));
+}
+function updateEnv(dt){
+  const e=ZENV[zoneAt(camera.position.x,camera.position.z)]||[0x0c7390,.0056,1],k=1-Math.exp(-dt*1.2);
+  envCol.lerp(envTgt.setHex(e[0]),k);envD+=(e[1]-envD)*k;envL+=(e[2]-envL)*k;
+  const above=camera.position.y>SURF+.15;
+  if(above!==aboveWater){aboveWater=above;sky.visible=above;for(const r of rays)r.visible=r.userData.keep&&!above;if(snowPts)snowPts.visible=!above;}
+  skyK+=((above?1:0)-skyK)*(1-Math.exp(-dt*3));
+  if(above){scene.background.copy(NIGHT_BG);scene.fog.color.copy(NIGHT_BG);scene.fog.density=.0012;}
+  else{scene.background.copy(envCol);scene.fog.color.copy(envCol);scene.fog.density=envD;}
+  hemi.intensity=2*envL*(1-skyK)+.9*skyK;hemi.color.lerpColors(HC_UNDER,HC_NIGHT,skyK);
+  sun.intensity=2.6*envL*(1-skyK)+1.3*skyK;sun.color.lerpColors(SUN_UNDER,SUN_NIGHT,skyK);
+  surfaceMat.color.lerpColors(SURF_UNDER,SURF_NIGHT,skyK);surfaceMat.opacity=.62+.26*skyK;surfaceMat.emissiveIntensity=.55-.35*skyK;
+  sky.position.copy(camera.position);
+}
 
 /* ================= Kayalar ve kemerler ================= */
 function rockGeo(seed){
@@ -405,7 +489,7 @@ function rockGeo(seed){
   const lists=[[],[],[]],rc=['#5d6a6c','#6c665c','#4f5c63','#7a7466','#58625a'];
   const put=(o,r,hp)=>{lists[(R()*3)|0].push(o);if(r)o.st=regStruct({kind:'rock',x:o.x,y:o.y,z:o.z,r,hp:hp||(r>3.2?3:2),cols:[addCol(o.x,o.y,o.z,r)],o,color:o.c});};
   const add=(x,z,s,yo=0,big=false)=>{const y=floorH(x,z)+s*.25+yo;put({x,y,z,rx:rr(0,6),ry:rr(0,6),rz:rr(0,6),sx:s*rr(1,1.5),sy:s*rr(.6,1),sz:s*rr(.9,1.3),c:rc[(R()*rc.length)|0]},(big||s>2.2)?s*1.05:0);};
-  for(let i=0;i<680;i++)add(rr(-HX+6,HX-6),rr(-HZ+6,HZ-6),rr(.4,2.2));
+  for(let i=0;i<1500;i++)add(rr(-HX+6,HX-6),rr(-HZ+6,HZ-6),rr(.4,2.2));
   for(let i=0;i<40;i++){const [x,z]=zp('kelp');add(x,z,rr(1.5,4));}
   for(let i=0;i<30;i++){const [x,z]=zp('arch');add(x,z,rr(2,5));}
   for(const id of ['trench','graveyard','dunes','temple'])for(let i=0;i<(id==='dunes'?45:30);i++){const [x,z]=zp(id);add(x,z,rr(1.8,5));}
@@ -414,12 +498,15 @@ function rockGeo(seed){
     const fy=floorH(cx,cz),dx=Math.cos(ang),dz=Math.sin(ang);
     for(let a=0;a<=Math.PI+.01;a+=Math.PI/11){const x=cx+dx*Math.cos(a)*r,z=cz+dz*Math.cos(a)*r,y=fy+Math.sin(a)*r*1.1;const s=rr(2.6,3.4);put({x,y,z,rx:rr(0,6),ry:rr(0,6),rz:rr(0,6),sx:s,sy:s*.9,sz:s,c:rc[(R()*rc.length)|0]},s*.95,2);}
   };
-  [[72,32,0,11],[100,56,1.1,13],[112,24,2.3,9],[-100,-48,.6,10],[-200,100,.3,13],[210,110,1.5,14],[-210,-95,2.1,11],[190,-60,.8,12],[0,120,.4,12],[-20,-125,1.9,10]].forEach(a=>arch(...a));
+  [[72,32,0,11],[100,56,1.1,13],[112,24,2.3,9],[-100,-48,.6,10],[-200,100,.3,13],[210,110,1.5,14],[-210,-95,2.1,11],[190,-60,.8,12],[0,120,.4,12],[-20,-125,1.9,10],[-420,150,.7,12],[-380,260,1.2,11],[400,250,.4,13],[330,-250,1.9,12],[-330,-250,.6,12],[0,-250,.2,13],[260,0,1.5,14],[-250,0,.9,14],[-480,60,.2,11],[-470,-60,1.1,11],[480,60,2.5,12],[0,250,2.1,14],[470,-120,.5,13],[-120,-260,1.3,12]].forEach(a=>arch(...a));
   // kaya sütunları
-  [[88,40],[118,66],[64,64],[-70,-20],[40,-66],[-200,80],[-170,120],[-235,60],[-160,95],[-225,125],[190,100],[245,70],[160,-120],[175,-40],[230,-110],[-40,-120],[60,120],[130,-130],[-120,130],[120,120]].forEach(([x,z])=>{
+  const stack=([x,z])=>{
     let y=floorH(x,z);
     for(let k=0;k<5;k++){const s=rr(2.4,3.6)*(1-k*.1);y+=s*.9;put({x:x+rr(-.8,.8),y,z:z+rr(-.8,.8),rx:rr(0,6),ry:rr(0,6),rz:rr(0,6),sx:s,sy:s*.8,sz:s,c:rc[(R()*rc.length)|0]},s*1.05,2);}
-  });
+  };
+  [[88,40],[118,66],[64,64],[-70,-20],[40,-66],[-200,80],[-170,120],[-235,60],[-160,95],[-225,125],[190,100],[245,70],[160,-120],[175,-40],[230,-110],[-40,-120],[60,120],[130,-130],[-120,130],[120,120]].forEach(stack);
+  for(let i=0;i<30;i++)stack(zp('canyon'));
+  for(let i=0;i<14;i++)stack(zp('bluehole'));
   const rmat=stdMat({roughness:.95,flatShading:true},'rock',{caus:.9});
   lists.forEach((l,i)=>{const m=inst(rockGeo(i*3.7),rmat,l,true);l.forEach((o,j)=>{if(o.st){o.st.mesh=m;o.st.idx=j;}else flora.push({mesh:m,idx:j,x:o.x,y:o.y,z:o.z,rad:2.5+o.sx,alive:true});});});
 }
@@ -430,14 +517,14 @@ function rockGeo(seed){
   const kelpGeo=merge(kelpParts);kelpGeo.computeVertexNormals();
   const kl=[];const addK=(x,z)=>{const y=floorH(x,z);const h=Math.min(rr(18,46),SURF-3-y);kl.push({x,y,z,ry:rr(0,6),sx:rr(.9,1.4),sy:h,sz:1,c:['#3f8f3a','#5f8f2a','#2f7a45','#7a8f2a'][(R()*4)|0]});};
   for(let i=0;i<260;i++){const [x,z]=zp('kelp');addK(x,z);}
-  for(let i=0;i<200;i++){const x=rr(-HX+6,HX-6),z=(R()<.5?-1:1)*rr(HZ-12,HZ-5);addK(x,z);}
+  for(let i=0;i<420;i++){const x=rr(-HX+6,HX-6),z=(R()<.5?-1:1)*rr(HZ-12,HZ-5);addK(x,z);}
   const sway='float sw=sin(uT*.9+ip.x*.21+ip.z*.17+position.y*2.2)*2.2+sin(uT*1.7+ip.z*.3)*.5;transformed.x+=sw*position.y*position.y;transformed.z+=cos(uT*.7+ip.x*.13+position.y*1.8)*1.3*position.y*position.y;';
   regFlora(inst(kelpGeo,stdMat({roughness:.8,side:THREE.DoubleSide},'kelp',{v:sway,caus:.6}),kl,true),kl,4.5);
   const grassParts=[];for(let k=0;k<3;k++){const g=new THREE.PlaneGeometry(.2,1,1,5);g.translate(rr(-.2,.2),.5,rr(-.2,.2));g.rotateY(k*Math.PI/3);grassParts.push(g);}
   const grassGeo=merge(grassParts);
   const gl=[];const addG=(x,z)=>gl.push({x,y:floorH(x,z)-.05,z,ry:rr(0,6),sx:rr(.8,1.3),sy:rr(1.2,3.6),sz:rr(.8,1.3),c:['#4c9a3c','#6aa23a','#3b8a4a','#8aa83a'][(R()*4)|0]});
   for(let i=0;i<2600;i++){const [x,z]=zp('grass');addG(x,z);}
-  for(let p=0;p<100;p++){const cx=rr(-HX+10,HX-10),cz=rr(-HZ+10,HZ-10);for(let i=0;i<30;i++)addG(cx+rr(-5,5),cz+rr(-5,5));}
+  for(let p=0;p<300;p++){const cx=rr(-HX+10,HX-10),cz=rr(-HZ+10,HZ-10);const zn=zoneAt(cx,cz);for(let i=0;i<30;i++){const gx=cx+rr(-5,5),gz=cz+rr(-5,5);if(zn!=='ice'&&zn!=='volcano'&&zn!=='crystal'&&zn!=='canyon')addG(gx,gz);}}
   lowCount(regFlora(inst(grassGeo,stdMat({roughness:.9,side:THREE.DoubleSide},'grass',{v:'transformed.x+=sin(uT*1.3+ip.x*.4+ip.z*.3)*.45*position.y*position.y;transformed.z+=cos(uT*1.1+ip.z*.35)*.3*position.y*position.y;',caus:.7}),gl,true),gl,6),.5);
 }
 
@@ -462,7 +549,9 @@ const anemones=[];
     else Tu.push({x,y,z,ry:rr(0,6),s:rr(1,2),c});};
   for(let i=0;i<340;i++){const [x,z]=zp('coral');coralAt(x,z,(R()*4)|0);}
   for(let i=0;i<70;i++){const [x,z]=zp('arch');coralAt(x,z,(R()*4)|0);}
-  for(let i=0;i<300;i++)coralAt(rr(-HX+8,HX-8),rr(-HZ+8,HZ-8),(R()*4)|0);
+  for(let i=0;i<800;i++){const x=rr(-HX+8,HX-8),z=rr(-HZ+8,HZ-8),zn=zoneAt(x,z),k=(R()*4)|0;if(zn==='ice'||zn==='volcano'||zn==='abyss'||zn==='crystal'||zn==='canyon')continue;coralAt(x,z,k);}
+  for(let i=0;i<460;i++){const [x,z]=zp('lagoon');coralAt(x,z,(R()*4)|0);}
+  for(let i=0;i<60;i++){const [x,z]=zp('sunken');coralAt(x,z,(R()*4)|0);}
   const clownHomes=[[60,-20],[84,-50],[108,-28],[96,-12],[70,-60]];
   for(const [cx,cz] of clownHomes){for(let i=0;i<5;i++){const x=cx+rr(-2.5,2.5),z=cz+rr(-2.5,2.5);A.push({x,y:floorH(x,z)-.05,z,ry:rr(0,6),s:rr(1.1,1.8),c:['#ff7ab0','#b8ff8a','#ffd1f0','#9df2ff'][(R()*4)|0]});}anemones.push([cx,floorH(cx,cz),cz]);}
   for(let i=0;i<30;i++){const [x,z]=zp('coral');A.push({x,y:floorH(x,z)-.05,z,ry:rr(0,6),s:rr(.8,1.4),c:['#ff7ab0','#b8ff8a','#ffd1f0','#9df2ff'][(R()*4)|0]});}
@@ -521,29 +610,29 @@ const chestPos=new THREE.Vector3();
 }
 
 /* ================= Işık huzmeleri ve partiküller ================= */
-const rays=[];
+const rays=[];let snowPts=null;
 {
   const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,uniforms:{uT:U.t},
     vertexShader:'varying vec2 vUv;varying float vF;void main(){vUv=uv;vec4 mv=modelViewMatrix*vec4(position,1.);vec3 n=normalize(normalMatrix*normal);vF=abs(dot(n,normalize(-mv.xyz)));gl_Position=projectionMatrix*mv;}',
     fragmentShader:'uniform float uT;varying vec2 vUv;varying float vF;void main(){float a=pow(vUv.y,1.6)*vF*vF*.085*(.75+.25*sin(uT*.6+vUv.x*6.28));gl_FragColor=vec4(.8,.97,1.,a);}'});
-  for(let i=0;i<60;i++){const h=rr(55,74),m=new THREE.Mesh(new THREE.CylinderGeometry(rr(2,4),rr(7,12),h,20,1,true),mat);m.position.set(rr(-HX+15,HX-15),SURF-h/2,rr(-HZ+12,HZ-12));m.rotation.set(rr(-.12,.12),0,rr(-.12,.12));m.userData.b=m.rotation.clone();m.userData.p=R()*6;if(isTouch&&i%3)m.visible=false;scene.add(m);rays.push(m);}
+  for(let i=0;i<150;i++){const h=rr(55,74),m=new THREE.Mesh(new THREE.CylinderGeometry(rr(2,4),rr(7,12),h,20,1,true),mat);m.position.set(rr(-HX+15,HX-15),SURF-h/2,rr(-HZ+12,HZ-12));m.rotation.set(rr(-.12,.12),0,rr(-.12,.12));m.userData.b=m.rotation.clone();m.userData.p=R()*6;m.userData.keep=!(isTouch&&i%3);m.visible=m.userData.keep;scene.add(m);rays.push(m);}
 }
 {
   const n=3000,a=new Float32Array(n*3);for(let i=0;i<n*3;i++)a[i]=Math.random()*60;
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(a,3));
   const pm=new THREE.PointsMaterial({color:0xe2fbff,size:.12,transparent:true,opacity:.5,depthWrite:false});
   pm.onBeforeCompile=sh=>{sh.uniforms.uT=U.t;sh.uniforms.uCam=U.cam;sh.vertexShader='uniform float uT;uniform vec3 uCam;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed=mod(position+vec3(sin(uT*.1+position.z)*1.5,uT*.35,cos(uT*.08+position.x)*1.5)-uCam+30.,60.)-30.+uCam;');};
-  if(isTouch)g.setDrawRange(0,1200);const pts=new THREE.Points(g,pm);pts.frustumCulled=false;scene.add(pts);
+  if(isTouch)g.setDrawRange(0,1200);const pts=snowPts=new THREE.Points(g,pm);pts.frustumCulled=false;scene.add(pts);
 }
 
 /* ================= Kabarcıklar ================= */
-const BMAX=1600,bub={vx:new Float32Array(BMAX),vz:new Float32Array(BMAX),vy:new Float32Array(BMAX),x:new Float32Array(BMAX),y:new Float32Array(BMAX),z:new Float32Array(BMAX),s:new Float32Array(BMAX),v:new Float32Array(BMAX),p:new Float32Array(BMAX),live:new Uint8Array(BMAX),next:0};
+const BMAX=2600,bub={vx:new Float32Array(BMAX),vz:new Float32Array(BMAX),vy:new Float32Array(BMAX),x:new Float32Array(BMAX),y:new Float32Array(BMAX),z:new Float32Array(BMAX),s:new Float32Array(BMAX),v:new Float32Array(BMAX),p:new Float32Array(BMAX),live:new Uint8Array(BMAX),next:0};
 const bubMesh=new THREE.InstancedMesh(new THREE.SphereGeometry(1,10,8),new THREE.MeshStandardMaterial({color:0xeaffff,emissive:0x5fc6e0,emissiveIntensity:.35,transparent:true,opacity:.55,roughness:.05,metalness:.1,depthWrite:false}),BMAX);
 bubMesh.frustumCulled=false;bubMesh.renderOrder=6;scene.add(bubMesh);
 for(let i=0;i<BMAX;i++){_m.makeScale(0,0,0);bubMesh.setMatrixAt(i,_m);}
 function spawnBubble(x,y,z,s,vx=0,vy=0,vz=0){const i=bub.next;bub.next=(i+1)%BMAX;bub.vx[i]=vx;bub.vy[i]=vy;bub.vz[i]=vz;bub.x[i]=x;bub.y[i]=y;bub.z[i]=z;bub.s[i]=s;bub.v[i]=2.2+s*6+Math.random();bub.p[i]=Math.random()*6.28;bub.live[i]=1;}
 const emitters=[];
-for(let i=0;i<34;i++){const x=rr(-HX+15,HX-15),z=rr(-HZ+12,HZ-12);emitters.push({x,y:floorH(x,z)+.3,z,rate:rr(10,18),acc:0});}
+for(let i=0;i<90;i++){const x=rr(-HX+15,HX-15),z=rr(-HZ+12,HZ-12);emitters.push({x,y:floorH(x,z)+.3,z,rate:rr(10,18),acc:0});}
 emitters.push({x:chestPos.x,y:chestPos.y,z:chestPos.z,rate:6,acc:0});
 {const stoneM=new THREE.MeshStandardMaterial({color:0x2f3b40,roughness:.9});for(const e of emitters.slice(0,-1)){const m=new THREE.Mesh(new THREE.CylinderGeometry(.6,.8,.5,10),stoneM);m.position.set(e.x,e.y-.1,e.z);scene.add(m);}}
 function updateBubbles(dt,t){
@@ -584,6 +673,52 @@ const GEO={
     for(let i=0;i<10;i++){const ang=i/10*6.28,r=.85;const c=new THREE.CatmullRomCurve3([0,1,2,3,4].map(k=>new THREE.Vector3(Math.cos(ang)*r*(1-k*.08)+Math.sin(k*1.7+i)*.1,-k*.75,Math.sin(ang)*r*(1-k*.08)+Math.cos(k*1.3+i)*.1)));a.push(colorize(new THREE.TubeGeometry(c,16,.025,4,false),'#c8f4ff'));}
     for(let i=0;i<4;i++){const ang=i/4*6.28+.4;const c=new THREE.CatmullRomCurve3([0,1,2,3].map(k=>new THREE.Vector3(Math.cos(ang)*.2+Math.sin(k*2+i)*.12,-k*.55,Math.sin(ang)*.2)));a.push(colorize(new THREE.TubeGeometry(c,12,.09,6,false),'#ffb3e0'));}
     return merge(a);},
+  manta:()=>merge([P(new THREE.SphereGeometry(1,30,12),'#2f4558',[0,0,0],[0,0,0],[3.4,.26,1.7]),P(new THREE.SphereGeometry(1,24,10),'#f1f3f4',[0,-.06,.05],[0,0,0],[3.25,.18,1.6]),
+    P(new THREE.ConeGeometry(.5,1.6,5),'#2f4558',[3.2,0,.2],[0,0,-Math.PI/2],[.35,1,1.4]),P(new THREE.ConeGeometry(.5,1.6,5),'#2f4558',[-3.2,0,.2],[0,0,Math.PI/2],[.35,1,1.4]),
+    P(new THREE.CylinderGeometry(.02,.1,4.6,6),'#27384a',[0,0,-3.6],[Math.PI/2,0,0]),
+    P(new THREE.ConeGeometry(.2,1.2,5),'#2f4558',[.45,-.05,2.0],[Math.PI/2+.3,0,0],[1,1,.6]),P(new THREE.ConeGeometry(.2,1.2,5),'#2f4558',[-.45,-.05,2.0],[Math.PI/2+.3,0,0],[1,1,.6]),
+    P(new THREE.SphereGeometry(.34,10,8),'#d8dde0',[.9,-.05,1.05],[0,0,0],[1.1,.4,.8]),P(new THREE.SphereGeometry(.34,10,8),'#d8dde0',[-.9,-.05,1.05],[0,0,0],[1.1,.4,.8]),
+    P(new THREE.SphereGeometry(.12,8,6),'#0b1215',[1.1,.2,1.35]),P(new THREE.SphereGeometry(.12,8,6),'#0b1215',[-1.1,.2,1.35])]),
+  whaleshark:()=>{const rnd=mulberry32(5),a=[P(new THREE.SphereGeometry(1,24,14),'#4d6c86',[0,0,0],[0,0,-0.0],[.95,.8,3.6]),P(new THREE.SphereGeometry(1,20,12),'#e6eef2',[0,-.28,.1],[0,0,0],[.82,.5,3.3]),
+      P(new THREE.SphereGeometry(1,18,10),'#5a7b96',[0,-.05,3.2],[0,0,0],[.98,.5,1.1]),P(new THREE.BoxGeometry(1.6,.08,.18),'#16222c',[0,-.2,4.0]),
+      P(new THREE.ConeGeometry(.7,1.6,4),'#4d6c86',[0,.95,.3],[-.35,0,0],[.12,1,1.3]),P(new THREE.ConeGeometry(.8,3.0,4),'#4d6c86',[0,.9,-3.9],[-Math.PI/2+.5,0,0],[.1,1,1]),P(new THREE.ConeGeometry(.5,2.0,4),'#4d6c86',[0,-.5,-3.7],[-Math.PI/2-.5,0,0],[.1,1,1]),
+      P(new THREE.ConeGeometry(.7,2.4,4),'#436079',[1.45,-.45,1.3],[.4,0,-1.7],[.12,1,1.4]),P(new THREE.ConeGeometry(.7,2.4,4),'#436079',[-1.45,-.45,1.3],[.4,0,1.7],[.12,1,1.4]),
+      P(new THREE.SphereGeometry(.09,8,6),'#081018',[.85,.2,3.7]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[-.85,.2,3.7])];
+    for(let i=0;i<46;i++){const z=-3+rnd()*6.8,ang=(rnd()-.5)*2.3,r=.82*(1-Math.max(0,z-1.5)/12);a.push(P(new THREE.SphereGeometry(1,6,4),'#f4f7f8',[Math.sin(ang)*r*1.0,Math.cos(ang)*.78+.02,z],[0,0,0],[.2,.06,.2]));}
+    return merge(a);},
+  mola:()=>merge([P(new THREE.SphereGeometry(1,22,14),'#9aa8b2',[0,0,0],[0,0,0],[.36,1.15,1.05]),P(new THREE.SphereGeometry(1,18,10),'#d7dee3',[0,0,.08],[0,0,0],[.3,1.0,.98]),
+    P(new THREE.ConeGeometry(.5,1.7,4),'#7f8e99',[0,1.55,-.6],[-.55,0,0],[.1,1,1.2]),P(new THREE.ConeGeometry(.5,1.7,4),'#7f8e99',[0,-1.55,-.6],[Math.PI+.55,0,0],[.1,1,1.2]),
+    P(new THREE.CylinderGeometry(1,1,.12,16),'#8a98a2',[0,0,-1.05],[Math.PI/2,0,0],[.3,.08,.95]),
+    P(new THREE.ConeGeometry(.3,.6,4),'#8a98a2',[.4,-.2,.3],[0,0,-1.4],[.12,1,1]),P(new THREE.ConeGeometry(.3,.6,4),'#8a98a2',[-.4,-.2,.3],[0,0,1.4],[.12,1,1]),
+    P(new THREE.SphereGeometry(.16,8,6),'#ffffff',[.3,.3,.82]),P(new THREE.SphereGeometry(.16,8,6),'#ffffff',[-.3,.3,.82]),P(new THREE.SphereGeometry(.08,8,6),'#081018',[.36,.3,.92]),P(new THREE.SphereGeometry(.08,8,6),'#081018',[-.36,.3,.92])]),
+  lion:()=>{const a=fishBase('#b8381f','#c8472a','#7a1f12');const out=[...a,band(.5,'#f5ecd8',.14),band(.05,'#f5ecd8',.14),band(-.42,'#f5ecd8',.12),band(-.85,'#f5ecd8',.1)];
+    for(let i=-4;i<=4;i++){const ang=i*.26;out.push(P(new THREE.ConeGeometry(.05,1.15,4),i%2?'#f0e0c8':'#8a2412',[Math.sin(ang)*.55+.42*Math.sign(i||1)*Math.abs(i)/4*0,.55,-.1-Math.abs(i)*.08],[-.35,0,-ang*1.3]));}
+    for(const sx of [1,-1])for(let i=0;i<7;i++){out.push(P(new THREE.ConeGeometry(.045,1.1,4),i%2?'#f0e0c8':'#a63018',[sx*.34,-.05+i*.015,.28-i*.1],[0,0,-sx*(1.0+i*.14)]));}
+    return merge(out);},
+  angler:()=>{const lure=new THREE.CatmullRomCurve3([[0,.75,.7],[0,1.5,1.0],[0,1.95,1.7],[0,1.7,2.5]].map(a=>new THREE.Vector3(...a)));
+    const a=[P(new THREE.SphereGeometry(1,20,14),'#2a2f3b',[0,0,0],[0,0,0],[.95,.85,1.05]),P(new THREE.SphereGeometry(1,16,12),'#1d212b',[0,-.35,.5],[0,0,0],[.82,.55,.85]),
+      P(new THREE.ConeGeometry(.75,1.2,10),'#16191f',[0,-.02,1.0],[Math.PI/2,0,0],[1,1,.75]),P(new THREE.ConeGeometry(.5,1.0,4),'#2a2f3b',[0,0,-1.3],[-Math.PI/2,0,0],[.15,1,1]),
+      P(new THREE.ConeGeometry(.3,.7,4),'#2a2f3b',[0,.8,-.2],[-.4,0,0],[.1,1,1.2]),P(new THREE.ConeGeometry(.3,.7,4),'#242836',[.9,-.2,.2],[0,0,-1.3],[.12,1,1]),P(new THREE.ConeGeometry(.3,.7,4),'#242836',[-.9,-.2,.2],[0,0,1.3],[.12,1,1]),
+      colorize(new THREE.TubeGeometry(lure,16,.035,5,false),'#3a4252'),P(new THREE.SphereGeometry(.28,12,10),'#aaffd8',[0,1.7,2.5]),
+      P(new THREE.SphereGeometry(.2,10,8),'#ffe9a0',[.5,.35,.78]),P(new THREE.SphereGeometry(.2,10,8),'#ffe9a0',[-.5,.35,.78]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[.57,.35,.92]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[-.57,.35,.92])];
+    for(let i=0;i<9;i++){const x=(i-4)*.12;a.push(P(new THREE.ConeGeometry(.045,.32,4),'#f2f2e8',[x,.22,1.62],[Math.PI,0,0]),P(new THREE.ConeGeometry(.045,.28,4),'#f2f2e8',[x*.9,-.34,1.55]));}
+    return merge(a);},
+  narwhal:()=>merge([P(new THREE.SphereGeometry(1,22,14),'#8d9aa8',[0,0,0],[0,0,0],[.62,.58,2.1]),P(new THREE.SphereGeometry(1,18,12),'#d8dfe6',[0,-.2,.1],[0,0,0],[.52,.38,1.95]),
+    P(new THREE.SphereGeometry(1,16,12),'#7f8d9c',[0,.05,1.9],[0,0,0],[.5,.5,.6]),P(new THREE.CylinderGeometry(.015,.08,3.4,8),'#f3ecd8',[.1,.05,3.9],[Math.PI/2,0,0]),
+    P(new THREE.ConeGeometry(.55,1.0,4),'#7f8d9c',[.62,0,-2.3],[Math.PI/2,0,1.2],[.1,1,1.3]),P(new THREE.ConeGeometry(.55,1.0,4),'#7f8d9c',[-.62,0,-2.3],[Math.PI/2,0,-1.2],[.1,1,1.3]),
+    P(new THREE.ConeGeometry(.35,.9,4),'#7f8d9c',[.62,-.25,1.1],[.4,0,-1.5],[.1,1,1.2]),P(new THREE.ConeGeometry(.35,.9,4),'#7f8d9c',[-.62,-.25,1.1],[.4,0,1.5],[.1,1,1.2]),
+    P(new THREE.ConeGeometry(.2,.5,4),'#7f8d9c',[0,.55,-.6],[-.3,0,0],[.1,1,1]),
+    ...Array.from({length:14},(_,i)=>P(new THREE.SphereGeometry(1,6,4),'#566470',[((i*37)%11-5)*.09,.38+((i*13)%5)*.03,-1.5+((i*29)%16)*.2],[0,0,0],[.2,.05,.2])),
+    P(new THREE.SphereGeometry(.07,8,6),'#081018',[.46,.12,2.05]),P(new THREE.SphereGeometry(.07,8,6),'#081018',[-.46,.12,2.05])]),
+  oarfish:()=>{const a=[],N=24;for(let i=0;i<N;i++){const u=i/(N-1),z=-3.2+u*6.4,r=.3*(.35+.65*Math.sin(Math.min(1,u*1.15+.05)*Math.PI*.85)),st=6.4/N*1.5;
+      a.push(P(new THREE.SphereGeometry(1,10,8),'#d3dce4',[0,0,z],[0,0,0],[r*.6,r*1.5,st]));if(i%2===0&&i>1&&i<N-2)a.push(P(new THREE.ConeGeometry(.05,.7+(i%4)*.1,4),'#e0302a',[0,r*1.5+.25,z],[-.25,0,0]));}
+    a.push(P(new THREE.SphereGeometry(1,14,10),'#c9d4dc',[0,0,3.2],[0,0,0],[.22,.34,.5]),P(new THREE.SphereGeometry(.1,8,6),'#081018',[.2,.1,3.4]),P(new THREE.SphereGeometry(.1,8,6),'#081018',[-.2,.1,3.4]),P(new THREE.ConeGeometry(.04,.9,4),'#e0302a',[0,.5,3.2],[-.9,0,0]));
+    return merge(a);},
+  nautilus:()=>{const a=[P(new THREE.SphereGeometry(1,22,16),'#f1e4cc',[0,.15,-.35],[0,0,0],[.62,.95,1.0]),P(new THREE.SphereGeometry(.5,14,10),'#e6b88a',[0,.1,.05],[0,0,0],[1.1,1.05,.6])];
+    for(let i=0;i<8;i++){const z=-.95+i*.26;a.push(P(new THREE.CylinderGeometry(1,1,.07,16),i%2?'#d9742a':'#8a3a14',[0,.15-Math.abs(z+.35)*.1,z],[Math.PI/2,0,0],[.63*Math.sqrt(Math.max(.1,1-((z+.35)/1.0)**2)),1,.95*Math.sqrt(Math.max(.1,1-((z+.35)/1.0)**2))]));}
+    for(let i=0;i<16;i++){const ang=i/16*6.28,c=new THREE.CatmullRomCurve3([0,1,2,3].map(k=>new THREE.Vector3(Math.cos(ang)*.42*(1-k*.1)+Math.sin(k*1.6+i)*.06,Math.sin(ang)*.36*(1-k*.1)-.05,.55+k*.42)));a.push(colorize(new THREE.TubeGeometry(c,10,.03,5,false),i%2?'#ecd2ac':'#d9a97a'));}
+    a.push(P(new THREE.SphereGeometry(.16,8,6),'#ffffff',[.32,.1,.45]),P(new THREE.SphereGeometry(.16,8,6),'#ffffff',[-.32,.1,.45]),P(new THREE.SphereGeometry(.08,8,6),'#081018',[.38,.1,.58]),P(new THREE.SphereGeometry(.08,8,6),'#081018',[-.38,.1,.58]));
+    return merge(a);},
   turtle:()=>merge([P(new THREE.SphereGeometry(1,22,12,0,Math.PI*2,0,Math.PI*.55),'#5b7a3a',[0,0,0],[0,0,0],[1.2,.62,1.5]),P(new THREE.SphereGeometry(1,20,10),'#d9c98a',[0,-.02,0],[0,0,0],[1.12,.2,1.38]),
     P(new THREE.SphereGeometry(1,14,10),'#8aa36a',[0,.08,1.75],[0,0,0],[.38,.34,.5]),P(new THREE.SphereGeometry(1,14,8),'#7f9a5e',[1.45,0,.7],[0,.5,.1],[1.1,.08,.36]),P(new THREE.SphereGeometry(1,14,8),'#7f9a5e',[-1.45,0,.7],[0,-.5,-.1],[1.1,.08,.36]),
     P(new THREE.SphereGeometry(1,12,8),'#7f9a5e',[.9,0,-1.3],[0,-.6,0],[.55,.07,.28]),P(new THREE.SphereGeometry(1,12,8),'#7f9a5e',[-.9,0,-1.3],[0,.6,0],[.55,.07,.28]),P(new THREE.ConeGeometry(.15,.5,6),'#7f9a5e',[0,0,-1.65],[-Math.PI/2,0,0]),
@@ -595,9 +730,12 @@ const ANIM={
   seahorse:'transformed.z+=sin(uT*2.+ph+position.y*1.5)*.05;transformed.x+=sin(uT*12.+ph)*.03*step(abs(position.y-.2),.4)*step(position.z,-.2);',
   ray:'float ax=abs(position.x);transformed.y+=sin(uT*2.1+ph-ax*1.3)*.32*ax;transformed.x+=sin(uT*3.+ph+position.z)*.1*step(position.z,-1.6);',
   jelly:'float bell=smoothstep(-.2,.6,position.y);float pl=sin(uT*2.3+ph);transformed.xz*=1.+pl*.14*bell;transformed.y*=1.-pl*.06*bell;float tn=smoothstep(0.,-3.,position.y);transformed.x+=sin(uT*1.6+ph+position.y*1.8)*.28*tn;transformed.z+=cos(uT*1.3+ph+position.y*2.1)*.28*tn;',
+  whale:'float sw=smoothstep(.4,-2.2,position.z);transformed.y+=sin(uT*2.2+ph+position.z*1.3)*.28*sw;transformed.x+=sin(uT*1.1+ph)*.1*sw;',
+  nautilus:'float tn=smoothstep(.3,1.8,position.z);transformed.x+=sin(uT*3.+ph+position.z*4.)*.1*tn;transformed.y+=cos(uT*2.4+ph+position.z*3.)*.08*tn+sin(uT*1.2+ph)*.05;',
   turtle:'float fx=smoothstep(.8,1.5,abs(position.x));transformed.y+=sin(uT*1.8+ph)*.4*fx*abs(position.x)*.6;transformed.z+=cos(uT*1.8+ph)*.18*fx;'
 };
-const SPEC_CFG={clown:{s:.55,a:'fish'},tang:{s:.8,a:'fish'},angel:{s:.85,a:'fish'},puffer:{s:.72,a:'slow'},seahorse:{s:.62,a:'seahorse'},ray:{s:1.3,a:'ray'},jelly:{s:1.15,a:'jelly'},turtle:{s:1.55,a:'turtle'}};
+ANIM.eel='float kk=smoothstep(2.6,-3.3,position.z);transformed.x+=sin(uT*4.+ph-position.z*1.6)*.5*kk;transformed.y+=cos(uT*3.1+ph-position.z*1.2)*.12*kk;';
+const SPEC_CFG={manta:{s:2.1,a:'ray'},whaleshark:{s:2.3,a:'whale'},mola:{s:1.5,a:'slow'},lion:{s:.95,a:'slow'},angler:{s:1.25,a:'slow',fx:1},narwhal:{s:1.8,a:'whale'},oarfish:{s:1.2,a:'eel'},nautilus:{s:.9,a:'nautilus'},clown:{s:.55,a:'fish'},tang:{s:.8,a:'fish'},angel:{s:.85,a:'fish'},puffer:{s:.72,a:'slow'},seahorse:{s:.62,a:'seahorse'},ray:{s:1.3,a:'ray'},jelly:{s:1.15,a:'jelly'},turtle:{s:1.55,a:'turtle'}};
 const schools=[],creatures=[];
 function addSchool(sp,n,ax,ay,az,amp,fr,spread,minAlt,opt={}){
   amp=[Math.min(amp[0],HX-6-Math.abs(ax)),Math.min(amp[1],SURF-3-ay),Math.min(amp[2],HZ-6-Math.abs(az))].map(v=>Math.max(v,.5));
@@ -607,15 +745,28 @@ function addSchool(sp,n,ax,ay,az,amp,fr,spread,minAlt,opt={}){
 }
 {
   anemones.forEach(([x,y,z])=>addSchool('clown',6,x,y+2.2,z,[2.5,1,2.5],[rr(.2,.3),rr(.3,.4),rr(.2,.3)],1.8,.8,{wm:3}));
-  for(let i=0;i<8;i++)addSchool('tang',26,rr(-140,140),rr(-15,12),rr(-70,70),[150,9,80],[rr(.02,.03),rr(.06,.09),rr(.03,.045)],6,3);
-  const angelAt=[[82,-38],[92,44],[0,-30],[-205,-100],[210,-90],[-200,100],[200,110],[-90,110],[110,-120]];
+  const slow=()=>[rr(.012,.022),rr(.04,.06),rr(.015,.028)];
+  for(let i=0;i<22;i++)addSchool('tang',26,rr(-420,420),rr(-15,12),rr(-230,230),[200,9,100],[rr(.02,.03),rr(.06,.09),rr(.03,.045)],6,3);
+  const angelAt=[[82,-38],[92,44],[0,-30],[-205,-100],[210,-90],[-200,100],[200,110],[-90,110],[110,-120],[-420,-100],[400,-60],[-380,200],[360,230],[-80,240],[120,-250],[-200,-240],[250,-230],[-30,-210],[300,40]];
   angelAt.forEach(([x,z])=>addSchool('angel',9,x,-18,z,[18,4,14],[rr(.06,.08),.1,rr(.07,.09)],3.5,2));
-  for(let i=0;i<30;i++)addSchool('puffer',1,rr(-230,230),rr(-24,0),rr(-120,120),[24,4,18],[rr(.05,.09),rr(.08,.12),rr(.05,.09)],0,2.5);
-  for(let i=0;i<24;i++){const [x,z]=zp(i<10?'grass':i<16?'kelp':'dunes');addSchool('seahorse',1,x,floorH(x,z)+2.6,z,[1.2,.6,1.2],[rr(.15,.3),rr(.2,.35),rr(.15,.3)],0,1.2,{foodie:false});}
-  for(let i=0;i<16;i++)addSchool('ray',1,rr(-200,200),-27,rr(-100,100),[90,1.5,50],[rr(.02,.035),rr(.1,.15),rr(.025,.04)],0,1.5);
+  for(let i=0;i<80;i++)addSchool('puffer',1,rr(-500,500),rr(-24,0),rr(-280,280),[28,4,20],[rr(.05,.09),rr(.08,.12),rr(.05,.09)],0,2.5);
+  for(let i=0;i<64;i++){const [x,z]=zp(i<20?'grass':i<32?'kelp':i<44?'dunes':i<54?'lagoon':'sunken');addSchool('seahorse',1,x,floorH(x,z)+2.6,z,[1.2,.6,1.2],[rr(.15,.3),rr(.2,.35),rr(.15,.3)],0,1.2,{foodie:false});}
+  for(let i=0;i<40;i++)addSchool('ray',1,rr(-480,480),-27,rr(-260,260),[100,1.5,60],[rr(.02,.035),rr(.1,.15),rr(.025,.04)],0,1.5);
+  const jc=(id,n)=>{for(let i=0;i<n;i++){const [x,z]=zp(id);addSchool('jelly',11,x,rr(4,18),z,[12,6,10],[rr(.015,.03),rr(.04,.06),rr(.015,.03)],10,8,{foodie:false,ya:4,wm:.3});}};
   for(let i=0;i<3;i++)addSchool('jelly',11,rr(-100,-76),rr(4,16),rr(34,58),[12,6,10],[rr(.015,.03),rr(.04,.06),rr(.015,.03)],10,8,{foodie:false,ya:4,wm:.3});
   for(let i=0;i<3;i++)addSchool('jelly',11,rr(170,240),rr(4,18),rr(-130,-50),[12,6,10],[rr(.015,.03),rr(.04,.06),rr(.015,.03)],10,8,{foodie:false,ya:4,wm:.3});
-  for(let i=0;i<14;i++)addSchool('turtle',1,rr(-120,120),rr(-12,8),rr(-40,40),[200,10,90],[rr(.012,.022),rr(.04,.06),rr(.015,.028)],0,4);
+  jc('abyss',4);jc('bluehole',3);jc('crystal',2);jc('lagoon',2);
+  for(let i=0;i<40;i++)addSchool('turtle',1,rr(-450,450),rr(-12,8),rr(-200,200),[260,10,110],slow(),0,4);
+  // yeni türler
+  for(let i=0;i<12;i++){const [x,z]=zp(i<7?'bluehole':i<10?'lagoon':'canyon');addSchool('manta',1,x,rr(-8,18),z,[110,6,70],[rr(.02,.03),rr(.05,.08),rr(.02,.035)],0,5);}
+  for(let i=0;i<8;i++){const [x,z]=zp(i<4?'bluehole':i<6?'sunken':'lagoon');addSchool('whaleshark',1,x,rr(-12,14),z,[200,5,110],[rr(.009,.014),rr(.03,.05),rr(.012,.018)],0,6);}
+  for(let i=0;i<14;i++){const [x,z]=zp(i<7?'bluehole':i<10?'ice':'lagoon');addSchool('mola',1,x,rr(14,27),z,[40,2.5,30],[rr(.03,.05),rr(.06,.1),rr(.03,.05)],0,4);}
+  for(let i=0;i<9;i++){const [x,z]=zp(i<6?'lagoon':'sunken');addSchool('lion',3,x,floorH(x,z)+4.5,z,[14,2.5,10],[rr(.05,.08),rr(.08,.12),rr(.06,.09)],2.5,2.5);}
+  for(let i=0;i<5;i++){const [x,z]=zp('sunken');addSchool('lion',3,x,floorH(x,z)+4.5,z,[10,2,8],[rr(.05,.08),rr(.08,.12),rr(.06,.09)],2.5,2.5);}
+  for(let i=0;i<16;i++){const [x,z]=zp('abyss');addSchool('angler',1,x,floorH(x,z)+rr(5,13),z,[26,3,20],[rr(.025,.05),rr(.05,.08),rr(.025,.05)],0,3,{foodie:false});}
+  for(let i=0;i<6;i++){const [x,z]=zp('ice');addSchool('narwhal',3,x,rr(-6,10),z,[90,5,40],[rr(.012,.02),rr(.03,.05),rr(.012,.02)],4.5,5);}
+  for(let i=0;i<8;i++){const [x,z]=zp(i<4?'abyss':i<6?'crystal':'bluehole');addSchool('oarfish',1,x,rr(-12,6),z,[50,6,30],[rr(.012,.02),rr(.04,.06),rr(.015,.025)],0,5,{foodie:false});}
+  for(let i=0;i<14;i++){const [x,z]=zp(i<9?'sunken':i<12?'lagoon':'volcano');addSchool('nautilus',1,x,floorH(x,z)+rr(4,12),z,[20,3,16],[rr(.03,.05),rr(.06,.09),rr(.03,.05)],0,3);}
 }
 creatures.forEach(c=>{c.deadUntil=-1e9;c.ry=0;c.sc=1;});
 const specMesh={};
@@ -623,7 +774,7 @@ for(const sp of SPECIES){
   const list=creatures.filter(c=>c.sp===sp.id);list.forEach((c,i)=>c.idx=i);
   const cfg=SPEC_CFG[sp.id];
   const o=sp.id==='jelly'?{vertexColors:true,roughness:.2,transparent:true,opacity:.6,emissive:0x2a8fb8,emissiveIntensity:.8,side:THREE.DoubleSide,depthWrite:false}:{vertexColors:true,roughness:.5,metalness:.05};
-  const m=new THREE.InstancedMesh(GEO[sp.id](),stdMat(o,'sp-'+sp.id,{v:ANIM[cfg.a],caus:.5}),list.length);
+  const m=new THREE.InstancedMesh(GEO[sp.id](),stdMat(o,'sp-'+sp.id,{v:ANIM[cfg.a],caus:.5,fx:cfg.fx?'{float mxc=max(diffuseColor.r,max(diffuseColor.g,diffuseColor.b));totalEmissiveRadiance+=diffuseColor.rgb*smoothstep(.62,.8,mxc)*(1.6+.5*sin(uT*2.3+vWp.x*.2));}':''}),list.length);
   m.frustumCulled=false;if(sp.id==='jelly')m.renderOrder=7;scene.add(m);specMesh[sp.id]=m;
 }
 
@@ -717,6 +868,7 @@ const subVel=new THREE.Vector3();let subYaw=Math.PI,subPitch=0,subRoll=0,lightOn
 const spot=new THREE.SpotLight(0xfff4dc,90,55,.42,.55,1.3);spot.position.set(0,-.3,2.2);sub.add(spot);sub.add(spot.target);spot.target.position.set(0,-2,20);
 
 /* ================= Durum ================= */
+let subAir=false,wasAfl=false,surfT=-1e9;
 let running=false,battery=100,camYaw=Math.PI,camPitch=.22,camDist=11,sonarCd=0,foodCd=0,lastT=performance.now(),hudT=0,discT=0,netT=0;
 const keys={},vk={fwd:0,turn:0,up:0,down:0,boost:0};
 const teamDisc=new Map(),pendingDisc=new Set();
@@ -743,6 +895,7 @@ const sfx={sonar(v=1){tone(1500,900,1.1,'sine',.28*v);tone(1500,900,1.1,'sine',.
   launch(v=1){tone(95,38,.4,'sine',.55*v);noise(.55,2400,300,.22*v);},motor(v=1){tone(260,1300,1.1,'sawtooth',.035*v);noise(.9,5000,1800,.05*v,.05);},
   boom(v=1){tone(70,24,1.6,'sine',.7*v);noise(2.2,900,60,.6*v);noise(.35,5000,800,.2*v);},empty(){tone(1300,1000,.05,'square',.05);},
   hurt(v=1){tone(120,45,.35,'sawtooth',.4*v);noise(.4,1800,200,.35*v);},zap(v=1){tone(1900,300,.5,'sawtooth',.16*v);noise(.5,6000,900,.22*v);tone(90,60,.7,'square',.12*v);},bite(v=1){tone(220,70,.25,'square',.3*v);noise(.25,3000,400,.3*v);},emp(v=1){tone(300,1600,.5,'sine',.3*v);tone(1600,80,.9,'triangle',.25*v,.4);},mine(){tone(700,700,.06,'square',.06);},squish(v=1){tone(180,60,.3,'sine',.3*v);noise(.3,900,200,.25*v);},crash(v=1){noise(1.4,700,80,.5*v);tone(60,30,1,'sine',.4*v);},swv(v=1){tone(70,22,1.3,'sine',.7*v);noise(1.1,1800,90,.55*v);tone(220,1000,.35,'sawtooth',.14*v,.05);},
+  splash(v=1){noise(.7,3200,500,.4*v);tone(220,90,.3,'sine',.2*v);},
   shield(){tone(400,900,.4,'sine',.25);tone(600,1200,.5,'triangle',.15,.15);},shieldHit(){tone(900,300,.15,'triangle',.2);},repair(){[500,650,800].forEach((f,i)=>tone(f,f*1.05,.25,'square',.06,i*.2));}};
 function noise(dur,f0,f1,vol,delay=0){if(!ac||muted||vol<.005)return;const t=ac.currentTime+delay,b=ac.createBuffer(1,Math.ceil(ac.sampleRate*dur),ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);const g=ac.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);s.connect(f).connect(g).connect(master);s.start(t);}
 
@@ -750,7 +903,7 @@ function noise(dur,f0,f1,vol,delay=0){if(!ac||muted||vol<.005)return;const t=ac.
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),1800);}
 function renderCatalog(){
   $('catalog').innerHTML=SPECIES.map(s=>{const d=teamDisc.get(s.id);return `<div class="chip ${d?'found':''}"><i style="background:${d?s.col:'#2a4450'}"></i>${esc(d?s[lang]:'???')}${d?`<small>${esc(d.id===net.myId?T.you:d.name)}</small>`:''}</div>`;}).join('');
-  $('live').textContent=teamDisc.size+'/8';$('progress').style.width=teamDisc.size/8*100+'%';
+  $('live').textContent=teamDisc.size+'/'+SPECIES.length;$('progress').style.width=teamDisc.size/SPECIES.length*100+'%';
 }
 function renderPlayers(){
   if(net.mode==='solo'){$('roomP').style.display='none';return;}
@@ -774,7 +927,7 @@ function applyDisc(sp,id,name){
   const d={id,name:cleanName(name)};teamDisc.set(sp,d);pendingDisc.delete(sp);
   if(net.mode==='host')broadcast({t:'disc',sp,id,n:d.name});
   renderCatalog();renderPlayers();showDiscCard(sp,d);sfx.disc();
-  if(teamDisc.size===8)setTimeout(()=>{toast(T.allFound);sysMsg(T.allFound);[523,659,784,1046].forEach((f,i)=>tone(f,f,.5,'triangle',.18,i*.15));},1500);
+  if(teamDisc.size===SPECIES.length)setTimeout(()=>{toast(T.allFound);sysMsg(T.allFound);[523,659,784,1046].forEach((f,i)=>tone(f,f,.5,'triangle',.18,i*.15));},1500);
 }
 function tryDiscover(sp){
   if(teamDisc.has(sp)||pendingDisc.has(sp))return;
@@ -812,11 +965,137 @@ let torpAmmo=TORP_MAX,torpReload=0,torpCd=0,torpTube=0,torpSeq=0,shake=0;
 const torps=[],frags=[],blasts=[],puffs=[],boomed=new Set();
 const aim={p:new THREE.Vector3(),ci:-1,ei:-1,pid:null,dist:0};
 const r3=v=>[+v.x.toFixed(2),+v.y.toFixed(2),+v.z.toFixed(2)];
-const v3=a=>Array.isArray(a)&&a.length===3?new THREE.Vector3(clamp(num(a[0]),-HX-20,HX+20),clamp(num(a[1]),-60,SURF+10),clamp(num(a[2]),-HZ-20,HZ+20)):null;
+const v3=a=>Array.isArray(a)&&a.length===3?new THREE.Vector3(clamp(num(a[0]),-HX-20,HX+20),clamp(num(a[1]),-60,SURF+16),clamp(num(a[2]),-HZ-20,HZ+20)):null;
 const hitR=c=>c.sc*(c.sp==='ray'?2:c.sp==='turtle'?1.6:c.sp==='jelly'?1.1:c.sp==='seahorse'?1.3:1);
 function softTex(stops){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),g=x.createRadialGradient(32,32,0,32,32,32);stops.forEach(([o,col])=>g.addColorStop(o,col));x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);}
 const glowTex=softTex([[0,'rgba(255,255,255,1)'],[.25,'rgba(255,255,255,.55)'],[1,'rgba(255,255,255,0)']]);
 const puffTex=softTex([[0,'rgba(255,255,255,.9)'],[.5,'rgba(255,255,255,.4)'],[1,'rgba(255,255,255,0)']]);
+
+/* ================= Yeni biyomlar: buz, yanardağ, kristal, uçurum, batık şehir, kanyon ================= */
+const biomeGlows=[];
+{
+  const props=(geo,mat,items)=>{
+    const m=inst(geo,mat,items,true);
+    items.forEach((o,j)=>{
+      if(o.r){const st=regStruct({kind:'rock',dc:o.dc,x:o.x,y:o.y,z:o.z,r:o.r,hp:o.hp||2,cols:o.cols||[addCol(o.x,o.y,o.z,o.r)],o,color:o.c});st.mesh=m;st.idx=j;}
+      else flora.push({mesh:m,idx:j,x:o.x,y:o.y,z:o.z,rad:o.rad||3,alive:true});
+    });
+    return m;
+  };
+  const pick=a=>a[(R()*a.length)|0];
+  const riser=(pos,n,spread,o)=>{
+    const a=new Float32Array(n*3),sd=new Float32Array(n);
+    for(let i=0;i<n;i++){const p=pos[i%pos.length];a[i*3]=p[0]+rr(-spread,spread);a[i*3+1]=p[1];a[i*3+2]=p[2]+rr(-spread,spread);sd[i]=R();}
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(a,3));g.setAttribute('aS',new THREE.BufferAttribute(sd,1));
+    const mt=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:o.add?THREE.AdditiveBlending:THREE.NormalBlending,uniforms:{uT:U.t},
+      vertexShader:'uniform float uT;attribute float aS;varying float vA;void main(){float life=mod(uT*'+o.speed.toFixed(3)+'+aS,1.);vec3 p=position;p.y+=life*'+o.rise.toFixed(1)+';p.x+=sin(aS*50.+life*6.)*life*'+o.drift.toFixed(1)+';p.z+=cos(aS*37.+life*5.)*life*'+o.drift.toFixed(1)+';vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;gl_PointSize=clamp('+o.size.toFixed(1)+'*(1.+life*'+o.grow.toFixed(1)+')*(300./-mv.z),1.,160.);vA=(1.-life)*smoothstep(0.,.1,life);}',
+      fragmentShader:'varying float vA;void main(){float d=length(gl_PointCoord-.5);float a=smoothstep(.5,.05,d)*vA*'+o.alpha.toFixed(2)+';gl_FragColor=vec4('+o.rgb+',a);}'});
+    const pt=new THREE.Points(g,mt);pt.frustumCulled=false;scene.add(pt);return pt;
+  };
+  const glow=(x,y,z,sz,col)=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:col,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.55}));sp.position.set(x,y,z);sp.scale.setScalar(sz);sp.renderOrder=4;scene.add(sp);biomeGlows.push({sp,p:R()*6.28,b:.55});return sp;};
+  const IDN=new THREE.Matrix4();
+
+  /* ---- Buzul Kutbu ---- */
+  {
+    const spike=new THREE.ConeGeometry(1,2.6,5);spike.translate(0,1.3,0);
+    const iceM=stdMat({roughness:.12,metalness:.1,transparent:true,opacity:.86,emissive:0x1f5f80,emissiveIntensity:.4,flatShading:true},'ice',{caus:1.1});
+    const L=[];
+    for(let i=0;i<330;i++){const [x,z]=zp('ice'),s=rr(1.2,5.2),y=floorH(x,z)-.3,sy=s*rr(1.3,2.6);
+      const o={x,y,z,rx:rr(-.18,.18),ry:rr(0,6),rz:rr(-.18,.18),sx:s*.9,sy,sz:s*.9,c:pick(['#e8f7ff','#cfeeff','#b8e4f5','#ffffff']),dc:'#cfeaf5'};
+      if(s>1.8){o.r=s*.85;o.x=x;o.y=y+sy*.9;o.z=z;o.hp=2;}
+      L.push(o);}
+    props(spike,iceM,L);
+    // yüzeyi delen buzdağları
+    const berg=new THREE.IcosahedronGeometry(1,1),bp=berg.attributes.position;for(let i=0;i<bp.count;i++){_v.fromBufferAttribute(bp,i);_v.multiplyScalar(.8+.28*hash2(_v.x*9+3,_v.z*7+_v.y*5));bp.setXYZ(i,_v.x,_v.y,_v.z);}berg.computeVertexNormals();
+    const hang=new THREE.ConeGeometry(1,1,6);hang.rotateX(Math.PI);hang.translate(0,-.5,0);
+    const B=[],H=[];
+    for(let i=0;i<22;i++){const [x,z]=zp('ice'),rx=rr(7,17),ry=rr(7,13),y=SURF-ry*.35,c=pick(['#f2fbff','#e3f4fc','#d8eef8']);
+      const cols=[addCol(x,y,z,rx*.78),addCol(x,y+ry*.5,z,rx*.55),addCol(x+rr(-2,2),y-ry*.5,z+rr(-2,2),rx*.6)];
+      B.push({x,y,z,rx:rr(0,.2),ry:rr(0,6),rz:rr(0,.2),sx:rx,sy:ry,sz:rx*rr(.8,1.1),c,r:rx*.78,cols,hp:4,dc:'#e6f6ff'});
+      H.push({x,y:y-ry*.4,z,ry:rr(0,6),sx:rx*.7,sy:rr(10,22),sz:rx*.7,c});}
+    props(berg,stdMat({roughness:.2,metalness:.05,flatShading:true,emissive:0x2c5a78,emissiveIntensity:.35},'berg',{caus:.8}),B);
+    props(hang,stdMat({roughness:.15,transparent:true,opacity:.85,flatShading:true,emissive:0x1f5f80,emissiveIntensity:.4},'berghang',{caus:.8}),H);
+    // su yüzeyinde yüzen buz parçaları
+    const floe=new THREE.CylinderGeometry(1,.85,.7,7);
+    const F=[];for(let i=0;i<55;i++){const [x,z]=zp('ice');F.push({x,y:SURF+.05,z,ry:rr(0,6),sx:rr(4,12),sy:1,sz:rr(4,12),c:pick(['#f4fcff','#e6f5fb']),rad:5});}
+    props(floe,stdMat({roughness:.35,emissive:0x234a60,emissiveIntensity:.35},'floe',{}),F);
+  }
+
+  /* ---- Yanardağ Bacaları ---- */
+  {
+    const chim=merge([(()=>{const g=new THREE.CylinderGeometry(.7,1.5,1,7);g.translate(0,.5,0);return g;})(),(()=>{const g=new THREE.CylinderGeometry(.9,.7,.3,7);g.translate(0,1.1,0);return g;})()]);
+    const V=[],vp=[];
+    const addVent=(x,z)=>{const y=floorH(x,z),h=rr(5,11);V.push({x,y:y+h*.5,z,ry:rr(0,6),sx:rr(1,1.5),sy:h,sz:rr(1,1.5),c:pick(['#2a2224','#35292a','#241d1f']),r:2.2,hp:3,dc:'#2e2527',cols:[addCol(x,y+h*.35,z,2.2),addCol(x,y+h*.85,z,1.8)]});vp.push([x,y+h*1.12,z]);glow(x,y+h*1.12+.5,z,12,0xff6a28);};
+    for(let i=0;i<10;i++){const [x,z]=zp('volcano');addVent(x,z);}
+    for(let i=0;i<3;i++)addVent(-430+rr(-9,9),-245+rr(-9,9));
+    props(chim,stdMat({roughness:.9,flatShading:true},'vent',{caus:.2}),V);
+    riser(vp,vp.length*70,.6,{speed:.16,rise:34,drift:5,size:9,grow:3,alpha:.34,rgb:'.16,.13,.13'});
+    riser(vp,vp.length*28,.5,{add:true,speed:.35,rise:20,drift:3,size:2.4,grow:.5,alpha:.9,rgb:'1.,.45,.1'});
+    for(const [x,y,z] of vp)emitters.push({x,y:y-.5,z,rate:12,acc:0});
+    // lav akıntıları ve çatlaklar
+    const disc=new THREE.CircleGeometry(1,9);disc.rotateX(-Math.PI/2);
+    const lavaM=stdMat({color:0xffffff,roughness:.6,emissive:0x000000},'lava',{fx:'totalEmissiveRadiance+=vec3(1.,.3,.04)*(.95+.4*sin(uT*1.6+vWp.x*.35+vWp.z*.27));'});
+    const Lv=[];
+    for(let i=0;i<110;i++){const a=rr(0,6.28),rd=rr(6,70),x=-430+Math.cos(a)*rd*1.25,z=-245+Math.sin(a)*rd,s=rr(1.4,5);if(x<-545+6||z<-305+6||z>-175-6)continue;Lv.push({x,y:floorH(x,z)+.15,z,ry:rr(0,6),sx:s*rr(1,2.2),sy:1,sz:s,c:'#2a0c04',rad:3});}
+    for(let i=0;i<70;i++){const [x,z]=zp('volcano'),s=rr(1.2,4);Lv.push({x,y:floorH(x,z)+.15,z,ry:rr(0,6),sx:s*rr(1,2.2),sy:1,sz:s,c:'#2a0c04',rad:3});}
+    props(disc,lavaM,Lv);
+    const rg=rockGeo(13.3),Rk=[];
+    for(let i=0;i<130;i++){const [x,z]=zp('volcano'),s=rr(1.6,6.5),y=floorH(x,z)+s*.25;Rk.push({x,y,z,rx:rr(0,6),ry:rr(0,6),rz:rr(0,6),sx:s*rr(1,1.5),sy:s*rr(.6,1),sz:s*rr(.9,1.3),c:pick(['#2b2527','#3a3033','#1f1a1c','#4a3a38']),r:s>2.4?s*1.05:0,hp:3,dc:'#3a3033'});}
+    props(rg,stdMat({roughness:.95,flatShading:true},'basalt',{caus:.2}),Rk);
+  }
+
+  /* ---- Kristal Mağaraları ---- */
+  {
+    const cry=merge([(()=>{const g=new THREE.CylinderGeometry(.42,.55,2.4,6);g.translate(0,1.2,0);return g;})(),(()=>{const g=new THREE.ConeGeometry(.42,1.1,6);g.translate(0,2.95,0);return g;})()]);
+    const C=[];
+    for(let k=0;k<130;k++){const [cx,cz]=zp('crystal'),n=3+((R()*4)|0),col=pick(['#b36bff','#5ad8ff','#ff7ad9','#7affc8','#8a7aff']);
+      for(let i=0;i<n;i++){const x=cx+rr(-3,3),z=cz+rr(-3,3),s=rr(.7,3.2),y=floorH(x,z)-.2;
+        const o={x,y,z,rx:rr(-.5,.5),ry:rr(0,6),rz:rr(-.5,.5),sx:s,sy:s*rr(1.1,2),sz:s,c:col,dc:col};
+        if(s>1.7){o.r=s*.9;o.x=x;o.y=y+s*1.2;o.z=z;o.hp=2;}
+        C.push(o);}}
+    props(cry,stdMat({roughness:.18,metalness:.15,transparent:true,opacity:.9,flatShading:true},'crystal',{caus:.4,fx:'totalEmissiveRadiance+=diffuseColor.rgb*(.95+.4*sin(uT*1.5+vWp.x*.1+vWp.z*.13));'}),C);
+    for(let i=0;i<10;i++){const [x,z]=zp('crystal');glow(x,floorH(x,z)+6,z,22,pick([0xb36bff,0x5ad8ff,0xff7ad9]));}
+  }
+
+  /* ---- Karanlık Uçurum + kristal bahçesinde biyolüminesan bitkiler ---- */
+  {
+    const bulb=merge([(()=>{const g=new THREE.CylinderGeometry(.05,.12,3,5);g.translate(0,1.5,0);return g;})(),(()=>{const g=new THREE.SphereGeometry(.42,10,8);g.translate(0,3.1,0);return g;})()]);
+    const Bp=[];
+    for(let i=0;i<480;i++){const [x,z]=zp(i<400?'abyss':'crystal');Bp.push({x,y:floorH(x,z)-.1,z,ry:rr(0,6),sx:1,sy:rr(.8,2.6),sz:1,c:pick(['#4ff0ff','#ff4fd8','#8aff6a','#7a8cff']),rad:3});}
+    props(bulb,stdMat({roughness:.5},'biolum',{v:'transformed.x+=sin(uT*1.2+ip.x*.3+ip.z*.2)*.03*position.y*position.y;transformed.z+=cos(uT*1.0+ip.z*.3)*.03*position.y*position.y;',fx:'totalEmissiveRadiance+=diffuseColor.rgb*(1.3+.6*sin(uT*1.8+vWp.x*.7+vWp.z*.4));'}),Bp);
+    for(let i=0;i<14;i++){const [x,z]=zp('abyss');glow(x,floorH(x,z)+4,z,16,pick([0x4ff0ff,0xff4fd8,0x8aff6a]));}
+    const rg=rockGeo(21.7),Rk=[];
+    for(let i=0;i<90;i++){const [x,z]=zp('abyss'),s=rr(1.8,6),y=floorH(x,z)+s*.25;Rk.push({x,y,z,rx:rr(0,6),ry:rr(0,6),rz:rr(0,6),sx:s*rr(1,1.5),sy:s*rr(.6,1),sz:s*rr(.9,1.3),c:pick(['#2a3038','#232a33','#33323a']),r:s>2.4?s*1.05:0,hp:3});}
+    props(rg,stdMat({roughness:.95,flatShading:true},'abyssrock',{caus:.2}),Rk);
+  }
+
+  /* ---- Kızıl Kanyon: kırmızı kayalar ---- */
+  {
+    const rg=rockGeo(8.8),Rk=[];
+    for(let i=0;i<260;i++){const [x,z]=zp('canyon'),s=rr(1.4,7),y=floorH(x,z)+s*.25;Rk.push({x,y,z,rx:rr(0,6),ry:rr(0,6),rz:rr(0,6),sx:s*rr(1,1.5),sy:s*rr(.7,1.3),sz:s*rr(.9,1.3),c:pick(['#a0522d','#b5651d','#8b3a1a','#c27a4a','#9c4a2a']),r:s>2.4?s*1.05:0,hp:3,dc:'#a0522d'});}
+    props(rg,stdMat({roughness:.95,flatShading:true},'redrock',{caus:.7}),Rk);
+  }
+
+  /* ---- Batık Şehir: sütunlu cadde, duvarlar, kubbeler ---- */
+  {
+    const col=new THREE.CylinderGeometry(1,1.18,1,12);col.translate(0,.5,0);
+    const wall=new THREE.BoxGeometry(1,1,1);wall.translate(0,.5,0);
+    const dome=new THREE.SphereGeometry(1,18,10,0,Math.PI*2,0,Math.PI/2);
+    const stoneC=['#b8b19c','#9e9886','#c9c2b0','#8c8a7c','#a8b0a0'];
+    const Cl=[],Wl=[],Dm=[];
+    for(const zr of [205,258])for(let x=-272;x<=272;x+=17){const h=rr(5,17),sc=rr(1.5,2.1),y=floorH(x,zr),broken=R()<.3;const hh=broken?h*.45:h;
+      Cl.push({x,y,z:zr,ry:0,sx:sc,sy:hh,sz:sc,c:pick(stoneC),r:2.6,hp:3,dc:'#c9c2b0',cols:[addCol(x,y+hh*.35,zr,2.6),addCol(x,y+hh*.8,zr,2.4)]});}
+    for(let i=0;i<46;i++){const [x,z]=zp('sunken'),w=rr(8,20),h=rr(4,11),horiz=R()<.5,y=floorH(x,z)-.4,n=Math.ceil(w/6),cols=[];
+      for(let k=0;k<n;k++){const u=(k+.5)/n*w-w/2;cols.push(addCol(x+(horiz?u:0),y+h*.5,z+(horiz?0:u),Math.max(h*.5,2.6)));}
+      Wl.push({x,y,z,ry:horiz?0:Math.PI/2,sx:w,sy:h,sz:rr(1.4,2.2),c:pick(stoneC),r:w*.4,hp:3,dc:'#a8a290',cols});}
+    for(let i=0;i<9;i++){const [x,z]=zp('sunken'),r=rr(8,15),y=floorH(x,z)-.3;
+      Dm.push({x,y,z,ry:rr(0,6),sx:r,sy:r*.8,sz:r,c:pick(['#7f9a9a','#6f8a8a','#9aa8a0']),r:r*.8,hp:4,dc:'#7f9a9a',cols:[addCol(x,y+r*.35,z,r*.8),addCol(x,y+r*.1,z,r*.95)]});}
+    const sm1=stdMat({roughness:.9},'cityStone',{caus:.9});
+    props(col,sm1,Cl);props(wall,stdMat({roughness:.92},'cityWall',{caus:.9}),Wl);props(dome,stdMat({roughness:.7,side:THREE.DoubleSide},'cityDome',{caus:.9}),Dm);
+  }
+}
+function updateBiomes(t){for(let i=0;i<biomeGlows.length;i++){const g=biomeGlows[i];g.sp.material.opacity=g.b+.2*Math.sin(t*1.6+g.p);}}
+
 const TG={body:new THREE.CylinderGeometry(.21,.21,2.3,18).rotateX(Math.PI/2),nose:new THREE.SphereGeometry(.21,16,10,0,Math.PI*2,0,Math.PI/2).rotateX(Math.PI/2),
   band:new THREE.CylinderGeometry(.216,.216,.2,18,1,true).rotateX(Math.PI/2),tail:new THREE.ConeGeometry(.21,.6,18,1,true).rotateX(-Math.PI/2),
   fin:new THREE.BoxGeometry(.025,.28,.34),shroud:new THREE.TorusGeometry(.17,.03,8,22),blade:new THREE.BoxGeometry(.06,.15,.015)};
@@ -851,6 +1130,7 @@ function spawnTorp(o){
 }
 function fireTorpedo(force){
   if(!running||chatOpen()||dead)return;
+  if(sub.position.y>SURF-3.2){if(!force)toast(T.noSurfFire);return;}
   if(force){if(torpAmmo<=0)return;}
   else{if(torpCd>0)return;if(torpAmmo<=0){toast(T.noTorp);sfx.empty();return;}torpCd=.8;}
   torpAmmo--;torpTube^=1;
@@ -976,7 +1256,7 @@ const fragCache={},fragMats={},EG={};
 function fragPieces(sp){
   if(fragCache[sp])return fragCache[sp];
   const g=specMesh[sp]?specMesh[sp].geometry:EG[sp],P=g.attributes.position,N=g.attributes.normal,C=g.attributes.color,nt=P.count/3;
-  const K=sp==='shark'?14:sp==='squid'?12:sp==='eel'?10:sp==='swarm'?9:sp==='turtle'||sp==='ray'?12:sp==='jelly'?9:sp==='seahorse'?6:8;
+  const K=sp==='whaleshark'||sp==='narwhal'||sp==='manta'?13:sp==='oarfish'?10:sp==='shark'?14:sp==='squid'?12:sp==='eel'?10:sp==='swarm'?9:sp==='turtle'||sp==='ray'?12:sp==='jelly'?9:sp==='seahorse'?6:8;
   const cen=new Float32Array(nt*3);
   for(let t=0;t<nt;t++)for(let a=0;a<3;a++)cen[t*3+a]=(P.array[t*9+a]+P.array[t*9+3+a]+P.array[t*9+6+a])/3;
   const seeds=[0],md=new Float32Array(nt).fill(1e9);
@@ -1051,7 +1331,7 @@ function updateFrags(dt){
 const chunkMats={},chunkGeo=new THREE.IcosahedronGeometry(1,0),_zero=new THREE.Matrix4().makeScale(0,0,0);
 const chunkMat=hex=>chunkMats[hex]||(chunkMats[hex]=new THREE.MeshStandardMaterial({color:hex,roughness:.95,flatShading:true}));
 function debris(s,c,n,sz){
-  const pts=s.cols.length?s.cols:[{x:s.x,y:s.y,z:s.z,r:s.r}],hex=s.kind==='ship'?'#5a3d28':s.kind==='rock'?'#6a6a66':'#c9c2b0';
+  const pts=s.cols.length?s.cols:[{x:s.x,y:s.y,z:s.z,r:s.r}],hex=s.dc||(s.kind==='ship'?'#5a3d28':s.kind==='rock'?'#6a6a66':'#c9c2b0');
   for(let i=0;i<n;i++){
     const pt=pts[(Math.random()*pts.length)|0],m=new THREE.Mesh(chunkGeo,chunkMat(hex)),sc=sz*rr(.35,.9);
     m.position.set(pt.x+rr(-1,1)*pt.r*.5,pt.y+rr(-1,1)*pt.r*.5,pt.z+rr(-1,1)*pt.r*.5);m.scale.set(sc,sc*rr(.5,1),sc*rr(.7,1.2));m.rotation.set(rr(0,6),rr(0,6),rr(0,6));scene.add(m);
@@ -1167,10 +1447,10 @@ const enemies=[];
     enemies.push({i:enemies.length,type,cfg,mesh,mat,x,y,z,nx:x,ny:y,nz:z,nyaw:0,npitch:0,yaw:re(0,6.28),pitch:0,hp:cfg.hp,dead:false,respT:0,home:{x,y,z},wp:null,st:0,stT:0,cd:re(1,4),stun:0,flash:0,dashHit:false,seen:false,r:cfg.r,bt:0});
   };
   const inZone=(id,yf)=>{const q=ZONES.find(o=>o.id===id);let x=0,z=0;for(let k=0;k<40;k++){x=re(q.x[0],q.x[1]);z=re(q.z[0],q.z[1]);if(Math.hypot(x,z)>80)break;}return [x,yf(x,z),z];};
-  for(let i=0;i<8;i++){let x=0,z=0;for(let k=0;k<60;k++){x=re(-HX+30,HX-30);z=re(-HZ+30,HZ-30);if(Math.hypot(x,z)>100)break;}mk('shark',x,re(-22,12),z);}
-  ['coral','kelp','trench','temple','graveyard','arch'].forEach(id=>{const p=inZone(id,(x,z)=>floorH(x,z)+3.5);mk('eel',...p);});
-  ['trench','trench','temple','dunes'].forEach(id=>{const p=inZone(id,()=>re(-8,8));mk('squid',...p);});
-  ['kelp','graveyard','dunes','coral','trench'].forEach(id=>{const p=inZone(id,(x,z)=>floorH(x,z)+8);mk('swarm',...p);});
+  for(let i=0;i<20;i++){let x=0,z=0;for(let k=0;k<60;k++){x=re(-HX+30,HX-30);z=re(-HZ+30,HZ-30);if(Math.hypot(x,z)>100)break;}mk('shark',x,re(-22,12),z);}
+  ['coral','kelp','trench','temple','graveyard','arch','ice','volcano','volcano','abyss','crystal','crystal','canyon','canyon','sunken','lagoon'].forEach(id=>{const p=inZone(id,(x,z)=>floorH(x,z)+3.5);mk('eel',...p);});
+  ['trench','trench','temple','dunes','abyss','abyss','abyss','bluehole','bluehole','sunken','ice'].forEach(id=>{const p=inZone(id,()=>re(-8,8));mk('squid',...p);});
+  ['kelp','graveyard','dunes','coral','trench','lagoon','lagoon','sunken','canyon','volcano','ice','bluehole'].forEach(id=>{const p=inZone(id,(x,z)=>floorH(x,z)+8);mk('swarm',...p);});
 }
 function enemyTargets(){
   if(!running)return [];const a=[];
@@ -1461,7 +1741,7 @@ function dropMine(){
   spawnMine(id,p,true);sendNet({t:'mine',id,p:r3(p)});sfx.mine();toast(T.mineDrop);
 }
 function fireSalvo(){
-  if(torpCd>0)return;if(torpAmmo<3){toast(T.salvoNeed);sfx.empty();return;}
+  if(torpCd>0)return;if(sub.position.y>SURF-3.2){toast(T.noSurfFire);return;}if(torpAmmo<3){toast(T.salvoNeed);sfx.empty();return;}
   torpCd=1.8;for(let k=0;k<3;k++)setTimeout(()=>fireTorpedo(true),k*170);
 }
 function empFx(x,y,z,color){
@@ -1532,7 +1812,7 @@ function updateAim(){
   camera.getWorldDirection(_rd);const o=camera.position,minT=camDist+3,wt=worldTime();
   let envT=220;
   for(let t=minT;t<220;t+=1.5){const x=o.x+_rd.x*t,y=o.y+_rd.y*t,z=o.z+_rd.z*t;
-    if(y<floorH(x,z)||y>SURF||Math.abs(x)>HX||Math.abs(z)>HZ){envT=t;break;}
+    if(y<floorH(x,z)||(y>SURF&&o.y<=SURF)||Math.abs(x)>HX||Math.abs(z)>HZ){envT=t;break;}
     let h=false;for(const c of colliders){const dx=x-c.x,dy=y-c.y,dz=z-c.z;if(dx*dx+dy*dy+dz*dz<c.r*c.r){h=true;break;}}if(h){envT=t;break;}}
   let best=envT,bk=null,bi=-1;
   for(let i=0;i<creatures.length;i++){const c=creatures[i];if(c.deadUntil>wt)continue;
@@ -1587,7 +1867,7 @@ function addPlayer(id,name,color){
 function removePlayer(id){const p=players.get(id);if(!p)return;scene.remove(p.sub.g);p.sub.g.traverse(o=>{if(o.geometry&&o.geometry!==sonarGeo)o.geometry.dispose();});p.tag.remove();players.delete(id);renderPlayers();}
 function applyState(p,d){
   if(!Array.isArray(d.p)||!Array.isArray(d.r))return;
-  p.pos.set(clamp(num(d.p[0]),-HX,HX),clamp(num(d.p[1]),-45,SURF),clamp(num(d.p[2]),-HZ,HZ));
+  p.pos.set(clamp(num(d.p[0]),-HX,HX),clamp(num(d.p[1]),-45,SURF+16),clamp(num(d.p[2]),-HZ,HZ));
   if(Array.isArray(d.v))p.vel.set(clamp(num(d.v[0]),-30,30),clamp(num(d.v[1]),-30,30),clamp(num(d.v[2]),-30,30));
   p.yaw=num(d.r[0]);p.pitch=num(d.r[1]);p.roll=num(d.r[2]);p.light=!!d.l;p.boost=!!d.b;p.hull=clamp(num(d.h,100),0,100);p.shield=!!d.s;p.rt=performance.now();
   if(!p.seen){p.seen=true;p.sub.g.position.copy(p.pos);}
@@ -1747,6 +2027,7 @@ function openChat(){if(document.pointerLockElement)document.exitPointerLock();$(
 function closeChat(){$('chatIn').blur();$('chatIn').style.display='none';$('chat').classList.remove('typing');}
 function toggleMap(force){const open=force??$('mapM').style.display!=='grid';$('mapM').style.display=open?'grid':'none';if(open){drawMap();if(document.pointerLockElement)document.exitPointerLock();}}
 $('mapM').addEventListener('click',()=>toggleMap(false));
+$('catX').addEventListener('click',()=>$('catalogP').classList.remove('open'));
 $('wpn').addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b)setWeapon(+b.dataset.w);});
 // Dokunmatik
 if(isTouch){
@@ -1787,7 +2068,13 @@ function updateSub(dt){
   const p=sub.position,rad=2.1;
   if(p.x<-HX+rad+.5){p.x=-HX+rad+.5;subVel.x=Math.max(0,subVel.x);}if(p.x>HX-rad-.5){p.x=HX-rad-.5;subVel.x=Math.min(0,subVel.x);}
   if(p.z<-HZ+rad+.5){p.z=-HZ+rad+.5;subVel.z=Math.max(0,subVel.z);}if(p.z>HZ-rad-.5){p.z=HZ-rad-.5;subVel.z=Math.min(0,subVel.z);}
-  if(p.y>SURF-1.8){p.y=SURF-1.8;subVel.y=Math.min(0,subVel.y);}
+  const wasAir=subAir;subAir=p.y>SURF+.35;
+  if(subAir)subVel.y-=30*dt;
+  if(p.y>SURF+12){p.y=SURF+12;subVel.y=Math.min(0,subVel.y);}
+  if(subAir!==wasAir&&Math.abs(subVel.y)>1.2)splash(p.x,p.z,Math.abs(subVel.y));
+  const afl=p.y>SURF-1.4;
+  if(afl&&!wasAfl&&performance.now()-surfT>25000){surfT=performance.now();toast(T.surfaced);}
+  wasAfl=afl;
   const fh=floorH(p.x,p.z)+1.7;if(p.y<fh){p.y=fh;subVel.y=Math.max(0,subVel.y);}
   for(const c of colliders){const dx=p.x-c.x,dy=p.y-c.y,dz=p.z-c.z,d2=dx*dx+dy*dy+dz*dz,rs=c.r+rad;if(d2<rs*rs&&d2>1e-4){const d=Math.sqrt(d2),push=(rs-d)/d;p.x+=dx*push;p.y+=dy*push;p.z+=dz*push;const vn=(subVel.x*dx+subVel.y*dy+subVel.z*dz)/d;if(vn<0){subVel.x-=vn*dx/d;subVel.y-=vn*dy/d;subVel.z-=vn*dz/d;}}}
   for(const o of players.values()){const q=o.sub.g.position,dx=p.x-q.x,dy=p.y-q.y,dz=p.z-q.z,d2=dx*dx+dy*dy+dz*dz;if(d2<16&&d2>1e-4){const d=Math.sqrt(d2),push=(4-d)/d*.5;p.x+=dx*push;p.y+=dy*push;p.z+=dz*push;}}
@@ -1819,14 +2106,15 @@ function updateRemotes(dt,now){
 function updateCamera(dt){
   const t=sub.position,cp=Math.cos(camPitch);
   const want=_tmp.set(t.x-Math.sin(camYaw)*cp*camDist,t.y+1.4+Math.sin(camPitch)*camDist,t.z-Math.cos(camYaw)*cp*camDist);
-  want.x=clamp(want.x,-HX+.8,HX-.8);want.z=clamp(want.z,-HZ+.8,HZ-.8);want.y=clamp(want.y,floorH(want.x,want.z)+.8,SURF-.6);
+  const afloat=t.y>SURF-2.2;
+  want.x=clamp(want.x,-HX+.8,HX-.8);want.z=clamp(want.z,-HZ+.8,HZ-.8);want.y=afloat?clamp(want.y,SURF+.9,SURF+34):clamp(want.y,floorH(want.x,want.z)+.8,SURF-.6);
   camera.position.lerp(want,1-Math.exp(-14*dt));
-  camera.lookAt(t.x,t.y+1.2+camDist*.11,t.z);
+  camera.lookAt(t.x,t.y+1.2+camDist*.11+(afloat?Math.max(0,-camPitch)*camDist*3.4:0),t.z);
   if(shake>.002){camera.position.x+=rr(-1,1)*shake*.5;camera.position.y+=rr(-1,1)*shake*.5;camera.rotateZ(rr(-1,1)*shake*.03);shake*=Math.exp(-5*dt);}
 }
 function updateHUD(spd){
   $('battery').textContent=Math.round(battery)+'%';$('batteryBar').style.width=battery+'%';
-  $('depth').textContent=Math.max(0,Math.round(SURF-sub.position.y))+' m';$('speed').textContent=(spd*1.94).toFixed(0)+' kn';
+  $('depth').textContent=sub.position.y>SURF-1.4?T.surface:Math.max(0,Math.round(SURF-sub.position.y))+' m';$('speed').textContent=(spd*1.94).toFixed(0)+' kn';
   $('zone').textContent=T.zones[zoneAt(sub.position.x,sub.position.z)];
   $('hull').textContent=Math.round(hull/HULL_MAX*100)+'%'+(shieldT>0?' 🛡':'')+(repairT>0?' 🔧':'');$('hullBar').style.width=hull/HULL_MAX*100+'%';updateWpnHUD();
   $('torp').textContent=torpAmmo+'/'+TORP_MAX;$('torpBar').style.width=(torpAmmo>=TORP_MAX?100:torpReload/TORP_RELOAD*100)+'%';
@@ -1865,7 +2153,7 @@ const mc=$('mapC').getContext('2d');
 function drawMap(){
   const Wc=1400,Hc=820,pad=30,sx=(Wc-pad*2)/TW,sz=(Hc-pad*2)/TD,m=(x,z)=>[pad+(x+HX)*sx,pad+(z+HZ)*sz];
   mc.fillStyle='#0a3c52';mc.fillRect(0,0,Wc,Hc);
-  const zc={coral:'#ff7a8a',kelp:'#5fbf5a',grass:'#a8c860',wreck:'#b08050',arch:'#9aa4a8',jelly:'#9fe8ff',trench:'#9a7cff',temple:'#e0c060',graveyard:'#c08a5a',dunes:'#e8d8a0'};
+  const zc={ice:'#bfeaff',volcano:'#ff6a3a',abyss:'#3a5aff',crystal:'#c07aff',lagoon:'#3ae0d0',sunken:'#9ab0a0',bluehole:'#3a8aff',canyon:'#d0703a',coral:'#ff7a8a',kelp:'#5fbf5a',grass:'#a8c860',wreck:'#b08050',arch:'#9aa4a8',jelly:'#9fe8ff',trench:'#9a7cff',temple:'#e0c060',graveyard:'#c08a5a',dunes:'#e8d8a0'};
   for(const q of ZONES){const [x0,y0]=m(q.x[0],q.z[0]),[x1,y1]=m(q.x[1],q.z[1]);mc.fillStyle=zc[q.id]+'33';mc.strokeStyle=zc[q.id]+'aa';mc.lineWidth=2;mc.fillRect(x0,y0,x1-x0,y1-y0);mc.strokeRect(x0,y0,x1-x0,y1-y0);mc.fillStyle='#fff';mc.font='800 26px system-ui';mc.fillText(T.zones[q.id],x0+12,y0+34);}
   mc.strokeStyle='#cfefff';mc.lineWidth=5;mc.strokeRect(pad,pad,Wc-pad*2,Hc-pad*2);
   for(const f of foods){const [x,y]=m(f.x,f.z);mc.fillStyle='#ffd56c';mc.fillRect(x-6,y-6,12,12);}
@@ -1880,6 +2168,8 @@ function loop(){
   let spd=0;
   if(running){const r=updateSub(dt);spd=r.spd;updateCamera(dt);}
   else{const a=now*.00005;camera.position.set(Math.sin(a)*90,-4,Math.cos(a)*55);camera.lookAt(0,-18,0);}
+  updateEnv(dt);updateBiomes(t);
+  if(running&&!dead&&sub.position.y>SURF-1.4&&Math.hypot(subVel.x,subVel.z)>3&&Math.random()<dt*9)addPuff(sub.position.x+rr(-1.2,1.2),SURF+.3,sub.position.z+rr(-1.2,1.2),0xdff6ff,rr(-.4,.4),rr(.1,.6),rr(-.4,.4),.9,2.6,.35,1.6);
   updateRemotes(dt,now);
   const subsPos=[sub.position];for(const o of players.values())subsPos.push(o.sub.g.position);
   updateCreatures(t,dt,subsPos);updateFood(t);updateBubbles(dt,t);
@@ -1948,10 +2238,16 @@ $('langBtn').onclick=()=>{lang=lang==='tr'?'en':'tr';store.set('aqua-lang',lang)
 $('soundBtn').onclick=()=>{muted=!muted;store.set('aqua-mute',muted?'1':'0');$('soundBtn').textContent=muted?'🔇':'🔊';if(master)master.gain.value=muted?0:.55;};
 $('soundBtn').textContent=muted?'🔇':'🔊';
 $('menuBtn').onclick=()=>{if(!running||net.mode==='solo'||confirm(T.leave)){try{net.peer&&net.peer.destroy();}catch{};location.reload();}};
+let deferredInstall=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('installBtn').style.display='';});
+$('installBtn').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice;}catch{}deferredInstall=null;$('installBtn').style.display='none';};
+addEventListener('appinstalled',()=>{$('installBtn').style.display='none';});
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!navigator.standalone&&document.querySelector('link[rel=manifest]'))$('iosHint').style.display='';
 if(store.get('aqua-lang')==='en')lang='en';
 applyLang();
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
 addEventListener('beforeunload',()=>{try{net.peer&&net.peer.destroy();}catch{}});
+if(qs.get('debug'))window.__aq={tp:(x,y,z)=>{sub.position.set(x,y,z);subVel.set(0,0,0);camera.position.set(x,y+3,z-11);},cam:(yaw,pitch)=>{camYaw=yaw;subYaw=yaw;camPitch=pitch;},info:()=>({y:sub.position.y,air:subAir,cy:camera.position.y,above:aboveWater,structs:structs.length,colliders:colliders.length,creatures:creatures.length,enemies:enemies.length})};
 requestAnimationFrame(loop);
 </script>
 </body>

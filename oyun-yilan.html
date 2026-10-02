@@ -43,15 +43,21 @@
   const store = { get(k) { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
   let best = store.get('yilan_best'); document.getElementById('bs').textContent = best;
 
-  let snake, dir, nextDir, food, score, state = 'menu', acc = 0, last = 0, stepMs, glow = [], bonus = null;
+  let snake, dir, nextDir, food, score, state = 'menu', acc = 0, last = 0, stepMs, glow = [], bonus = null, queue = [];
   function reset() {
     snake = [{ x: 8, y: 10 }, { x: 7, y: 10 }, { x: 6, y: 10 }];
-    dir = { x: 1, y: 0 }; nextDir = dir; score = 0; stepMs = 130; bonus = null;
+    dir = { x: 1, y: 0 }; nextDir = dir; queue = []; score = 0; stepMs = 130; bonus = null;
     placeFood(); document.getElementById('sc').textContent = 0;
   }
   function free() { let p; do { p = { x: Math.floor(Math.random() * N), y: Math.floor(Math.random() * N) }; } while (snake.some(s => s.x === p.x && s.y === p.y)); return p; }
   function placeFood() { food = free(); }
-  function setDir(x, y) { if (state !== 'play') return; if (x === -dir.x && y === -dir.y) return; nextDir = { x, y }; }
+  function setDir(x, y) {
+    if (state !== 'play') return;
+    // Bir adım içinde art arda basılan yönler sırayla uygulanır (hızlı dönüşler yutulmasın)
+    const ref = queue.length ? queue[queue.length - 1] : dir;
+    if ((x === -ref.x && y === -ref.y) || (x === ref.x && y === ref.y) || queue.length >= 2) return;
+    queue.push({ x, y });
+  }
 
   addEventListener('keydown', e => {
     const k = e.code;
@@ -85,6 +91,7 @@
   }
 
   function step() {
+    if (queue.length) nextDir = queue.shift();
     dir = nextDir;
     const h = { x: (snake[0].x + dir.x + N) % N, y: (snake[0].y + dir.y + N) % N };
     if (snake.some((s, i) => i < snake.length - 1 && s.x === h.x && s.y === h.y)) return over();

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Sınır Karakolu</title>
+<style>
+:root{--ink:#fff3e0;--mut:#c8b595;--line:rgba(255,220,160,.18);--gold:#ffc65a;--bad:#ff6b5e;--panel:rgba(26,15,8,.93)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#150d07;color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-user-select:none;user-select:none;touch-action:none}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:1000px;margin:0 auto}
+#top{display:flex;align-items:center;gap:10px;padding:7px 10px;background:#24140a;border-bottom:1px solid var(--line);font-weight:800;font-size:15px}
+#top .g{flex:1}
+#top small{color:var(--mut);font-weight:700;font-size:10px;letter-spacing:.7px;display:block}
+#prog{flex:1.4;height:10px;background:rgba(255,255,255,.12);border-radius:6px;overflow:hidden}#prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#d97a1a,#ffc65a)}
+#field{position:relative;flex:1;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#msg{position:absolute;left:0;right:0;top:12%;text-align:center;font-size:clamp(22px,6vw,40px);font-weight:900;text-shadow:0 2px 12px #000;pointer-events:none;opacity:0;transition:opacity .3s}
+#cards{display:flex;gap:6px;padding:6px;background:#24140a;border-top:1px solid var(--line);overflow-x:auto}
+.card{flex:1;min-width:58px;background:rgba(255,255,255,.07);border:2px solid transparent;border-radius:12px;padding:5px 2px;text-align:center;cursor:pointer;position:relative;touch-action:manipulation}
+.card.sel{border-color:var(--gold);background:rgba(255,198,90,.18)}
+.card.no{opacity:.45}
+.card.lock{opacity:.35}
+.card canvas{position:static;width:36px;height:36px;margin:0 auto;display:block}
+.card b{display:block;font-size:12px;margin-top:1px}.card small{color:var(--gold);font-weight:800;font-size:11px}
+.card .cd{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);border-radius:0 0 10px 10px;height:0}
+.modal{position:fixed;inset:0;background:rgba(10,5,2,.8);display:flex;align-items:center;justify-content:center;padding:14px;z-index:5;overflow:auto}
+.box{width:min(560px,100%);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;max-height:100%;overflow:auto}
+.box h1{margin:0 0 4px;font-size:clamp(26px,7vw,38px);background:linear-gradient(90deg,#ffd27a,#ff7a2a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.box p{margin:6px 0;color:#ead8b8;line-height:1.45;font-size:15px}
+.lv{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-top:7px;padding:10px 12px;background:rgba(255,255,255,.08);border:0;border-radius:12px;color:var(--ink);font:inherit;font-weight:800;cursor:pointer;touch-action:manipulation}
+.lv .n{width:30px;height:30px;border-radius:50%;background:var(--gold);color:#2a1604;display:grid;place-items:center;font-weight:900}
+.lv .t{flex:1}.lv small{display:block;color:var(--mut);font-weight:600;font-size:12px}
+.lv.lock{opacity:.4}.lv.lock .n{background:#555;color:#ccc}
+.stars{color:var(--gold);letter-spacing:2px}
+.btn{display:block;width:100%;margin-top:9px;padding:13px;border:0;border-radius:12px;font:inherit;font-weight:900;font-size:16px;color:var(--ink);background:rgba(255,255,255,.1);cursor:pointer;touch-action:manipulation}
+.btn.go{background:linear-gradient(135deg,#ff9a2a,#e0561a);color:#fff}
+.rank{display:inline-block;background:rgba(255,198,90,.15);border:1px solid rgba(255,198,90,.4);border-radius:999px;padding:3px 12px;font-size:13px;font-weight:800;color:var(--gold)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top"><div class="g"><small>ALTIN</small><span id="gold">0</span></div><div id="prog"><i></i></div><div style="text-align:center"><small>KALE CANI</small><span id="lives">❤❤❤</span></div><button class="btn" id="pause" style="width:auto;margin:0;padding:6px 12px;font-size:14px">II</button></div>
+  <div id="field"><canvas id="c"></canvas><div id="msg"></div></div>
+  <div id="cards"></div>
+</div>
+<div class="modal" id="modal"><div class="box" id="box"></div></div>
+<script>
+(() => {
+  const COLS = 9, ROWS = 5;
+  const KEY = 'yg_sinir_karakolu_v1';
+  const load = () => { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.stars) return d; } catch (e) {} return { stars: Array(8).fill(0) }; };
+  let prof = load(); const save = () => { try { localStorage.setItem(KEY, JSON.stringify(prof)); } catch (e) {} };
+  const total = () => prof.stars.reduce((a, b) => a + b, 0);
+  const RANKS = [[0, 'Nöbetçi'], [4, 'Karakol Eri'], [9, 'Yüzbaşı'], [14, 'Sınır Beyi'], [19, 'Serhat Kumandanı'], [24, 'Kale Muhafızı']];
+  const rankOf = s => { let r = RANKS[0][1]; for (const [n, t] of RANKS) if (s >= n) r = t; return r; };
+
+  // ---------- BİRLİKLER ----------
+  const U = {
+    cadir: { n: 'Çadır', cost: 30, hp: 5, cd: 6.5, need: 0, info: 'Altın üretir' },
+    okcu: { n: 'Okçu', cost: 50, hp: 5, cd: 1.3, need: 0, info: 'Şeride ok atar' },
+    kalkan: { n: 'Kalkancı', cost: 40, hp: 22, cd: 0, need: 0, info: 'Düşmanı durdurur' },
+    mancinik: { n: 'Mancınık', cost: 110, hp: 6, cd: 3, need: 2, info: 'Alan hasarı' },
+    elit: { n: 'Okçubaşı', cost: 110, hp: 7, cd: 1.3, need: 4, info: 'Çift ok' },
+  };
+  const ORDER = ['cadir', 'okcu', 'kalkan', 'mancinik', 'elit'];
+  const E = {
+    piyade: { hp: 5, sp: 0.38, dmg: 1.2 }, atli: { hp: 4, sp: 0.75, dmg: 1.5 },
+    kalkanli: { hp: 15, sp: 0.3, dmg: 1.5 }, kule: { hp: 36, sp: 0.2, dmg: 9 },
+  };
+
+  // ---------- BÖLÜMLER ----------
+  const LV = [
+    { n: 'Sınır Taşı', info: 'Piyadeler geliyor.', k: 14, dur: 55, types: ['piyade'], gold: 140 },
+    { n: 'Atlı Akını', info: 'Hızlı atlılar şerit değiştirmez ama çok hızlı.', k: 20, dur: 62, types: ['piyade', 'atli'], gold: 140 },
+    { n: 'Kalkan Duvarı', info: 'Mancınık açıldı! Kalkanlılar zırhlı.', k: 32, dur: 66, types: ['piyade', 'atli', 'kalkanli'], gold: 150 },
+    { n: 'Ova Savaşı', info: 'Kalabalık dalgalar.', k: 44, dur: 72, types: ['piyade', 'atli', 'kalkanli'], gold: 150 },
+    { n: 'Okçubaşı Fermanı', info: 'Okçubaşı açıldı! Dalgalar sertleşiyor.', k: 50, dur: 78, types: ['piyade', 'atli', 'kalkanli'], gold: 160 },
+    { n: 'Kuşatma', info: 'Kuşatma kuleleri birliklerini ezer!', k: 58, dur: 84, types: ['piyade', 'atli', 'kalkanli', 'kule'], gold: 170 },
+    { n: 'Kara Fırtına', info: 'Her şerit aynı anda saldırı altında.', k: 68, dur: 90, types: ['piyade', 'atli', 'kalkanli', 'kule'], gold: 170 },
+    { n: 'Son Kale', info: 'Büyük hücum: karakolu savun!', k: 80, dur: 98, types: ['piyade', 'atli', 'kalkanli', 'kule'], gold: 180 },
+  ];
+
+  // ---------- OYUN DURUMU ----------
+  const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2d');
+  let W = 0, H = 0, CS = 40, OX = 0, OY = 0, S = null, sel = 'okcu', paused = false, flash = 0;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+
+  function build(li) {
+    const L = LV[li], sched = [];
+    const avail = L.types;
+    for (let i = 0; i < L.k; i++) {
+      const f = i / L.k; let t = f < 0.8 ? 8 + (L.dur - 8) * Math.pow(f / 0.8, 0.85) * 0.8 + rnd(-1, 1) : L.dur * 0.78 + (f - 0.8) / 0.2 * 6;
+      let type = 'piyade', r = Math.random();
+      if (avail.includes('kule') && f > 0.35 && r < 0.09) type = 'kule';
+      else if (avail.includes('kalkanli') && r < 0.28) type = 'kalkanli';
+      else if (avail.includes('atli') && r < 0.55) type = 'atli';
+      sched.push({ t: Math.max(6, t), lane: Math.floor(Math.random() * ROWS), type });
+    }
+    sched.sort((a, b) => a.t - b.t);
+    return { li, L, gold: L.gold, t: 0, sched, si: 0, units: [], enemies: [], shots: [], lobs: [], parts: [], lives: 3, kills: 0, over: false, announced: false, passive: 0, cool: {}, grid: Array.from({ length: ROWS }, () => Array(COLS).fill(null)) };
+  }
+
+  function start(li) {
+    S = build(li); paused = false; sel = 'okcu';
+    $('modal').style.display = 'none'; buildCards(); hud(); say('Bölüm ' + (li + 1) + ': ' + LV[li].n, 1800);
+  }
+
+  // ---------- HUD / KARTLAR ----------
+  function buildCards() {
+    const bar = $('cards'); bar.innerHTML = '';
+    for (const k of ORDER) {
+      const u = U[k], locked = u.need > S.li, d = document.createElement('div');
+      d.className = 'card' + (locked ? ' lock' : '') + (sel === k ? ' sel' : ''); d.dataset.k = k;
+      d.innerHTML = `<canvas width="72" height="72"></canvas><b>${locked ? '🔒 B' + (u.need + 1) : u.n}</b><small>${u.cost}</small><div class="cd"></div>`;
+      bar.appendChild(d);
+      drawUnit(d.querySelector('canvas').getContext('2d'), k, 36, 40, 60, 0);
+      d.onclick = () => { if (!locked) { sel = k; refreshCards(); } };
+    }
+    const sh = document.createElement('div'); sh.className = 'card'; sh.dataset.k = 'kaldir'; sh.innerHTML = '<div style="font-size:28px;height:36px">⛏️</div><b>Kaldır</b><small>+½</small>'; sh.onclick = () => { sel = 'kaldir'; refreshCards(); }; bar.appendChild(sh);
+  }
+  function refreshCards() {
+    document.querySelectorAll('.card').forEach(c => {
+      const k = c.dataset.k; c.classList.toggle('sel', sel === k);
+      if (U[k]) { const cdv = S && S.cool[k] > 0 ? S.cool[k] / 5 : 0; c.querySelector('.cd').style.height = cdv * 100 + '%'; c.classList.toggle('no', !!S && S.gold < U[k].cost && U[k].need <= S.li); }
+    });
+  }
+  function hud() {
+    if (!S) return;
+    $('gold').textContent = Math.floor(S.gold);
+    $('lives').textContent = '❤'.repeat(Math.max(0, S.lives)) + '🖤'.repeat(3 - Math.max(0, S.lives));
+    const done = (S.si + S.kills * 0) / S.sched.length; $('prog').firstElementChild.style.width = Math.min(100, (S.kills / S.sched.length) * 100) + '%';
+    refreshCards();
+  }
+  let msgT = 0; function say(t, ms) { const m = $('msg'); m.textContent = t; m.style.opacity = 1; clearTimeout(msgT); msgT = setTimeout(() => m.style.opacity = 0, ms || 1500); }
+
+  // ---------- ÇİZİM YARDIMCILARI ----------
+  function drawUnit(c, k, x, y, s, t, hpf) {
+    c.save(); c.translate(x, y); const r = s / 2;
+    c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(0, r * 0.55, r * 0.7, r * 0.18, 0, 0, 7); c.fill();
+    if (k === 'cadir') { c.fillStyle = '#c0412e'; c.beginPath(); c.moveTo(0, -r * 0.8); c.lineTo(r * 0.8, r * 0.5); c.lineTo(-r * 0.8, r * 0.5); c.fill(); c.fillStyle = '#ffc65a'; c.beginPath(); c.moveTo(0, -r * 0.2); c.lineTo(r * 0.28, r * 0.5); c.lineTo(-r * 0.28, r * 0.5); c.fill(); c.fillStyle = '#ffd23d'; c.beginPath(); c.arc(0, -r * 0.88, r * 0.12, 0, 7); c.fill(); }
+    else {
+      const body = { okcu: '#2a8f6e', kalkan: '#4a6fa5', mancinik: '#7a5230', elit: '#a83242' }[k];
+      if (k === 'mancinik') {
+        c.fillStyle = body; c.fillRect(-r * 0.6, r * 0.1, r * 1.2, r * 0.3); c.strokeStyle = '#4a2f18'; c.lineWidth = r * 0.14; c.beginPath(); c.moveTo(-r * 0.4, r * 0.1); c.lineTo(r * 0.3, -r * 0.7); c.stroke();
+        c.fillStyle = '#555'; c.beginPath(); c.arc(r * 0.35, -r * 0.75 - (Math.sin(t * 6) > 0.8 ? r * 0.1 : 0), r * 0.2, 0, 7); c.fill();
+        c.fillStyle = '#2a1a0c'; c.beginPath(); c.arc(-r * 0.5, r * 0.45, r * 0.18, 0, 7); c.arc(r * 0.5, r * 0.45, r * 0.18, 0, 7); c.fill();
+      } else {
+        c.fillStyle = body; c.beginPath(); c.roundRect(-r * 0.38, -r * 0.15, r * 0.76, r * 0.7, r * 0.2); c.fill();
+        c.fillStyle = '#f0c9a0'; c.beginPath(); c.arc(0, -r * 0.35, r * 0.28, 0, 7); c.fill();
+        c.fillStyle = k === 'elit' ? '#e63946' : k === 'kalkan' ? '#8a96a8' : '#3a2a1a'; c.beginPath(); c.arc(0, -r * 0.45, r * 0.3, Math.PI, 0); c.fill();
+        if (k === 'okcu' || k === 'elit') { c.strokeStyle = '#6b4423'; c.lineWidth = r * 0.1; c.beginPath(); c.arc(r * 0.35, 0, r * 0.5, -1.2, 1.2); c.stroke(); c.strokeStyle = '#eee'; c.lineWidth = 1; c.beginPath(); c.moveTo(r * 0.35 + Math.cos(-1.2) * r * 0.5, Math.sin(-1.2) * r * 0.5); c.lineTo(r * 0.35 + Math.cos(1.2) * r * 0.5, Math.sin(1.2) * r * 0.5); c.stroke(); }
+        if (k === 'kalkan') { c.fillStyle = '#c9a24a'; c.beginPath(); c.arc(r * 0.25, r * 0.1, r * 0.52, 0, 7); c.fill(); c.fillStyle = '#e63946'; c.beginPath(); c.arc(r * 0.25, r * 0.1, r * 0.2, 0, 7); c.fill(); }
+      }
+    }
+    if (hpf !== undefined && hpf < 1) { c.fillStyle = '#000a'; c.fillRect(-r * 0.6, -r * 0.95, r * 1.2, 4); c.fillStyle = hpf > 0.5 ? '#6ddc8b' : '#ff6b5e'; c.fillRect(-r * 0.6, -r * 0.95, r * 1.2 * hpf, 4); }
+    c.restore();
+  }
+  function drawEnemy(e, t) {
+    const x = OX + e.x * CS, y = OY + e.lane * CS + CS / 2, r = CS * 0.42;
+    ctx.save(); ctx.translate(x, y); const bob = Math.sin(t * 8 + e.id) * 1.5;
+    ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(0, r * 0.7, r * 0.8, r * 0.2, 0, 0, 7); ctx.fill();
+    if (e.type === 'kule') {
+      ctx.fillStyle = '#6b4a2b'; ctx.fillRect(-r * 0.8, -r * 1.1 + bob, r * 1.6, r * 1.7); ctx.fillStyle = '#4a3019'; ctx.fillRect(-r * 0.8, -r * 0.5 + bob, r * 1.6, r * 0.2); ctx.fillRect(-r * 0.8, r * 0.1 + bob, r * 1.6, r * 0.2);
+      ctx.fillStyle = '#b71c1c'; ctx.fillRect(-r * 0.2, -r * 1.5 + bob, r * 0.12, r * 0.45); ctx.fillRect(-r * 0.2, -r * 1.5 + bob, r * 0.6, r * 0.25);
+      ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(-r * 0.5, r * 0.6, r * 0.28, 0, 7); ctx.arc(r * 0.5, r * 0.6, r * 0.28, 0, 7); ctx.fill();
+    } else if (e.type === 'atli') {
+      ctx.fillStyle = '#5a3a28'; ctx.beginPath(); ctx.ellipse(0, r * 0.15 + bob, r * 0.95, r * 0.45, 0, 0, 7); ctx.fill(); ctx.fillRect(-r * 0.7, r * 0.3, r * 0.14, r * 0.45); ctx.fillRect(r * 0.5, r * 0.3, r * 0.14, r * 0.45); ctx.beginPath(); ctx.arc(-r * 0.95, -r * 0.1 + bob, r * 0.3, 0, 7); ctx.fill();
+      ctx.fillStyle = '#8c1c2c'; ctx.fillRect(-r * 0.2, -r * 0.7 + bob, r * 0.5, r * 0.6); ctx.fillStyle = '#f0c9a0'; ctx.beginPath(); ctx.arc(0, -r * 0.85 + bob, r * 0.24, 0, 7); ctx.fill();
+    } else {
+      const big = e.type === 'kalkanli';
+      ctx.fillStyle = big ? '#444b58' : '#8c1c2c'; ctx.beginPath(); ctx.roundRect(-r * 0.4, -r * 0.2 + bob, r * 0.8, r * 0.8, r * 0.2); ctx.fill();
+      ctx.fillStyle = '#f0c9a0'; ctx.beginPath(); ctx.arc(0, -r * 0.4 + bob, r * 0.3, 0, 7); ctx.fill(); ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(0, -r * 0.5 + bob, r * 0.32, Math.PI, 0); ctx.fill();
+      if (big) { ctx.fillStyle = '#9aa3b2'; ctx.beginPath(); ctx.arc(-r * 0.45, r * 0.1 + bob, r * 0.55, 0, 7); ctx.fill(); ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.stroke(); }
+      else { ctx.strokeStyle = '#d6d6d6'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-r * 0.6, r * 0.3); ctx.lineTo(-r * 0.6, -r * 1.0); ctx.stroke(); }
+    }
+    const f = Math.min(1, e.hp / (E[e.type].hp * (1 + 0.055 * S.li))); if (f < 1) { ctx.fillStyle = '#000a'; ctx.fillRect(-r * 0.7, -r * 1.35, r * 1.4, 4); ctx.fillStyle = '#ff6b5e'; ctx.fillRect(-r * 0.7, -r * 1.35, r * 1.4 * f, 4); }
+    if (e.slow) { ctx.globalAlpha = 0.3; }
+    ctx.restore();
+  }
+
+  // ---------- GİRDİ ----------
+  function cellAt(px, py) { const r = cv.getBoundingClientRect(), x = px - r.left, y = py - r.top, c = Math.floor((x - OX) / CS), l = Math.floor((y - OY) / CS); return c >= 0 && c < COLS && l >= 0 && l < ROWS ? [c, l] : null; }
+  function tap(px, py) {
+    if (!S || S.over || paused) return; const cl = cellAt(px, py); if (!cl) return; const [c, l] = cl;
+    const cur = S.grid[l][c];
+    if (sel === 'kaldir') { if (cur) { S.gold += Math.floor(U[cur.k].cost / 2); S.grid[l][c] = null; S.units = S.units.filter(u => u !== cur); burst(c + .5, l + .5, '#ffc65a', 6); hud(); } return; }
+    if (cur) return;
+    const u = U[sel]; if (!u || u.need > S.li) return;
+    if (S.gold < u.cost) { say('Yeterli altın yok', 700); return; }
+    if ((S.cool[sel] || 0) > 0) return;
+    S.gold -= u.cost; S.cool[sel] = 5 * (sel === 'kalkan' ? 0.6 : 1) * (sel === 'cadir' ? 0.5 : 1);
+    const nu = { k: sel, c, l, hp: u.hp, mhp: u.hp, t: sel === 'cadir' ? u.cd * 0.5 : 0.3, born: S.t }; S.units.push(nu); S.grid[l][c] = nu; burst(c + .5, l + .5, '#fff', 6); hud();
+  }
+  cv.addEventListener('pointerdown', e => tap(e.clientX, e.clientY));
+  addEventListener('keydown', e => { const i = +e.key; if (i >= 1 && i <= 5 && S && U[ORDER[i - 1]].need <= S.li) { sel = ORDER[i - 1]; refreshCards(); } if (e.key === 'x') { sel = 'kaldir'; refreshCards(); } if (e.key === 'p' || e.key === 'Escape') togglePause(); });
+  $('pause').onclick = () => togglePause();
+  function togglePause() { if (!S || S.over) return; paused = !paused; if (paused) { $('box').innerHTML = '<h1>DURAKLATILDI</h1><button class="btn go" id="r">DEVAM</button><button class="btn" id="m">Bölüm Seçimi</button>'; $('modal').style.display = 'flex'; $('r').onclick = togglePause; $('m').onclick = () => { paused = false; menu(); }; } else $('modal').style.display = 'none'; }
+
+  function burst(x, y, col, n) { for (let i = 0; i < n; i++) S.parts.push({ x, y, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0.5), l: 0.5, c: col }); }
+
+  // ---------- SİMÜLASYON ----------
+  let eid = 0;
+  function step(dt) {
+    if (!S || S.over || paused) return;
+    S.t += dt; flash = Math.max(0, flash - dt * 3);
+    for (const k in S.cool) S.cool[k] = Math.max(0, S.cool[k] - dt);
+    S.passive += dt; if (S.passive >= 2.6 + S.li * 0.15) { S.passive = 0; S.gold += 5; }
+    while (S.si < S.sched.length && S.sched[S.si].t <= S.t) { const s = S.sched[S.si++]; S.enemies.push({ id: ++eid, type: s.type, lane: s.lane, x: COLS + 0.4, hp: E[s.type].hp * (1 + 0.055 * S.li), spd: 1 + 0.025 * S.li, atk: 0 }); if (!S.announced && S.si > S.sched.length * 0.8) { S.announced = true; say('⚔ BÜYÜK HÜCUM!', 1800); } }
+    // birlikler
+    for (const u of S.units) {
+      const d = U[u.k];
+      if (u.k === 'cadir') { u.t -= dt; if (u.t <= 0) { u.t = d.cd; S.gold += 25; S.parts.push({ x: u.c + .5, y: u.l + .2, vx: 0, vy: -1.2, l: 0.8, c: '#ffd23d', txt: '+25' }); } }
+      else if (u.k === 'okcu' || u.k === 'elit') {
+        const tgt = S.enemies.some(e => e.lane === u.l && e.x > u.c + 0.3 && e.x < COLS + 0.2);
+        u.t -= dt; if (u.t <= 0 && tgt) { u.t = d.cd; S.shots.push({ lane: u.l, x: u.c + 0.8, dmg: 1.5 }); if (u.k === 'elit') S.shots.push({ lane: u.l, x: u.c + 0.4, dmg: 1.5 }); }
+      } else if (u.k === 'mancinik') {
+        const t = S.enemies.filter(e => e.lane === u.l && e.x > u.c + 0.5 && e.x < COLS).sort((a, b) => a.x - b.x)[0];
+        u.t -= dt; if (u.t <= 0 && t) { u.t = d.cd; S.lobs.push({ lane: u.l, x0: u.c + 0.5, x1: t.x - 0.25, t: 0, from: u }); }
+      }
+    }
+    // oklar
+    for (const s of S.shots) { s.x += 7.5 * dt; const e = S.enemies.find(e => !e.dead && e.lane === s.lane && Math.abs(e.x - s.x) < 0.35); if (e) { e.hp -= s.dmg; s.dead = true; if (e.hp <= 0) kill(e); } if (s.x > COLS + 1) s.dead = true; }
+    for (const b of S.lobs) { b.t += dt / 0.8; if (b.t >= 1) { b.dead = true; for (const e of S.enemies) if (!e.dead && e.lane === b.lane && Math.abs(e.x - b.x1) < 1.0) { e.hp -= 4; if (e.hp <= 0) kill(e); } burst(b.x1, b.lane + .6, '#ff9a2a', 10); } }
+    // düşmanlar
+    for (const e of S.enemies) {
+      if (e.dead) continue; const P = E[e.type];
+      const blocker = S.units.filter(u => u.l === e.lane && u.c + 1.0 >= e.x - 0.15 && u.c + 0.2 < e.x).sort((a, b) => b.c - a.c)[0];
+      if (blocker) { e.atk += dt; if (e.atk >= 0.6) { e.atk = 0; blocker.hp -= P.dmg * 0.6 * (e.type === 'kule' ? 1 : 1); } if (blocker.hp <= 0) { S.grid[blocker.l][blocker.c] = null; blocker.dead = true; burst(blocker.c + .5, blocker.l + .5, '#999', 8); } }
+      else { e.x -= P.sp * e.spd * dt; e.atk = 0; if (e.x <= 0.1) { e.dead = true; S.lives--; flash = 1; say('Kapı zorlandı!', 800); hud(); if (S.lives <= 0) return finish(false); } }
+    }
+    S.units = S.units.filter(u => !u.dead); S.shots = S.shots.filter(s => !s.dead); S.lobs = S.lobs.filter(b => !b.dead); S.enemies = S.enemies.filter(e => !e.dead);
+    for (const p of S.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 4 * dt; p.l -= dt; } S.parts = S.parts.filter(p => p.l > 0);
+    if (S.si >= S.sched.length && !S.enemies.length) return finish(true);
+    hudTick = (hudTick || 0) + 1; if (hudTick % 6 === 0) hud();
+  }
+  let hudTick = 0;
+  function kill(e) { e.dead = true; S.kills++; S.gold += e.type === 'kule' ? 25 : 5; burst(e.x, e.lane + .5, '#ff6b5e', 8); }
+
+  function finish(win) {
+    S.over = true; hud();
+    if (win) {
+      const st = S.lives; const had = total(), old = prof.stars[S.li];
+      prof.stars[S.li] = Math.max(old, st); save();
+      const unlock = LV[S.li + 1] ? U[ORDER.find(k => U[k].need === S.li + 1)] : null;
+      const nr = rankOf(total()) !== rankOf(had);
+      $('box').innerHTML = `<h1>KARAKOL AYAKTA!</h1><p>${LV[S.li].n} bölümünü kazandın. Kalan kale canı: <b>${S.lives}/3</b></p>
+        <p class="stars" style="font-size:34px;margin:6px 0">${'★'.repeat(st)}${'☆'.repeat(3 - st)}</p>
+        <p>Rütbe: <span class="rank">${rankOf(total())}</span> ${nr ? '🎉 Yeni rütbe!' : ''} · ${total()}/24 ★</p>
+        ${unlock ? `<p>🔓 Yeni birlik: <b>${unlock.n}</b> (${unlock.info})</p>` : ''}
+        ${LV[S.li + 1] ? `<button class="btn go" id="nx">SONRAKİ BÖLÜM ▶</button>` : '<p><b>🏆 Tüm sınırı savundun!</b></p>'}
+        <button class="btn" id="rt">${st < 3 ? 'Tekrar dene (3 ★ için hiç can kaybetme)' : 'Tekrar oyna'}</button><button class="btn" id="mn">Bölüm Seçimi</button>`;
+      $('modal').style.display = 'flex';
+      if ($('nx')) $('nx').onclick = () => start(S.li + 1);
+    } else {
+      $('box').innerHTML = `<h1>KARAKOL DÜŞTÜ</h1><p>Düşman kapıyı aştı. Daha çok çadır kurup erken okçu dizmeyi dene; kalkancıları okçuların önüne koy.</p><button class="btn go" id="rt">YENİDEN DENE</button><button class="btn" id="mn">Bölüm Seçimi</button>`;
+      $('modal').style.display = 'flex';
+    }
+    $('rt').onclick = () => start(S.li); $('mn').onclick = menu;
+  }
+
+  function menu() {
+    S = null; paused = false;
+    $('box').innerHTML = `<h1>SINIR KARAKOLU</h1><p>Düşmanlar şeritlerden karakola yürüyor. Çadırlarla altın topla, okçu ve kalkancılarla savun. <b>3 can</b> var; ne kadar az can kaybedersen o kadar çok yıldız alırsın.</p>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span class="rank">${rankOf(total())}</span><span class="stars">${total()}/24 ★</span></div>` +
+      LV.map((l, i) => { const lock = i > 0 && prof.stars[i - 1] < 1; return `<button class="lv ${lock ? 'lock' : ''}" data-i="${i}" ${lock ? 'disabled' : ''}><span class="n">${lock ? '🔒' : i + 1}</span><span class="t">${l.n}<small>${lock ? 'Önceki bölümü kazan' : l.info}</small></span><span class="stars">${'★'.repeat(prof.stars[i])}${'☆'.repeat(3 - prof.stars[i])}</span></button>`; }).join('');
+    $('modal').style.display = 'flex';
+    $('box').querySelectorAll('[data-i]').forEach(b => b.onclick = () => start(+b.dataset.i));
+  }
+
+  // ---------- ÇİZİM ----------
+  function resize() {
+    const r = cv.getBoundingClientRect(), D = Math.min(2, devicePixelRatio || 1); W = r.width; H = r.height; cv.width = W * D; cv.height = H * D; ctx.setTransform(D, 0, 0, D, 0, 0);
+    CS = Math.floor(Math.min(W / (COLS + 1), H / ROWS)); OX = Math.floor((W - CS * COLS) / 2 + CS * 0.3); OY = Math.floor((H - CS * ROWS) / 2);
+  }
+  addEventListener('resize', resize);
+  function render(t) {
+    if (!W) resize();
+    ctx.fillStyle = '#3f5a2a'; ctx.fillRect(0, 0, W, H);
+    for (let l = 0; l < ROWS; l++) for (let c = 0; c < COLS; c++) { ctx.fillStyle = (l + c) % 2 ? '#4a6a31' : '#43602b'; ctx.fillRect(OX + c * CS, OY + l * CS, CS, CS); }
+    // kale duvarı
+    ctx.fillStyle = '#8a7a66'; ctx.fillRect(OX - CS * 0.55, OY - 4, CS * 0.55, CS * ROWS + 8); ctx.fillStyle = '#6b5d4c'; for (let i = 0; i < ROWS * 2; i++) ctx.fillRect(OX - CS * 0.55, OY + i * CS / 2, CS * 0.55, 3);
+    ctx.fillStyle = '#e63946'; ctx.fillRect(OX - CS * 0.3, OY - CS * 0.35, 4, CS * 0.5); ctx.beginPath(); ctx.moveTo(OX - CS * 0.3 + 4, OY - CS * 0.35); ctx.lineTo(OX - CS * 0.3 + CS * 0.4, OY - CS * 0.22); ctx.lineTo(OX - CS * 0.3 + 4, OY - CS * 0.1); ctx.fill();
+    if (!S) return;
+    // hedef hücre ipucu
+    const tt = t / 1000;
+    for (const u of S.units) { const bob = u.k === 'cadir' ? 0 : Math.sin(tt * 3 + u.l) * 1; drawUnit(ctx, u.k, OX + (u.c + .5) * CS, OY + (u.l + .5) * CS + bob, CS * 0.95, tt, u.hp / u.mhp); }
+    for (const e of S.enemies) drawEnemy(e, tt);
+    ctx.fillStyle = '#f5e6b8'; for (const s of S.shots) { const x = OX + s.x * CS, y = OY + (s.lane + 0.45) * CS; ctx.fillRect(x - 8, y, 16, 2.5); ctx.fillStyle = '#fff'; ctx.fillRect(x + 6, y - 1, 4, 5); ctx.fillStyle = '#f5e6b8'; }
+    for (const b of S.lobs) { const x = OX + (b.x0 + (b.x1 - b.x0) * b.t) * CS, y = OY + (b.lane + 0.5) * CS - Math.sin(b.t * Math.PI) * CS * 1.1; ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(x, y, CS * 0.13, 0, 7); ctx.fill(); }
+    for (const p of S.parts) { ctx.globalAlpha = Math.min(1, p.l * 2); if (p.txt) { ctx.fillStyle = p.c; ctx.font = `800 ${CS * 0.3}px system-ui`; ctx.textAlign = 'center'; ctx.fillText(p.txt, OX + p.x * CS, OY + p.y * CS); } else { ctx.fillStyle = p.c; ctx.fillRect(OX + p.x * CS, OY + p.y * CS, 4, 4); } } ctx.globalAlpha = 1;
+    if (flash > 0) { ctx.fillStyle = `rgba(230,40,40,${flash * 0.35})`; ctx.fillRect(0, 0, W, H); }
+  }
+  // sabit 60 Hz adım
+  const STEP = 1000 / 60; let acc = 0, last = 0;
+  function loop(now) {
+    requestAnimationFrame(loop); acc += Math.min(100, now - (last || now)); last = now;
+    let n = 0; while (acc >= STEP - 1.5 && n < 4) { acc -= STEP; n++; step(1 / 60); } if (n === 4) acc = 0;
+    render(now);
+  }
+  requestAnimationFrame(loop);
+  menu();
+})();
+</script>
+</body>
+</html>

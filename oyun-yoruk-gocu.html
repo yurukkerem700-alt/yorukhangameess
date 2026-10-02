@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Yörük Göçü</title>
+<style>
+:root{--ink:#fff6e6;--mut:#c9b08a;--line:rgba(255,224,170,.16);--gold:#ffc65a;--good:#7be0a0;--bad:#ff7a6e;--panel:rgba(30,16,8,.9)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#1a0f08;color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:900px;margin:0 auto}
+#hud{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px;background:#26140a;border-bottom:1px solid var(--line)}
+.st{background:rgba(255,255,255,.05);border-radius:10px;padding:5px 4px;text-align:center}
+.st small{display:block;font-size:10px;letter-spacing:.8px;color:var(--mut);font-weight:700}
+.st b{font-size:17px}
+.st.low b{color:var(--bad)}
+.bar{height:5px;background:rgba(255,255,255,.1);border-radius:4px;margin-top:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--gold);width:50%}
+#stage{position:relative;flex:1;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#goal{position:absolute;left:8px;right:8px;top:8px;height:26px;background:rgba(0,0,0,.45);border-radius:13px;overflow:hidden;border:1px solid var(--line)}
+#goal i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#d97a1a,#ffc65a);width:0}
+#goal span{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:800;text-shadow:0 1px 3px #000}
+#log{position:absolute;left:8px;right:8px;bottom:8px;background:rgba(0,0,0,.55);border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.35;border:1px solid var(--line);min-height:36px}
+#ctl{padding:8px;background:#26140a;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr) 1.5fr;gap:6px}
+button{font:inherit;border:0;cursor:pointer;color:var(--ink);background:rgba(255,255,255,.09);border-radius:12px;padding:11px 6px;font-weight:800;font-size:14px;touch-action:manipulation}
+button.on{background:var(--gold);color:#2a1604}
+button.go{background:linear-gradient(135deg,#ff9a2a,#e0561a);color:#fff;font-size:16px}
+button:disabled{opacity:.4}
+button small{display:block;font-weight:600;font-size:10px;opacity:.8}
+.modal{position:fixed;inset:0;background:rgba(10,5,2,.78);display:flex;align-items:center;justify-content:center;padding:14px;z-index:5;overflow:auto}
+.card{width:min(560px,100%);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;max-height:100%;overflow:auto}
+.card h1{margin:0 0 4px;font-size:clamp(26px,7vw,38px);background:linear-gradient(90deg,#ffd27a,#ff7a2a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card h2{margin:0 0 6px;font-size:22px}
+.card p{margin:6px 0;color:#e9d6b5;line-height:1.45;font-size:15px}
+.card .opt{display:block;width:100%;text-align:left;margin-top:8px;padding:12px 14px}
+.opt small{display:block;color:var(--mut);font-weight:600;margin-top:2px;font-size:12px}
+.chap{display:flex;align-items:center;gap:12px;text-align:left;width:100%;margin-top:8px;padding:12px 14px}
+.chap .n{font-size:26px}.chap .t{flex:1}.chap small{display:block;font-weight:600;color:var(--mut);font-size:12px}
+.chap.lock{opacity:.45}
+.stars{letter-spacing:2px;color:var(--gold)}
+.rank{display:inline-block;background:rgba(255,198,90,.15);border:1px solid rgba(255,198,90,.4);border-radius:999px;padding:3px 12px;font-size:13px;font-weight:800;color:var(--gold)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
+.row button{padding:8px 12px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hud">
+    <div class="st" id="sDay"><small>GÜN</small><b>1/28</b></div>
+    <div class="st" id="sFood"><small>YİYECEK</small><b>40</b></div>
+    <div class="st" id="sWater"><small>SU</small><b>40</b></div>
+    <div class="st" id="sMoral"><small>MORAL</small><b>70</b></div>
+    <div class="st" id="sHerd"><small>SÜRÜ</small><b>80</b></div>
+  </div>
+  <div id="stage"><canvas id="c"></canvas><div id="goal"><i></i><span></span></div><div id="log"></div></div>
+  <div id="ctl">
+    <button data-p="0">Yavaş<small>8 km</small></button>
+    <button data-p="1" class="on">Normal<small>11 km</small></button>
+    <button data-p="2">Hızlı<small>16 km</small></button>
+    <button class="go" id="go">GÜNÜ YAŞA ▶</button>
+  </div>
+</div>
+<div class="modal" id="modal"><div class="card" id="card"></div></div>
+<script>
+(() => {
+  // ---------- KAYIT ----------
+  const KEY = 'yg_yoruk_gocu_v1';
+  const load = () => { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.stars) return d; } catch (e) {} return { stars: [0, 0, 0, 0], best: [0, 0, 0, 0] }; };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(prof)); } catch (e) {} };
+  let prof = load();
+
+  // ---------- BÖLÜMLER ----------
+  const CH = [
+    { name: 'Toros Yaylası', ico: '⛰️', km: 240, days: 27, ev: 0.5, herd: 80, desc: 'Kolay yol, bol su. Göçün ilk adımı.' },
+    { name: 'Erciyes Yaylası', ico: '🌋', km: 330, days: 36, ev: 0.58, herd: 90, desc: 'Daha uzun yol, rüzgârlı geçitler.' },
+    { name: 'Ağrı Yaylası', ico: '🏔️', km: 420, days: 44, ev: 0.66, herd: 100, desc: 'Kıtlık ve haydut tehlikesi.' },
+    { name: 'Kaçkar Yaylası', ico: '🌲', km: 520, days: 54, ev: 0.74, herd: 110, desc: 'Son sınav: yılın en zor göçü.' },
+  ];
+  const RANKS = [[0, 'Genç Çoban'], [2, 'Oba Yiğidi'], [5, 'Boy Kethüdası'], [8, 'Aşiret Reisi'], [10, 'Boy Beyi'], [12, 'Yörüklerin Atası']];
+  const rankOf = s => { let r = RANKS[0][1]; for (const [n, t] of RANKS) if (s >= n) r = t; return r; };
+  const totalStars = () => prof.stars.reduce((a, b) => a + b, 0);
+
+  // ---------- DURUM ----------
+  let G = null, pace = 1, busy = false, anim = 0, camp = 0;
+  const $ = id => document.getElementById(id);
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const PACE = [{ km: 8, f: 2.4, w: 2.6, m: 3, hl: 0 }, { km: 11, f: 3, w: 3.2, m: 0, hl: 0.08 }, { km: 16, f: 3.9, w: 4.1, m: -6, hl: 0.35 }];
+
+  function newGame(ci) {
+    const c = CH[ci];
+    G = { ci, day: 1, km: 0, food: 30, water: 30, moral: 65, herd: c.herd, start: c.herd, gold: 40, nextKonak: 60, nextPinar: 45, skip: 0, over: false, ate: 0, log: 'Obayı topla, yola çık. Hedef: ' + c.km + ' km, ' + c.days + ' gün içinde yayla.' };
+    pace = 1; busy = false; setPaceBtn(); hud(); $('modal').style.display = 'none';
+  }
+
+  function hud() {
+    const c = CH[G.ci];
+    const set = (id, t, low, pct) => { const el = $(id); el.querySelector('b').textContent = t; el.classList.toggle('low', !!low); };
+    set('sDay', G.day + '/' + c.days, c.days - G.day < 4);
+    set('sFood', Math.max(0, Math.round(G.food)), G.food < 10);
+    set('sWater', Math.max(0, Math.round(G.water)), G.water < 10);
+    set('sMoral', Math.round(G.moral), G.moral < 25);
+    set('sHerd', G.herd, G.herd < G.start * 0.5);
+    const p = clamp(G.km / c.km, 0, 1);
+    document.querySelector('#goal i').style.width = p * 100 + '%';
+    document.querySelector('#goal span').textContent = c.name + ' · ' + Math.round(G.km) + ' / ' + c.km + ' km';
+    $('log').textContent = G.log;
+  }
+  function setPaceBtn() { document.querySelectorAll('[data-p]').forEach(b => b.classList.toggle('on', +b.dataset.p === pace)); }
+  document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { if (!busy) { pace = +b.dataset.p; setPaceBtn(); } });
+  $('go').onclick = () => { if (G && !busy && !G.over) day(); };
+
+  // ---------- GÜN ----------
+  function day() {
+    const c = CH[G.ci], P = PACE[pace], notes = [];
+    busy = true;
+    let dist = G.skip > 0 ? 0 : P.km * (0.85 + Math.random() * 0.3) * (G.moral < 30 ? 0.8 : 1);
+    if (G.skip > 0) { G.skip--; notes.push('Bugün yürümedik, dinlendik.'); }
+    G.km += dist; camp += dist;
+    const hungry = G.food <= 0, thirsty = G.water <= 0;
+    G.food = Math.max(0, G.food - P.f * (G.herd > 0 ? 1 : 0)); G.water = Math.max(0, G.water - P.w);
+    G.moral = clamp(G.moral + (P.m === 3 ? 3 : P.m === 0 ? 0 : -3) + (G.skip >= 0 && dist === 0 ? 6 : 0), 0, 100);
+    if (hungry) { G.moral = clamp(G.moral - 10, 0, 100); const l = rnd(1, 3); G.herd -= l; notes.push('Yiyecek yok! Sürüden ' + l + ' baş kaybettik.'); }
+    if (thirsty) { G.moral = clamp(G.moral - 8, 0, 100); const l = rnd(2, 4); G.herd -= l; notes.push('Su yok! Sürüden ' + l + ' baş kaybettik.'); }
+    if (Math.random() < 0.07 + G.ci * 0.03 && G.moral < 70) { G.herd -= 1; notes.push('Bir koyun sürüden ayrılıp kayboldu.'); }
+    if (Math.random() < P.hl && dist > 0) { G.herd -= 1; notes.push('Hızlı yürüyüşte bir kuzu yorgunluktan düştü.'); }
+    if (G.moral >= 85 && G.food > 12 && Math.random() < 0.08 && G.herd > 0) { const b = rnd(1, 2); G.herd += b; notes.push('Sürüde ' + b + ' kuzu doğdu!'); }
+    G.herd = Math.max(0, G.herd);
+    if (!notes.length) notes.push(dist ? Math.round(dist) + ' km yol yürüdük.' : 'Dinlendik.');
+    G.log = 'Gün ' + G.day + ': ' + notes.join(' ');
+    // pınar
+    let pinar = false;
+    while (G.km >= G.nextPinar) { G.nextPinar += rnd(40, 60); G.water = Math.min(50, G.water + 22); pinar = true; }
+    if (pinar) G.log += ' Pınar başında su tazeledik (+22).';
+    G.day++;
+    hud(); animate(dist, () => afterDay());
+  }
+
+  function afterDay() {
+    const c = CH[G.ci];
+    if (G.herd <= 0 || G.moral <= 0) return end(false, G.herd <= 0 ? 'Sürü tükendi. Oba dağıldı.' : 'Moral çöktü. Obalılar geri döndü.');
+    if (G.km >= c.km) return end(true);
+    if (G.day > c.days) return end(false, 'Sıcaklar bastı, yayla otları kurudu. Zamanında varamadık.');
+    if (G.km >= G.nextKonak) { G.nextKonak += 60; return konak(); }
+    if (Math.random() < c.ev) return event();
+    busy = false;
+  }
+
+  // ---------- KONAK (PAZAR) ----------
+  function konak() {
+    const wool = Math.round(G.herd * 0.22); G.gold += wool;
+    const render = () => {
+      $('card').innerHTML = `<h2>🏕️ Konak Pazarı</h2><p>Yün sattık: <b>+${wool} altın</b>. Elinde <b>${G.gold} altın</b>.</p>
+      <button class="opt" data-b="f">🌾 10 yiyecek al<small>22 altın · şu an ${Math.round(G.food)}</small></button>
+      <button class="opt" data-b="w">💧 10 su al<small>12 altın · şu an ${Math.round(G.water)}</small></button>
+      <button class="opt" data-b="m">🎉 Obaya şenlik yap (+12 moral)<small>35 altın</small></button>
+      <button class="opt" data-b="s">🐑 5 baş sat<small>+45 altın (sürü azalır)</small></button>
+      <button class="opt go" data-b="x" style="text-align:center;margin-top:14px">YOLA DEVAM</button>`;
+      $('card').querySelectorAll('[data-b]').forEach(b => b.onclick = () => {
+        const k = b.dataset.b;
+        if (k === 'f' && G.gold >= 22) { G.gold -= 22; G.food += 10; }
+        else if (k === 'w' && G.gold >= 12) { G.gold -= 12; G.water += 10; }
+        else if (k === 'm' && G.gold >= 35) { G.gold -= 35; G.moral = clamp(G.moral + 12, 0, 100); }
+        else if (k === 's' && G.herd > 5) { G.herd -= 5; G.gold += 45; }
+        else if (k === 'x') { $('modal').style.display = 'none'; hud(); busy = false; return; }
+        hud(); render();
+      });
+    };
+    $('modal').style.display = 'flex'; render(); hud();
+  }
+
+  // ---------- OLAYLAR ----------
+  // Her seçenek: [başlık, ipucu, işlev(G) -> sonuç metni]
+  const EV = [
+    { t: '🐺 Kurt Sürüsü', d: 'Gece sürünün çevresinde kurt gözleri parlıyor.', o: [
+      ['Köpekleri saldır', '%70 güvenli', g => Math.random() < .7 ? (g.moral += 5, 'Köpekler kurtları kovaladı. Moral yükseldi.') : (g.herd -= 5, g.moral -= 5, 'Kurtlar sürüye daldı: 5 baş kayıp.')],
+      ['Ateş yak, nöbet tut', '−5 moral, −1 baş', g => (g.moral -= 5, g.herd -= 1, 'Sabaha kadar nöbet tuttuk. Bir kuzu kayıp.')],
+      ['Sürüyü sık topla, yarım gün kaybet', '−6 km', g => (g.km -= 6, 'Sürü sıkı toplandı, kayıp yok ama yavaşladık.')]] },
+    { t: '🌊 Taşkın Geçidi', d: 'Önümüzde kabarmış bir dere var.', o: [
+      ['Hemen geç', '%60 güvenli', g => Math.random() < .6 ? 'Sürü karşıya sağ salim geçti.' : (g.herd -= 4, g.food -= 6, 'Akıntı sürüden 4 baş ve 6 yiyecek aldı.')],
+      ['Su çekilmesini bekle', 'Bir gün dur', g => (g.skip = 1, 'Su çekilene kadar bekleyeceğiz.')],
+      ['Kayıkçıya öde', '−25 altın', g => g.gold >= 25 ? (g.gold -= 25, 'Kayıkçı hepimizi güvenle geçirdi.') : (g.herd -= 3, 'Param yetmedi, riskli geçtik: 3 baş kayıp.')]] },
+    { t: '⛈️ Fırtına', d: 'Gök kararıyor, yağmur başlıyor.', o: [
+      ['Çadırları sağlamlaştır', '−4 yiyecek', g => (g.food -= 4, g.water += 8, 'Fırtınayı atlattık, yağmur suyu topladık (+8 su).')],
+      ['Yola devam et', '−10 moral, %25 −3 baş', g => { g.moral -= 10; if (Math.random() < .25) { g.herd -= 3; return 'Sürü dağıldı, 3 baş kayıp.'; } return 'Islandık ama ilerledik.'; }]] },
+    { t: '👴 Yaşlı Çoban', d: 'Yolda bir yaşlı çoban size yol gösteriyor.', o: [
+      ['Kestirme yolu dinle', '+15 km', g => (g.km += 15, 'Kestirme yol bizi epey ilerletti.')],
+      ['Suyunu paylaş', '+12 su', g => (g.water += 12, 'Çoban gizli bir kaynağı gösterdi.')],
+      ['Hikâyesini dinle', '+10 moral', g => (g.moral += 10, 'Eski göç hikâyeleri herkesi neşelendirdi.')]] },
+    { t: '🧳 Gezgin Tüccar', d: 'Bir tüccar mal satmak istiyor.', o: [
+      ['10 yiyecek al', '18 altın', g => g.gold >= 18 ? (g.gold -= 18, g.food += 10, 'Anlaştık.') : 'Yeterli altının yok.'],
+      ['3 baş sat', '+40 altın', g => g.herd > 5 ? (g.herd -= 3, g.gold += 40, 'Üç koyun satıldı.') : 'Sürü çok küçük, satamazsın.'],
+      ['Geç git', 'Bir şey olmaz', () => 'Yola devam.']] },
+    { t: '🐑 Hasta Kuzular', d: 'Bazı kuzular halsiz, ishal oluyor.', o: [
+      ['Otlarla tedavi et', '−5 su, %80 başarı', g => { g.water -= 5; return Math.random() < .8 ? 'Kuzular iyileşti.' : (g.herd -= 3, 'Tedavi tutmadı, 3 kuzu öldü.'); }],
+      ['Hastaları ayır', '−2 baş', g => (g.herd -= 2, 'Hasta kuzular geride kaldı ama salgın yayılmadı.')]] },
+    { t: '🎶 Komşu Oba Şenliği', d: 'Komşu obalar sizi düğüne çağırıyor.', o: [
+      ['Katıl', '+20 moral, −5 yiyecek, bir gün', g => (g.moral += 20, g.food -= 5, g.skip = 1, 'Davul zurna eşliğinde horon! Moral tavan.')],
+      ['Hediye alıp geç', '+8 yiyecek', g => (g.food += 8, 'Komşular bize azık verdi.')]] },
+    { t: '🌿 Zengin Otlak', d: 'Önümüzde yemyeşil bir çayır uzanıyor.', o: [
+      ['Sürüyü otlat', '+2 baş, +8 moral, bir gün', g => (g.herd += 2, g.moral += 8, g.skip = 1, 'Sürü doyasıya otladı, hayvanlar güçlendi.')],
+      ['Yürümeye devam', '+10 km', g => (g.km += 10, 'Fırsatı geçip yol aldık.')]] },
+    { t: '🗡️ Haydutlar', d: 'Yol kesen atlılar önümüzü kesti.', o: [
+      ['Çatış', '%55 kazanç', g => Math.random() < .55 ? (g.gold += 30, g.moral += 10, 'Haydutları püskürttük! +30 altın.') : (g.food -= 8, g.moral -= 10, g.herd -= 2, 'Kaybettik: yiyecek, moral ve 2 baş gitti.')],
+      ['Haraç ver', '−20 altın veya −10 yiyecek', g => g.gold >= 20 ? (g.gold -= 20, 'Haraç ödendi, yolumuza baktık.') : (g.food -= 10, 'Altın yetmedi, yiyecekten verdik.')],
+      ['Gece sessizce geç', '%50 başarı', g => Math.random() < .5 ? 'Fark edilmeden geçtik.' : (g.herd -= 3, g.moral -= 5, 'Fark edildik, 3 baş kaçtı.')]] },
+    { t: '🏜️ Kuru Pınar', d: 'Hesap ettiğimiz pınar kurumuş.', o: [
+      ['Eski kuyuyu kaz', '−8 moral, +15 su', g => (g.moral -= 8, g.water += 15, 'Zorlu kazı sonunda su çıktı.')],
+      ['Suyu kıs', '−6 su', g => (g.water -= 6, 'Su dağıtımını kısıtladık.')]] },
+    { t: '☀️ Kavurucu Sıcak', d: 'Öğle güneşi sürüyü bunaltıyor.', o: [
+      ['Akşama kadar gölgede dur', 'Bir gün dur, −3 su', g => (g.skip = 1, g.water -= 3, 'Sürü dinlendi.')],
+      ['Gece yürüyelim', '−5 moral, +8 km', g => (g.moral -= 5, g.km += 8, 'Ay ışığında yol aldık.')]] },
+  ];
+  let lastEv = -1;
+  function event() {
+    let i; do { i = rnd(0, EV.length - 1); } while (i === lastEv); lastEv = i;
+    const e = EV[i];
+    $('card').innerHTML = `<h2>${e.t}</h2><p>${e.d}</p>` + e.o.map((o, k) => `<button class="opt" data-k="${k}">${o[0]}<small>${o[1]}</small></button>`).join('');
+    $('modal').style.display = 'flex';
+    $('card').querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
+      const res = e.o[+b.dataset.k][2](G);
+      G.food = Math.max(0, G.food); G.water = Math.max(0, G.water); G.herd = Math.max(0, G.herd); G.moral = clamp(G.moral, 0, 100); G.km = Math.max(0, G.km); G.gold = Math.max(0, G.gold);
+      G.log = res; hud();
+      $('card').innerHTML = `<h2>${e.t}</h2><p>${res}</p><button class="opt go" data-ok style="text-align:center">TAMAM</button>`;
+      $('card').querySelector('[data-ok]').onclick = () => { $('modal').style.display = 'none'; afterDay2(); };
+    });
+  }
+  function afterDay2() {
+    hud(); const c = CH[G.ci];
+    if (G.herd <= 0 || G.moral <= 0) return end(false, G.herd <= 0 ? 'Sürü tükendi. Oba dağıldı.' : 'Moral çöktü. Obalılar geri döndü.');
+    if (G.km >= c.km) return end(true);
+    if (G.day > c.days) return end(false, 'Sıcaklar bastı, yayla otları kurudu. Zamanında varamadık.');
+    busy = false;
+  }
+
+  // ---------- SONUÇ ----------
+  function end(win, why) {
+    G.over = true; busy = false;
+    const c = CH[G.ci];
+    let stars = 0, score = 0;
+    if (win) {
+      const keep = G.herd / G.start;
+      stars = 1 + (keep >= 0.75 ? 1 : 0) + (keep >= 0.92 && G.moral >= 55 ? 1 : 0);
+      score = Math.round(G.herd * 10 + G.moral * 3 + G.gold + (c.days - G.day + 1) * 15);
+      const had = totalStars();
+      prof.stars[G.ci] = Math.max(prof.stars[G.ci], stars); prof.best[G.ci] = Math.max(prof.best[G.ci], score); save();
+      const newRank = rankOf(totalStars()) !== rankOf(had);
+      $('card').innerHTML = `<h1>YAYLAYA VARDIK!</h1><p>${c.name} otlaklarına ulaştık. Sürü: <b>${G.herd}/${G.start}</b> · Moral: <b>${Math.round(G.moral)}</b> · ${G.day - 1}. gün</p>
+        <p class="stars" style="font-size:34px;margin:8px 0">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</p>
+        <p>Puan: <b>${score}</b> · En iyi: <b>${prof.best[G.ci]}</b></p>
+        <p>Unvan: <span class="rank">${rankOf(totalStars())}</span> ${newRank ? '🎉 Yeni rütbe!' : ''} · Toplam ${totalStars()}/12 ★</p>
+        <p style="font-size:13px;color:var(--mut)">★ yaylaya var · ★ sürünün %75'ini koru · ★ sürünün %92'si ve moral 55+</p>
+        ${G.ci < 3 && prof.stars[G.ci] >= 1 ? `<button class="opt go" data-n="${G.ci + 1}" style="text-align:center">SONRAKİ YAYLA ▶</button>` : ''}
+        <button class="opt" data-r="${G.ci}" style="text-align:center">Tekrar dene (daha çok yıldız)</button><button class="opt" data-m style="text-align:center">Harita</button>`;
+    } else {
+      $('card').innerHTML = `<h1>GÖÇ YARIDA KALDI</h1><p>${why}</p><p>${Math.round(G.km)} / ${c.km} km yol aldık.</p>
+        <p style="color:var(--mut);font-size:13px">İpucu: Konaklarda yiyecek ve su stokla, hızlı yürüyüş sürüyü yorar, morali yüksek tut.</p>
+        <button class="opt go" data-r="${G.ci}" style="text-align:center">Yeniden dene</button><button class="opt" data-m style="text-align:center">Harita</button>`;
+    }
+    $('modal').style.display = 'flex'; wire();
+  }
+  function wire() {
+    $('card').querySelectorAll('[data-n],[data-r]').forEach(b => b.onclick = () => newGame(+(b.dataset.n ?? b.dataset.r)));
+    $('card').querySelectorAll('[data-m]').forEach(b => b.onclick = menu);
+  }
+
+  // ---------- MENÜ ----------
+  function menu() {
+    G = null; busy = true;
+    $('card').innerHTML = `<h1>YÖRÜK GÖÇÜ</h1><p>Yaz geliyor! Obanı, sürünü ve yükünü al, yaylaya ulaştır. Her gün hızını seç, olayları yönet, konaklarda stok yap.</p>
+      <div class="row"><span class="rank">${rankOf(totalStars())}</span><span class="stars">${totalStars()}/12 ★</span></div>` +
+      CH.map((c, i) => { const lock = i > 0 && prof.stars[i - 1] < 1; return `<button class="chap ${lock ? 'lock' : ''}" data-c="${i}" ${lock ? 'disabled' : ''}><span class="n">${lock ? '🔒' : c.ico}</span><span class="t">${c.name}<small>${lock ? 'Önceki yaylaya ulaşınca açılır' : c.km + ' km · ' + c.days + ' gün · ' + c.desc}</small></span><span class="stars">${'★'.repeat(prof.stars[i])}${'☆'.repeat(3 - prof.stars[i])}</span></button>`; }).join('');
+    $('modal').style.display = 'flex';
+    $('card').querySelectorAll('[data-c]').forEach(b => b.onclick = () => newGame(+b.dataset.c));
+    hudBlank();
+  }
+  function hudBlank() { document.querySelector('#goal span').textContent = 'Bir yayla seç'; document.querySelector('#goal i').style.width = '0'; $('log').textContent = 'Yörük göçü başlıyor…'; }
+
+  // ---------- ÇİZİM ----------
+  const cv = $('c'), ctx = cv.getContext('2d'); let W = 0, H = 0, t = 0, scroll = 0, moving = 0;
+  function resize() { const r = cv.getBoundingClientRect(), D = Math.min(2, devicePixelRatio || 1); W = r.width; H = r.height; cv.width = W * D; cv.height = H * D; ctx.setTransform(D, 0, 0, D, 0, 0); }
+  addEventListener('resize', resize);
+  function animate(dist, done) { moving = dist > 0 ? 60 : 0; const wait = dist > 0 ? 1000 : 400; setTimeout(() => { moving = 0; done(); }, wait); }
+  function ridge(off, base, amp, col, k) {
+    ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, H);
+    for (let x = 0; x <= W + 10; x += 10) { const X = x + off; ctx.lineTo(x, base - amp * (0.55 + 0.3 * Math.sin(X * 0.008 * k) + 0.18 * Math.sin(X * 0.021 * k + 2) + 0.1 * Math.sin(X * 0.05 * k))); }
+    ctx.lineTo(W, H); ctx.fill();
+  }
+  function draw() {
+    requestAnimationFrame(draw); t++;
+    if (!W) resize();
+    if (moving > 0) { moving--; scroll += 3.2; }
+    const prog = G ? clamp(G.km / CH[G.ci].km, 0, 1) : 0, g0 = ctx.createLinearGradient(0, 0, 0, H);
+    // gökyüzü ilerledikçe yaza döner
+    const warm = prog; g0.addColorStop(0, `rgb(${60 + 60 * warm},${100 + 70 * warm},${150 + 60 * warm})`); g0.addColorStop(1, `rgb(${230},${190 + 30 * warm},${130 + 40 * warm})`);
+    ctx.fillStyle = g0; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,240,200,.9)'; ctx.beginPath(); ctx.arc(W * (0.2 + 0.6 * prog), H * 0.22, 26, 0, 7); ctx.fill();
+    ridge(scroll * 0.15, H * 0.62, H * 0.35, '#6e5a78', 1); ridge(scroll * 0.35, H * 0.72, H * 0.28, '#4d6b5a', 1.7);
+    ctx.fillStyle = prog > 0.85 ? '#6fae4a' : '#8a7a43'; ctx.fillRect(0, H * 0.74, W, H);
+    ctx.fillStyle = 'rgba(0,0,0,.12)'; for (let x = -(scroll % 60); x < W; x += 60) ctx.fillRect(x, H * 0.8, 28, 3);
+    // yayla işareti
+    const gx = W - 40 - (1 - prog) * 0; if (prog > 0.8) { ctx.fillStyle = '#e63946'; ctx.fillRect(W * 0.86, H * 0.55, 5, H * 0.19); ctx.fillStyle = '#ffc65a'; ctx.beginPath(); ctx.moveTo(W * 0.86 + 5, H * 0.55); ctx.lineTo(W * 0.86 + 40, H * 0.6); ctx.lineTo(W * 0.86 + 5, H * 0.65); ctx.fill(); }
+    // kafile
+    const base = H * 0.8, bob = moving ? Math.sin(t * 0.3) * 2 : 0;
+    const herd = G ? G.herd : 60, n = Math.min(40, Math.ceil(herd / 3));
+    for (let i = 0; i < n; i++) { const x = W * 0.12 + (i % 10) * 16 + (i / 10 | 0) * 7, y = base + 14 + (i / 10 | 0) * 9 + Math.sin(t * 0.2 + i) * (moving ? 1.5 : 0); ctx.fillStyle = '#f4efe6'; ctx.beginPath(); ctx.ellipse(x, y, 7, 5, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#3a2e22'; ctx.fillRect(x + 5, y - 3, 4, 4); }
+    for (let i = 0; i < 3; i++) { const x = W * 0.5 + i * 62, y = base + bob; ctx.fillStyle = '#b9814a'; ctx.beginPath(); ctx.ellipse(x, y - 22, 22, 13, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(x - 6, y - 36, 8, 0, 7); ctx.arc(x + 8, y - 36, 8, 0, 7); ctx.fill(); ctx.fillRect(x + 16, y - 44, 6, 22); ctx.beginPath(); ctx.arc(x + 20, y - 46, 6, 0, 7); ctx.fill(); ctx.strokeStyle = '#7a4f2a'; ctx.lineWidth = 4; for (const d of [-14, -4, 6, 14]) { ctx.beginPath(); ctx.moveTo(x + d, y - 12); ctx.lineTo(x + d + Math.sin(t * 0.3 + d) * (moving ? 5 : 0), y + 4); ctx.stroke(); } ctx.fillStyle = ['#e63946', '#ffc65a', '#2a9d8f'][i]; ctx.fillRect(x - 12, y - 36, 22, 10); }
+    // ön çalılar
+    ctx.fillStyle = '#4a5a2a'; for (let x = -(scroll * 1.4 % 140); x < W; x += 140) { ctx.beginPath(); ctx.ellipse(x, H - 6, 26, 12, 0, 0, 7); ctx.fill(); }
+    // gece örtüsü: gün sonu
+    if (busy && !moving && G && !G.over) { ctx.fillStyle = 'rgba(10,10,40,.25)'; ctx.fillRect(0, 0, W, H); }
+  }
+  requestAnimationFrame(draw);
+  addEventListener('keydown', e => { if (e.code === 'Space' && G && !busy && !G.over) { e.preventDefault(); day(); } if (G && !busy && ['Digit1', 'Digit2', 'Digit3'].includes(e.code)) { pace = +e.code.slice(5) - 1; setPaceBtn(); } });
+  menu();
+})();
+</script>
+</body>
+</html>

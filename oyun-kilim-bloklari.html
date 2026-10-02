@@ -38,14 +38,21 @@
     ['0001111000', '0012222100', '0123333210', '1234554321', '0123333210', '0012222100', '0001111000'],
   ];
   function resize() {
+    const oW = W, oH = H;
     DPR = Math.min(2, devicePixelRatio || 1);
     W = Math.min(innerWidth, innerHeight * 0.75, 600); H = innerHeight;
     cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (oW && pad && (oW !== W || oH !== H)) {
+      const fx = W / oW, fy = H / oH;
+      pad.x *= fx; pad.y = H - 70; pad.w *= fx;
+      if (ball) { ball.x *= fx; ball.y *= fy; ball.r = Math.max(6, W * 0.014); }
+      if (bricks) for (const b of bricks) { b.x *= fx; b.w *= fx; b.y *= fy; b.h = Math.min(26, H * 0.035); }
+    }
   }
-  addEventListener('resize', resize); resize();
+  let state = 'menu', bricks, pad, ball, score, lives, level, parts = [], stuck;
+  resize(); addEventListener('resize', resize);
   const store = { get(k) { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
   let best = store.get('kilim_best'); document.getElementById('bs').textContent = best;
-  let state = 'menu', bricks, pad, ball, score, lives, level, parts = [], stuck;
 
   function build() {
     const L = LEVELS[(level - 1) % LEVELS.length], bw = W / COLS, bh = Math.min(26, H * 0.035), top = H * 0.12;
@@ -79,8 +86,9 @@
       if (ball.x < ball.r) { ball.x = ball.r; ball.vx = Math.abs(ball.vx); }
       if (ball.x > W - ball.r) { ball.x = W - ball.r; ball.vx = -Math.abs(ball.vx); }
       if (ball.y < H * 0.08) { ball.y = H * 0.08; ball.vy = Math.abs(ball.vy); }
+      if (Math.abs(ball.vy) < 1.2) ball.vy = (ball.vy < 0 ? -1 : 1) * 1.2;
       if (ball.vy > 0 && ball.y + ball.r > pad.y - 6 && ball.y < pad.y + 8 && Math.abs(ball.x - pad.x) < pad.w / 2 + ball.r) {
-        const k = (ball.x - pad.x) / (pad.w / 2), sp = Math.hypot(ball.vx, ball.vy) * 1.01;
+        const k = Math.max(-1, Math.min(1, (ball.x - pad.x) / (pad.w / 2))), sp = Math.min(Math.hypot(ball.vx, ball.vy) * 1.01, H * 0.011 + level * 0.4 + H * 0.006);
         const a = -Math.PI / 2 + k * 1.05; ball.vx = Math.cos(a) * sp; ball.vy = Math.sin(a) * sp; ball.y = pad.y - 6 - ball.r;
       }
       for (const b of bricks) {
@@ -103,23 +111,35 @@
     ctx.beginPath(); ctx.moveTo(cx, cy - s); ctx.lineTo(cx + s, cy); ctx.lineTo(cx, cy + s); ctx.lineTo(cx - s, cy); ctx.fill();
     if (b.hp > 1) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(b.x + 4, b.y + 4, b.w - 8, b.h - 8); }
   }
-  function loop() {
-    requestAnimationFrame(loop);
+  function tick() {
     if (state === 'play') update();
+    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vy += .2; p.l--; }
+    parts = parts.filter(p => p.l > 0);
+  }
+  function render() {
     ctx.fillStyle = '#1c0f0f'; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = 'rgba(255,194,61,.05)';
     for (let y = 0; y < H; y += 40) for (let x = (y / 40) % 2 * 20; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 10, y + 10); ctx.lineTo(x, y + 20); ctx.lineTo(x - 10, y + 10); ctx.fill(); }
     if (!bricks) return;
     bricks.forEach(b => !b.dead && brick(b));
-    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vy += .2; p.l--; ctx.globalAlpha = p.l / 30; ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 4, 4); }
-    parts = parts.filter(p => p.l > 0); ctx.globalAlpha = 1;
+    for (const p of parts) { ctx.globalAlpha = Math.max(0, p.l / 30); ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 4, 4); }
+    ctx.globalAlpha = 1;
     const g = ctx.createLinearGradient(pad.x - pad.w / 2, 0, pad.x + pad.w / 2, 0); g.addColorStop(0, '#ff7a1a'); g.addColorStop(1, '#ffc23d');
     ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(pad.x - pad.w / 2, pad.y - 6, pad.w, 12, 6); ctx.fill();
     ctx.fillStyle = '#fff'; ctx.shadowColor = '#ffc23d'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
     if (state === 'play' && stuck) { ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.font = '700 16px system-ui'; ctx.textAlign = 'center'; ctx.fillText('Başlatmak için dokun', W / 2, H * 0.65); }
   }
   score = 0; lives = 3; level = 1; pad = { x: W / 2, y: H - 70, w: W * 0.2 }; build(); resetBall();
-  loop();
+  // Sabit 60 Hz adım: 90/120/144 Hz ekranlarda oyun hızlanmasın
+  const STEP = 1000 / 60; let acc = 0, lastT = 0;
+  function loop(now) {
+    requestAnimationFrame(loop);
+    acc += Math.min(100, now - (lastT || now)); lastT = now;
+    let n = 0; while (acc >= STEP - 1.5 && n < 4) { acc -= STEP; n++; tick(); }
+    if (n === 4) acc = 0;
+    render();
+  }
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>

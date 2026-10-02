@@ -118,8 +118,7 @@
     ctx.restore();
   }
 
-  function loop() {
-    requestAnimationFrame(loop);
+  function tick() {
     t++;
     const u = U();
     if (state === 'play') {
@@ -139,10 +138,14 @@
       }
       document.getElementById('sc').textContent = Math.floor(dist);
     } else if (state === 'menu') { wolf.run += 0.15; }
-
-    // ---- sahne ----
+    if (shake > 0) shake *= 0.85;
+    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.l--; }
+    parts = parts.filter(p => p.l > 0);
+  }
+  function render() {
+    const u = U();
     ctx.save();
-    if (shake > 0) { ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake); shake *= 0.85; }
+    if (shake > 0.3) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
     const sky = ctx.createLinearGradient(0, 0, 0, G);
     sky.addColorStop(0, '#1b1033'); sky.addColorStop(0.55, '#5b2a5e'); sky.addColorStop(1, '#ff8a3d');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
@@ -181,14 +184,23 @@
       }
     }
     // parçacıklar
-    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.l--; ctx.globalAlpha = Math.max(0, p.l / 30); ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 3, 3); }
-    parts = parts.filter(p => p.l > 0); ctx.globalAlpha = 1;
+    for (const p of parts) { ctx.globalAlpha = Math.max(0, p.l / 30); ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 3, 3); }
+    ctx.globalAlpha = 1;
     // kurt
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(W * 0.2 + 5 * u, G + 4, 38 * u * (1 + wolf.y / 400), 6 * u, 0, 0, 7); ctx.fill();
     drawWolf(W * 0.2, G + wolf.y, u);
     ctx.restore();
   }
-  loop();
+  // Sabit 60 Hz adım: 90/120/144 Hz ekranlarda oyun hızlanmasın
+  const STEP = 1000 / 60; let acc = 0, lastT = 0;
+  function loop(now) {
+    requestAnimationFrame(loop);
+    acc += Math.min(100, now - (lastT || now)); lastT = now;
+    let n = 0; while (acc >= STEP - 1.5 && n < 4) { acc -= STEP; n++; tick(); }
+    if (n === 4) acc = 0;
+    render();
+  }
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>

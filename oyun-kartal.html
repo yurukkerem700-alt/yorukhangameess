@@ -82,12 +82,11 @@
     ctx.fillStyle = '#4e2a12'; ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(-32, -6); ctx.lineTo(-32, 8); ctx.fill();
     ctx.restore();
   }
-  function loop() {
-    requestAnimationFrame(loop); t++;
-    if (state === 'play' || state === 'dead') update(); else bird.y = H * 0.45 + Math.sin(t * 0.05) * 12 * S;
+  function tick() { t++; if (state === 'play' || state === 'dead') update(); else bird.y = H * 0.45 + Math.sin(t * 0.05) * 12 * S; for (const c of clouds) { c.x -= 0.0003 * c.s; if (c.x < -0.2) c.x = 1.2; } }
+  function render() {
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#3fa4f0'); g.addColorStop(1, '#bfe6ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = 'rgba(255,255,255,.85)';
-    for (const c of clouds) { c.x -= 0.0003 * c.s; if (c.x < -0.2) c.x = 1.2; const x = c.x * W, y = c.y * H, r = 26 * c.s * S; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.arc(x + r, y - r * .4, r * 1.2, 0, 7); ctx.arc(x + r * 2.2, y, r, 0, 7); ctx.fill(); }
+    for (const c of clouds) { const x = c.x * W, y = c.y * H, r = 26 * c.s * S; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.arc(x + r, y - r * .4, r * 1.2, 0, 7); ctx.arc(x + r * 2.2, y, r, 0, 7); ctx.fill(); }
     ctx.fillStyle = '#8fc0a8'; ctx.beginPath(); ctx.moveTo(0, GROUND());
     for (let x = 0; x <= W; x += 30) ctx.lineTo(x, GROUND() - 60 * S - Math.sin((x + t * 0.3) * 0.01) * 30 * S); ctx.lineTo(W, GROUND()); ctx.fill();
     const pw = 76 * S;
@@ -95,7 +94,16 @@
     ctx.fillStyle = '#6fbf4a'; ctx.fillRect(0, GROUND(), W, 14 * S); ctx.fillStyle = '#c69a5b'; ctx.fillRect(0, GROUND() + 14 * S, W, H);
     drawBird();
   }
-  loop();
+  // Sabit 60 Hz adım: 90/120/144 Hz ekranlarda oyun hızlanmasın
+  const STEP = 1000 / 60; let acc = 0, lastT = 0;
+  function loop(now) {
+    requestAnimationFrame(loop);
+    acc += Math.min(100, now - (lastT || now)); lastT = now;
+    let n = 0; while (acc >= STEP - 1.5 && n < 4) { acc -= STEP; n++; tick(); }
+    if (n === 4) acc = 0;
+    render();
+  }
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>

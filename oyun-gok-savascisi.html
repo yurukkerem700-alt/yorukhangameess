@@ -22,7 +22,7 @@
 <div id="ui"><div class="panel" id="panel">
   <h1>GÖK SAVAŞÇISI</h1>
   <p>Gökyüzünü istilacılardan temizle!</p>
-  <p><b>Hareket:</b> parmağını/fareyi sürükle ya da ok tuşları. Ateş otomatik.</p>
+  <p><b>Hareket:</b> parmağını sürükle / fareyi gezdir ya da ok tuşları. Ateş otomatik.</p>
   <p>🟡 Yıldız topla: çift ateş</p>
   <button class="btn" id="go">BAŞLA</button>
 </div></div>
@@ -45,8 +45,9 @@
   addEventListener('keydown', e => { keys[e.code] = true; if ((e.code === 'Space' || e.code === 'Enter') && state !== 'play') start(); if (e.code.startsWith('Arrow')) e.preventDefault(); });
   addEventListener('keyup', e => keys[e.code] = false);
   const tp = e => { if (state === 'play') target = { x: e.clientX, y: e.clientY - 60 * S }; };
-  cv.addEventListener('pointerdown', tp); cv.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.buttons) tp(e); });
+  cv.addEventListener('pointerdown', tp); cv.addEventListener('pointermove', tp);
   cv.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') target = null; });
+  cv.addEventListener('pointercancel', () => { target = null; });
 
   function start() { resize(); reset(); state = 'play'; document.getElementById('ui').style.display = 'none'; }
   document.getElementById('go').onclick = start;
@@ -120,12 +121,16 @@
   }
   function hit() { lives--; inv = 100; hud(); boom(ship.x, ship.y, '#6ee7ff', 26); if (lives <= 0) { boom(ship.x, ship.y, '#ff7a1a', 60); over(); } }
 
-  function loop() {
-    requestAnimationFrame(loop);
-    if (state === 'play') update();
+  function tick() {
+    if (state === 'play') { update(); if (waveT > 0) waveT--; }
+    for (const s of stars) { s.y += s.z * 0.0009 * (state === 'play' ? 2 : 1); if (s.y > 1) { s.y = 0; s.x = Math.random(); } }
+    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.l--; }
+    parts = parts.filter(p => p.l > 0);
+  }
+  function render() {
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#050722'); g.addColorStop(1, '#130a2e');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    for (const s of stars) { s.y += s.z * 0.0009 * (state === 'play' ? 2 : 1); if (s.y > 1) { s.y = 0; s.x = Math.random(); } ctx.fillStyle = `rgba(255,255,255,${0.2 + s.z * 0.2})`; ctx.fillRect(s.x * W, s.y * H, s.z * 0.7, s.z * 1.8); }
+    for (const s of stars) { ctx.fillStyle = `rgba(255,255,255,${0.2 + s.z * 0.2})`; ctx.fillRect(s.x * W, s.y * H, s.z * 0.7, s.z * 1.8); }
     ctx.fillStyle = '#ffe28a'; ctx.shadowColor = '#ffd23d'; ctx.shadowBlur = 10;
     for (const b of bullets) ctx.fillRect(b.x - 2 * S, b.y - 10 * S, 4 * S, 16 * S);
     ctx.shadowColor = '#ff4dd2'; ctx.fillStyle = '#ff9be9';
@@ -134,11 +139,20 @@
     for (const p of pups) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(t * 0.05); ctx.fillStyle = '#ffd23d'; ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5, r = (i % 2 ? 6 : 14) * S; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.fill(); ctx.restore(); }
     enemies.forEach(drawEnemy);
     if (state !== 'over' && (inv <= 0 || Math.floor(inv / 6) % 2)) drawShip(ship ? ship.x : W / 2, ship ? ship.y : H * 0.85);
-    for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.l--; ctx.globalAlpha = Math.max(0, p.l / 40); ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 3 * S + 1, 3 * S + 1); }
-    parts = parts.filter(p => p.l > 0); ctx.globalAlpha = 1;
-    if (state === 'play' && waveT > 0) { waveT--; ctx.fillStyle = '#fff'; ctx.font = `800 ${28 * S + 8}px system-ui`; ctx.textAlign = 'center'; ctx.globalAlpha = Math.min(1, waveT / 40); ctx.fillText(wave + '. DALGA', W / 2, H * 0.4); ctx.globalAlpha = 1; }
+    for (const p of parts) { ctx.globalAlpha = Math.max(0, p.l / 40); ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 3 * S + 1, 3 * S + 1); }
+    ctx.globalAlpha = 1;
+    if (state === 'play' && waveT > 0) { ctx.fillStyle = '#fff'; ctx.font = `800 ${28 * S + 8}px system-ui`; ctx.textAlign = 'center'; ctx.globalAlpha = Math.min(1, waveT / 40); ctx.fillText(wave + '. DALGA', W / 2, H * 0.4); ctx.globalAlpha = 1; }
   }
-  reset(); loop();
+  // Sabit 60 Hz adım: 90/120/144 Hz ekranlarda oyun hızlanmasın
+  const STEP = 1000 / 60; let acc = 0, lastT = 0;
+  function loop(now) {
+    requestAnimationFrame(loop);
+    acc += Math.min(100, now - (lastT || now)); lastT = now;
+    let n = 0; while (acc >= STEP - 1.5 && n < 4) { acc -= STEP; n++; tick(); }
+    if (n === 4) acc = 0;
+    render();
+  }
+  reset(); requestAnimationFrame(loop);
 })();
 </script>
 </body>

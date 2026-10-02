@@ -382,7 +382,7 @@ function regFlora(mesh,list,rad){list.forEach((o,i)=>flora.push({mesh,idx:i,x:o.
 
 /* ================= Akvaryum: zemin, cam, salon ================= */
 {
-  const ZT=[{b:[300,545,-305,-175],c:[.86,.93,.98],k:.8},{b:[-545,-300,-305,-175],c:[.09,.07,.07],k:.8},{b:[-545,-300,175,305],c:[.2,.25,.32],k:.7},{b:[300,545,175,305],c:[.38,.27,.6],k:.6},{b:[-295,295,-305,-175],c:[.98,.96,.88],k:.55},{b:[-295,295,175,305],c:[.58,.55,.5],k:.5},{b:[300,545,-170,170],c:[.7,.82,.9],k:.45},{b:[-545,-300,-170,170],c:[.8,.4,.24],k:.8}],_zc=new THREE.Color();
+  const ZT=[{b:[300,545,-305,-175],c:[.86,.93,.98],k:.8},{b:[-545,-300,-305,-175],c:[.03,.025,.025],k:.97},{b:[-545,-300,175,305],c:[.2,.25,.32],k:.7},{b:[300,545,175,305],c:[.38,.27,.6],k:.6},{b:[-295,295,-305,-175],c:[.98,.96,.88],k:.55},{b:[-295,295,175,305],c:[.58,.55,.5],k:.5},{b:[300,545,-170,170],c:[.7,.82,.9],k:.45},{b:[-545,-300,-170,170],c:[.8,.4,.24],k:.8}],_zc=new THREE.Color();
   const g=new THREE.PlaneGeometry(TW,TD,isTouch?380:560,isTouch?217:320);g.rotateX(-Math.PI/2);
   const p=g.attributes.position,col=new Float32Array(p.count*3),c=new THREE.Color();
   for(let i=0;i<p.count;i++){
@@ -2247,7 +2247,6 @@ if(store.get('aqua-lang')==='en')lang='en';
 applyLang();
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
 addEventListener('beforeunload',()=>{try{net.peer&&net.peer.destroy();}catch{}});
-if(qs.get('debug'))window.__aq={tp:(x,y,z)=>{sub.position.set(x,y,z);subVel.set(0,0,0);camera.position.set(x,y+3,z-11);},cam:(yaw,pitch)=>{camYaw=yaw;subYaw=yaw;camPitch=pitch;},info:()=>({y:sub.position.y,air:subAir,cy:camera.position.y,above:aboveWater,structs:structs.length,colliders:colliders.length,creatures:creatures.length,enemies:enemies.length})};
 requestAnimationFrame(loop);
 </script>
 </body>

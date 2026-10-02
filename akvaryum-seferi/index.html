@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Akvaryum Seferi — Online 3D Denizaltı</title>
+<meta name="description" content="Akvaryum Seferi: online co-op 3D denizaltı oyunu. 16 canlı türü, 12 biyom, su yüzeyi ve yıldızlı gökyüzü. Ücretsiz, tarayıcıda oyna; masaüstüne veya ana ekrana yükle.">
+<meta name="theme-color" content="#04202e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Akvaryum">
 <style>
 :root{--ink:#f4fbff;--muted:#96b9c6;--line:rgba(255,255,255,.13);--panel:rgba(2,14,24,.64);--cyan:#6fe0ff;--gold:#ffd56c;--green:#7ef0b9}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#04202e;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;-webkit-user-select:none;user-select:none}
@@ -220,6 +226,7 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
 setTimeout(function(){if(!window.__aquaOK)document.getElementById('err').style.display='grid';},15000);
 window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='SCRIPT')document.getElementById('err').style.display='grid';},true);
 </script>
+<script>if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
 <script type="module">
 import * as THREE from 'three';

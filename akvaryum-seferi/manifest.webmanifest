@@ -1,0 +1,20 @@
+{
+  "name": "Akvaryum Seferi",
+  "short_name": "Akvaryum",
+  "description": "Online 3D denizaltı oyunu: 16 canlı türü, 12 biyom, yüzeyde yıldızlı gökyüzü.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#04202e",
+  "theme_color": "#04202e",
+  "lang": "tr",
+  "categories": ["games"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

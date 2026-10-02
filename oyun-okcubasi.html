@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Okçubaşı</title>
+<style>
+:root{--ink:#fff3e0;--mut:#c8b595;--line:rgba(255,220,160,.18);--gold:#ffc65a;--panel:rgba(26,15,8,.93)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#150d07;color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-user-select:none;user-select:none;touch-action:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#hud{position:fixed;top:0;left:0;right:0;display:flex;gap:8px;align-items:center;padding:8px 10px;pointer-events:none;text-shadow:0 2px 6px rgba(0,0,0,.6);font-weight:800}
+#hud div{flex:0 0 auto;text-align:center;font-size:18px;min-width:52px}
+#hud small{display:block;font-size:10px;letter-spacing:.8px;opacity:.75}
+#bar{flex:1 !important;position:relative;height:16px;background:rgba(0,0,0,.4);border-radius:9px;border:1px solid var(--line);overflow:hidden;min-width:80px}
+#bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#d97a1a,#ffc65a);width:0}
+#bar u{position:absolute;top:0;bottom:0;width:2px;background:#fff;opacity:.8}
+#pause{pointer-events:auto;background:rgba(0,0,0,.4);border:1px solid var(--line);color:#fff;border-radius:10px;font:inherit;font-weight:900;padding:6px 10px}
+#combo{position:fixed;left:0;right:0;top:56px;text-align:center;font-size:clamp(18px,4vw,28px);font-weight:900;color:var(--gold);text-shadow:0 2px 8px #000;pointer-events:none}
+#hint{position:fixed;left:0;right:0;bottom:10px;text-align:center;font-size:13px;color:#fff;opacity:.85;pointer-events:none;text-shadow:0 1px 4px #000}
+.modal{position:fixed;inset:0;background:rgba(10,5,2,.8);display:flex;align-items:center;justify-content:center;padding:14px;z-index:5;overflow:auto}
+.box{width:min(560px,100%);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;max-height:100%;overflow:auto}
+.box h1{margin:0 0 4px;font-size:clamp(26px,7vw,38px);background:linear-gradient(90deg,#ffd27a,#ff7a2a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.box p{margin:6px 0;color:#ead8b8;line-height:1.45;font-size:15px}
+.lv{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-top:7px;padding:10px 12px;background:rgba(255,255,255,.08);border:0;border-radius:12px;color:var(--ink);font:inherit;font-weight:800;cursor:pointer;touch-action:manipulation}
+.lv .n{width:30px;height:30px;border-radius:50%;background:var(--gold);color:#2a1604;display:grid;place-items:center;font-weight:900}
+.lv .t{flex:1}.lv small{display:block;color:var(--mut);font-weight:600;font-size:12px}
+.lv.lock{opacity:.4}.lv.lock .n{background:#555;color:#ccc}
+.stars{color:var(--gold);letter-spacing:2px}
+.btn{display:block;width:100%;margin-top:9px;padding:13px;border:0;border-radius:12px;font:inherit;font-weight:900;font-size:16px;color:var(--ink);background:rgba(255,255,255,.1);cursor:pointer;touch-action:manipulation}
+.btn.go{background:linear-gradient(135deg,#ff9a2a,#e0561a);color:#fff}
+.rank{display:inline-block;background:rgba(255,198,90,.15);border:1px solid rgba(255,198,90,.4);border-radius:999px;padding:3px 12px;font-size:13px;font-weight:800;color:var(--gold)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud">
+  <div><small>PUAN</small><span id="sc">0</span></div>
+  <div id="bar"><i></i><u style="left:50%"></u><u style="left:73%"></u><u style="left:100%"></u></div>
+  <div id="tm"><small>SÜRE</small><span>0</span></div>
+  <div id="ar"><small>OK</small><span>∞</span></div>
+  <button id="pause">II</button>
+</div>
+<div id="combo"></div>
+<div id="hint">Hedefin biraz önüne dokun · Hareketli hedefte yön kestir</div>
+<div class="modal" id="modal"><div class="box" id="box"></div></div>
+<script>
+(() => {
+  const KEY = 'yg_okcubasi_v1';
+  const load = () => { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.stars) return d; } catch (e) {} return { stars: Array(10).fill(0), best: Array(10).fill(0) }; };
+  let prof = load(); const save = () => { try { localStorage.setItem(KEY, JSON.stringify(prof)); } catch (e) {} };
+  const total = () => prof.stars.reduce((a, b) => a + b, 0);
+  const RANKS = [[0, 'Çırak'], [4, 'Atlı Okçu'], [9, 'Alp'], [14, 'Yiğit'], [20, 'Okçubaşı'], [26, 'Gök Okçusu'], [30, 'Efsane Nişancı']];
+  const rankOf = s => { let r = RANKS[0][1]; for (const [n, t] of RANKS) if (s >= n) r = t; return r; };
+
+  // goal: 1★ için puan. 2★ = goal*1.35, 3★ = goal*1.75
+  const LV = [
+    { n: 'İlk Ok', info: '60 sn · 10 puan', goal: 10, time: 60, arrows: 0, sp: 190, gap: 1.7, kinds: ['yer'] },
+    { n: 'Dörtnala', info: '50 sn · 16 puan', goal: 16, time: 50, arrows: 0, sp: 240, gap: 1.3, kinds: ['yer'] },
+    { n: 'Kıt Ok', info: 'Sadece 20 ok · 14 puan', goal: 14, time: 90, arrows: 20, sp: 220, gap: 1.5, kinds: ['yer', 'yer', 'direk'] },
+    { n: 'Uçan Tepsiler', info: '60 sn · 18 puan', goal: 18, time: 60, arrows: 0, sp: 230, gap: 1.2, kinds: ['yer', 'direk', 'tepsi', 'tepsi'] },
+    { n: 'Dost Bayrağı', info: 'Kırmızı bayraklara dokunma! · 20 puan', goal: 20, time: 60, arrows: 0, sp: 240, gap: 1.1, kinds: ['yer', 'direk', 'tepsi', 'bayrak', 'bayrak'] },
+    { n: 'Tek Nişan', info: '24 ok · 20 puan', goal: 20, time: 80, arrows: 24, sp: 260, gap: 1.2, kinds: ['yer', 'direk', 'tepsi', 'bayrak'] },
+    { n: 'Rüzgâr Gibi', info: '55 sn · 28 puan', goal: 28, time: 55, arrows: 0, sp: 300, gap: 0.9, kinds: ['yer', 'direk', 'tepsi', 'tepsi', 'bayrak'] },
+    { n: 'Keskin Gözler', info: '28 ok · 26 puan', goal: 26, time: 80, arrows: 28, sp: 290, gap: 1.0, kinds: ['yer', 'direk', 'tepsi', 'bayrak'] },
+    { n: 'Bozkır Fırtınası', info: '70 sn · 36 puan', goal: 36, time: 70, arrows: 0, sp: 330, gap: 0.8, kinds: ['yer', 'direk', 'tepsi', 'tepsi', 'bayrak'] },
+    { n: 'Okçubaşı Sınavı', info: '30 ok · 34 puan', goal: 34, time: 75, arrows: 30, sp: 340, gap: 0.85, kinds: ['yer', 'direk', 'tepsi', 'tepsi', 'bayrak'] },
+  ];
+  const starsFor = (L, sc) => sc >= L.goal * 1.75 ? 3 : sc >= L.goal * 1.35 ? 2 : sc >= L.goal ? 1 : 0;
+
+  const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2d');
+  let W = 0, H = 0, S = 1, GY = 0, G = null, paused = false, aimA = -0.2, shake = 0;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function resize() { const D = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * D; cv.height = H * D; ctx.setTransform(D, 0, 0, D, 0, 0); S = Math.max(0.55, Math.min(W / 800, H / 480)); GY = H * 0.82; }
+  addEventListener('resize', resize); resize();
+  const BX = () => W * 0.18, BY = () => GY - 92 * S;
+
+  function start(li) {
+    const L = LV[li];
+    G = { li, L, t: 0, left: L.time, arrows: L.arrows, sc: 0, hits: 0, shots: 0, combo: 0, bestCombo: 0, reload: 0, tg: [], ar: [], parts: [], next: 1.2, over: false, scroll: 0, floaters: [] };
+    paused = false; $('modal').style.display = 'none'; hud(); $('hint').style.opacity = .85; setTimeout(() => $('hint').style.opacity = 0, 5000);
+    $('bar').querySelectorAll('u')[0].style.left = (1 / 1.75 * 100) + '%'; $('bar').querySelectorAll('u')[1].style.left = (1.35 / 1.75 * 100) + '%'; $('bar').querySelectorAll('u')[2].style.left = '100%';
+  }
+  function hud() {
+    if (!G) return;
+    $('sc').textContent = G.sc; $('tm').lastElementChild.textContent = Math.ceil(G.left);
+    $('ar').lastElementChild.textContent = G.L.arrows ? G.arrows : '∞'; $('ar').style.color = G.L.arrows && G.arrows <= 5 ? '#ff7a6e' : '';
+    $('bar').firstElementChild.style.width = Math.min(100, G.sc / (G.L.goal * 1.75) * 100) + '%';
+    $('combo').textContent = G.combo >= 3 ? '🔥 Seri x' + G.combo : '';
+  }
+
+  // ---------- HEDEFLER ----------
+  function spawn() {
+    const k = G.L.kinds[Math.floor(Math.random() * G.L.kinds.length)], sp = G.L.sp * S;
+    const T = { k, x: W + 60 * S, r: 30 * S, vx: -sp, y: GY - 30 * S, dead: false, id: Math.random() };
+    if (k === 'direk') { T.y = GY - rnd(110, 210) * S; T.r = 27 * S; }
+    if (k === 'tepsi') { T.r = 20 * S; T.x = rnd(W * 0.55, W * 0.95); T.y = GY - 10 * S; T.vx = -rnd(40, 110) * S; T.vy = -rnd(520, 640) * S; T.g = 520 * S; }
+    if (k === 'bayrak') { T.r = 26 * S; T.y = GY - rnd(40, 170) * S; }
+    G.tg.push(T);
+  }
+
+  // ---------- ATIŞ ----------
+  function fire(px, py) {
+    if (!G || G.over || paused || G.reload > 0) return; if (G.L.arrows && G.arrows <= 0) return;
+    const sx = BX(), sy = BY(), dx = px - sx, dy = py - sy, v = 1100 * S, g = 420 * S;
+    // Dokunulan noktadan geçen balistik açı (alçak yay): A·u² + dx·u + (A − dy) = 0, u = tan(açı)
+    let fa;
+    if (dx > 30) {
+      const A = g * dx * dx / (2 * v * v), disc = dx * dx - 4 * A * (A - dy);
+      fa = disc >= 0 ? Math.atan((-dx + Math.sqrt(disc)) / (2 * A)) : -Math.PI / 4;
+    } else fa = Math.atan2(dy, 120);
+    fa = Math.max(-1.3, Math.min(0.6, fa));
+    aimA = fa; G.reload = 0.32; G.shots++;
+    if (G.L.arrows) G.arrows--;
+    G.ar.push({ x: sx + Math.cos(fa) * 40 * S, y: sy + Math.sin(fa) * 40 * S, vx: Math.cos(fa) * v, vy: Math.sin(fa) * v, g, hit: false, trail: [] });
+    hud();
+  }
+  cv.addEventListener('pointerdown', e => { if (e.target === cv) fire(e.clientX, e.clientY); });
+
+  function floater(x, y, txt, col) { G.floaters.push({ x, y, txt, col, t: 0 }); }
+  function pop(x, y, col, n) { for (let i = 0; i < n; i++) G.parts.push({ x, y, vx: rnd(-200, 200) * S, vy: rnd(-260, 60) * S, l: 0.6, c: col }); }
+
+  // ---------- SİMÜLASYON ----------
+  function step(dt) {
+    if (!G || G.over || paused) return;
+    G.t += dt; G.left -= dt; G.scroll += G.L.sp * S * dt; G.reload = Math.max(0, G.reload - dt); shake = Math.max(0, shake - dt * 30);
+    G.next -= dt; if (G.next <= 0) { spawn(); G.next = G.L.gap * rnd(0.7, 1.3); }
+    for (const T of G.tg) { T.x += T.vx * dt; if (T.k === 'tepsi') { T.vy += T.g * dt; T.y += T.vy * dt; if (T.y > GY + 20) T.dead = true; } if (T.x < -80 * S) { T.dead = true; } }
+    for (const A of G.ar) {
+      const px = A.x, py = A.y; A.vy += A.g * dt; A.x += A.vx * dt; A.y += A.vy * dt; A.trail.push([A.x, A.y]); if (A.trail.length > 6) A.trail.shift();
+      for (const T of G.tg) {
+        if (T.dead) continue;
+        // doğru parçası - daire
+        const sx = A.x - px, sy = A.y - py, fx = px - T.x, fy = py - T.y, a = sx * sx + sy * sy || 1e-6, b = 2 * (fx * sx + fy * sy), c = fx * fx + fy * fy - (T.r * 1.05) ** 2, d = b * b - 4 * a * c;
+        if (d >= 0) { const t1 = (-b - Math.sqrt(d)) / (2 * a), t2 = (-b + Math.sqrt(d)) / (2 * a); if ((t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1) || c < 0) { hit(T, A); break; } }
+      }
+      if (A.y > GY + 6 || A.x > W + 100 || A.x < -100 || A.y < -400) { A.hit = true; if (A.y > GY + 6 && !A.stuck) { A.stuck = true; } miss(A); }
+    }
+    G.ar = G.ar.filter(A => !A.hit); G.tg = G.tg.filter(T => !T.dead);
+    for (const p of G.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 900 * S * dt; p.l -= dt; } G.parts = G.parts.filter(p => p.l > 0);
+    for (const f of G.floaters) f.t += dt; G.floaters = G.floaters.filter(f => f.t < 0.9);
+    if (G.t > 0.001 && (G.left <= 0 || (G.L.arrows && G.arrows <= 0 && !G.ar.length))) finish();
+    G._h = (G._h || 0) + 1; if (G._h % 6 === 0) hud();
+  }
+  function miss(A) { if (!A.counted) { A.counted = true; if (!A.scored) { G.combo = 0; } } }
+  function hit(T, A) {
+    A.hit = true; A.scored = true; T.dead = true;
+    if (T.k === 'bayrak') { G.sc = Math.max(0, G.sc - 3); G.combo = 0; floater(T.x, T.y, '-3 Dost!', '#ff7a6e'); pop(T.x, T.y, '#e63946', 12); shake = 8; hud(); return; }
+    let pts = T.k === 'tepsi' ? 2 : 1;
+    const bull = Math.hypot(A.x - T.x, A.y - T.y) < T.r * 0.45; if (bull) pts += 2;
+    G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); G.hits++;
+    if (G.combo % 5 === 0) { pts += 2; floater(T.x, T.y - 30 * S, 'SERİ +2', '#ffd23d'); }
+    G.sc += pts; floater(T.x, T.y, '+' + pts + (bull ? ' ⦿' : ''), bull ? '#ffd23d' : '#fff'); pop(T.x, T.y, T.k === 'tepsi' ? '#ff9a2a' : '#e8c88a', 10); hud();
+  }
+  function finish() {
+    G.over = true; hud();
+    const L = G.L, st = starsFor(L, G.sc), had = total(), old = prof.stars[G.li], newBest = G.sc > prof.best[G.li];
+    prof.stars[G.li] = Math.max(old, st); prof.best[G.li] = Math.max(prof.best[G.li], G.sc); save();
+    const acc = G.shots ? Math.round(G.hits / G.shots * 100) : 0, nr = rankOf(total()) !== rankOf(had);
+    const need = st < 3 ? (st === 0 ? L.goal : st === 1 ? Math.ceil(L.goal * 1.35) : Math.ceil(L.goal * 1.75)) : 0;
+    $('box').innerHTML = `<h1>${st ? 'GÖREV TAMAM!' : 'GÖREV BAŞARISIZ'}</h1><p>${L.n} · Puan <b>${G.sc}</b> / hedef ${L.goal} · En iyi: <b>${prof.best[G.li]}</b>${newBest ? ' 🎉' : ''}</p>
+      <p class="stars" style="font-size:34px;margin:6px 0">${'★'.repeat(st)}${'☆'.repeat(3 - st)}</p>
+      <p>İsabet: <b>%${acc}</b> (${G.hits}/${G.shots}) · En uzun seri: <b>${G.bestCombo}</b></p>
+      ${st < 3 ? `<p style="color:var(--mut);font-size:13px">${st === 0 ? 'Hedefe ulaşmak' : 'Sonraki yıldız'} için <b>${need}</b> puan gerek.</p>` : ''}
+      <p>Rütbe: <span class="rank">${rankOf(total())}</span> ${nr ? '🎉 Yeni rütbe!' : ''} · ${total()}/30 ★</p>
+      ${st && LV[G.li + 1] ? '<button class="btn go" id="nx">SONRAKİ GÖREV ▶</button>' : ''}
+      <button class="btn ${st ? '' : 'go'}" id="rt">Tekrar dene</button><button class="btn" id="mn">Görev Listesi</button>`;
+    $('modal').style.display = 'flex'; if ($('nx')) $('nx').onclick = () => start(G.li + 1); $('rt').onclick = () => start(G.li); $('mn').onclick = menu;
+  }
+  $('pause').onclick = e => { e.stopPropagation(); togglePause(); };
+  addEventListener('keydown', e => { if (e.key === 'p' || e.key === 'Escape') togglePause(); });
+  function togglePause() { if (!G || G.over) return; paused = !paused; if (paused) { $('box').innerHTML = '<h1>DURAKLATILDI</h1><button class="btn go" id="r">DEVAM</button><button class="btn" id="m">Görev Listesi</button>'; $('modal').style.display = 'flex'; $('r').onclick = togglePause; $('m').onclick = () => { paused = false; menu(); }; } else $('modal').style.display = 'none'; }
+
+  function menu() {
+    G = null; paused = false; $('combo').textContent = '';
+    $('box').innerHTML = `<h1>OKÇUBAŞI</h1><p>Atının üstünde dörtnala giderken hedefleri vur! Her görevde bir <b>puan hedefi</b> var. Hedefi geç, daha çok yıldız topla, rütbeni yükselt. Ekrana dokunduğun yere ok atılır.</p>
+      <p style="font-size:13px;color:var(--mut)">⦿ Tam ortaya vur: +2 · 🔥 Her 5 seri vuruş: +2 · 🔴 Kırmızı dost bayrağına vurma: −3 · Tepsiler uçar, yönünü kestir.</p>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span class="rank">${rankOf(total())}</span><span class="stars">${total()}/30 ★</span></div>` +
+      LV.map((l, i) => { const lock = i > 0 && prof.stars[i - 1] < 1; return `<button class="lv ${lock ? 'lock' : ''}" data-i="${i}" ${lock ? 'disabled' : ''}><span class="n">${lock ? '🔒' : i + 1}</span><span class="t">${l.n}<small>${lock ? 'Önceki görevi tamamla' : l.info}</small></span><span class="stars">${'★'.repeat(prof.stars[i])}${'☆'.repeat(3 - prof.stars[i])}</span></button>`; }).join('');
+    $('modal').style.display = 'flex'; $('box').querySelectorAll('[data-i]').forEach(b => b.onclick = () => start(+b.dataset.i));
+  }
+
+  // ---------- ÇİZİM ----------
+  function hills(off, base, amp, col, k) { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, GY); for (let x = 0; x <= W + 10; x += 12) { const X = x + off; ctx.lineTo(x, base - amp * (0.5 + 0.3 * Math.sin(X * 0.006 * k) + 0.2 * Math.sin(X * 0.017 * k + 1.3))); } ctx.lineTo(W, GY); ctx.fill(); }
+  function target(T, t) {
+    ctx.save(); ctx.translate(T.x, T.y); const r = T.r;
+    if (T.k === 'yer' || T.k === 'direk') {
+      ctx.strokeStyle = '#5a3a1e'; ctx.lineWidth = 6 * S; ctx.beginPath(); ctx.moveTo(0, r); ctx.lineTo(0, GY - T.y); ctx.stroke();
+      ctx.fillStyle = '#f4efe6'; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill();
+      ctx.fillStyle = '#d23a3a'; ctx.beginPath(); ctx.arc(0, 0, r * 0.7, 0, 7); ctx.fill(); ctx.fillStyle = '#f4efe6'; ctx.beginPath(); ctx.arc(0, 0, r * 0.45, 0, 7); ctx.fill(); ctx.fillStyle = '#d23a3a'; ctx.beginPath(); ctx.arc(0, 0, r * 0.22, 0, 7); ctx.fill();
+    } else if (T.k === 'tepsi') {
+      ctx.rotate(t * 9); ctx.fillStyle = '#ff9a2a'; ctx.beginPath(); ctx.ellipse(0, 0, r, r * 0.35, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#ffd27a'; ctx.beginPath(); ctx.ellipse(0, -r * 0.1, r * 0.6, r * 0.18, 0, 0, 7); ctx.fill();
+    } else {
+      ctx.strokeStyle = '#5a3a1e'; ctx.lineWidth = 5 * S; ctx.beginPath(); ctx.moveTo(-r * 0.3, r); ctx.lineTo(-r * 0.3, GY - T.y); ctx.stroke();
+      ctx.fillStyle = '#e63946'; ctx.beginPath(); ctx.moveTo(-r * 0.3, -r); ctx.lineTo(r, -r * 0.45 + Math.sin(t * 8) * 3); ctx.lineTo(-r * 0.3, r * 0.1); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(r * 0.15, -r * 0.45, r * 0.18, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function horse(t, moving) {
+    const x = BX(), y = GY, s = S, ph = t * 14;
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0, 4, 70, 10, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#5a3320'; ctx.lineWidth = 11; ctx.lineCap = 'round';
+    for (const [lx, o] of [[-42, 0], [-30, 2], [34, 1], [46, 3]]) { const a = moving ? Math.sin(ph + o) * 0.7 : 0; ctx.beginPath(); ctx.moveTo(lx, -48); ctx.lineTo(lx + Math.sin(a) * 28, -2 - Math.abs(Math.cos(a)) * -2); ctx.stroke(); }
+    ctx.fillStyle = '#7a4a2a'; ctx.beginPath(); ctx.ellipse(0, -62, 62, 26, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(44, -78); ctx.lineTo(72, -112); ctx.lineTo(96, -100); ctx.lineTo(90, -80); ctx.lineTo(60, -62); ctx.fill();
+    ctx.fillStyle = '#2a1a10'; ctx.beginPath(); ctx.moveTo(48, -80); ctx.lineTo(70, -112); ctx.lineTo(60, -114); ctx.lineTo(40, -88); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-60, -66); ctx.quadraticCurveTo(-96, -70 + Math.sin(ph) * 6, -92, -36); ctx.quadraticCurveTo(-76, -52, -58, -52); ctx.fill();
+    ctx.fillStyle = '#c0392b'; ctx.fillRect(-20, -86, 40, 8); // eyer
+    // binici
+    ctx.fillStyle = '#2a5a8f'; ctx.beginPath(); ctx.roundRect(-14, -132, 28, 48, 8); ctx.fill();
+    ctx.fillStyle = '#f0c9a0'; ctx.beginPath(); ctx.arc(0, -144, 12, 0, 7); ctx.fill(); ctx.fillStyle = '#8c1c2c'; ctx.beginPath(); ctx.arc(0, -150, 13, Math.PI, 0); ctx.fill(); ctx.fillRect(-14, -152, 28, 5);
+    // yay
+    ctx.save(); ctx.translate(12, -108); ctx.rotate(aimA); ctx.strokeStyle = '#6b4423'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(14, 0, 34, -1.15, 1.15); ctx.stroke(); ctx.strokeStyle = '#eee'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(14 + Math.cos(-1.15) * 34, Math.sin(-1.15) * 34); ctx.lineTo(14 + Math.cos(1.15) * 34 - (G && G.reload > 0 ? 0 : 6), Math.sin(1.15) * 34); ctx.stroke(); ctx.restore();
+    ctx.restore();
+  }
+  function render(now) {
+    const t = now / 1000, moving = G && !G.over && !paused;
+    const sc = G ? G.scroll : t * 60;
+    const g = ctx.createLinearGradient(0, 0, 0, GY); g.addColorStop(0, '#4aa3e8'); g.addColorStop(1, '#f6d9a0'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#fff7d6'; ctx.beginPath(); ctx.arc(W * 0.82, H * 0.2, 36 * S, 0, 7); ctx.fill();
+    hills(sc * 0.08, GY - 40 * S, 150 * S, '#9fb3c8', 0.7); hills(sc * 0.25, GY - 10 * S, 110 * S, '#7da06a', 1.2);
+    ctx.fillStyle = '#a9873f'; ctx.fillRect(0, GY, W, H - GY); ctx.fillStyle = 'rgba(0,0,0,.1)'; for (let x = -(sc % 90); x < W; x += 90) ctx.fillRect(x, GY + 18 * S, 40 * S, 4 * S);
+    ctx.save(); if (shake > 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+    if (G) { for (const T of G.tg) target(T, t);
+      for (const A of G.ar) { const ang = Math.atan2(A.vy, A.vx); ctx.save(); ctx.translate(A.x, A.y); ctx.rotate(ang); ctx.strokeStyle = '#f5e6b8'; ctx.lineWidth = 3 * S; ctx.beginPath(); ctx.moveTo(-26 * S, 0); ctx.lineTo(10 * S, 0); ctx.stroke(); ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.moveTo(14 * S, 0); ctx.lineTo(6 * S, -4 * S); ctx.lineTo(6 * S, 4 * S); ctx.fill(); ctx.fillStyle = '#d23a3a'; ctx.fillRect(-28 * S, -3 * S, 7 * S, 6 * S); ctx.restore(); }
+      for (const p of G.parts) { ctx.globalAlpha = Math.max(0, p.l / 0.6); ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 5 * S, 5 * S); } ctx.globalAlpha = 1;
+      for (const f of G.floaters) { ctx.globalAlpha = 1 - f.t / 0.9; ctx.fillStyle = f.col; ctx.font = `900 ${22 * S}px system-ui`; ctx.textAlign = 'center'; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 3; ctx.strokeText(f.txt, f.x, f.y - f.t * 50); ctx.fillText(f.txt, f.x, f.y - f.t * 50); } ctx.globalAlpha = 1; }
+    horse(t, moving); ctx.restore();
+  }
+  const STEP = 1000 / 60; let acc = 0, last = 0;
+  function loop(now) { requestAnimationFrame(loop); acc += Math.min(100, now - (last || now)); last = now; let n = 0; while (acc >= STEP - 1.5 && n < 4) { acc -= STEP; n++; step(1 / 60); } if (n === 4) acc = 0; render(now); }
+  requestAnimationFrame(loop);
+  menu();
+})();
+</script>
+</body>
+</html>
